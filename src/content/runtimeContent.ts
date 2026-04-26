@@ -13,26 +13,26 @@ const text = (en: string, zh: string): LocalizedText => ({ en, zh })
 
 const fallbackConfig: SiteRuntimeConfig = {
   brand: {
-    name: 'Formosa Pacific Advisory',
+    name: 'BlueRock Capital Group',
     tagline: text(
       'Luxury Southern California property strategy for Taiwanese investors',
       '專為台灣投資人打造的南加州精品不動產策略顧問',
     ),
-    legalName: 'Formosa Pacific Advisory LLC',
-    logoMark: 'FP',
+    legalName: 'BlueRock Capital Group',
+    logoMark: 'BR',
   },
   contact: {
-    email: 'invest@formosapacific.com',
+    email: 'invest@bluerockcapitalgroup.com',
     phone: '+1 (949) 555-0188',
     whatsapp: '+886 900 000 000',
-    line: '@formosapacific',
+    line: '@bluerockcapital',
     location: text('Orange County and Greater Los Angeles, California', '加州橘郡與大洛杉磯地區'),
   },
   seo: {
-    siteUrl: 'https://formosapacificadvisory.com',
+    siteUrl: 'https://bluerockcapitalgroup.com',
     defaultTitle: text(
-      'Formosa Pacific Advisory | Luxury Southern California Property Strategy',
-      'Formosa Pacific Advisory | 南加州精品不動產策略顧問',
+      'BlueRock Capital Group | Luxury Southern California Property Strategy',
+      'BlueRock Capital Group | 南加州精品不動產策略顧問',
     ),
     defaultDescription: text(
       'Bilingual luxury real estate advisory for Taiwanese investors acquiring Southern California property across Orange County, Arcadia, Irvine, and South Bay.',
@@ -59,7 +59,7 @@ const fallbackConfig: SiteRuntimeConfig = {
       'https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1600&q=80',
   },
   notifications: {
-    inquiryNotificationEmail: 'invest@formosapacific.com',
+    inquiryNotificationEmail: 'invest@bluerockcapitalgroup.com',
   },
   hero: {
     en: {

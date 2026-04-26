@@ -1,4 +1,4 @@
-# Formosa Pacific Advisory
+# BlueRock Capital Group
 
 Luxury bilingual real estate investment website for Taiwanese investors evaluating and acquiring Southern California properties.
 

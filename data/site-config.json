@@ -1,12 +1,12 @@
 {
   "brand": {
-    "name": "Formosa Pacific Advisory",
+    "name": "BlueRock Capital Group",
     "tagline": {
       "en": "Luxury Southern California property strategy for Taiwanese investors",
       "zh": "專為台灣投資人打造的南加州精品不動產策略顧問"
     },
-    "legalName": "Formosa Pacific Advisory LLC",
-    "logoMark": "FP"
+    "legalName": "BlueRock Capital Group",
+    "logoMark": "BR"
   },
   "contact": {
     "email": "invest@formosapacific.com",
@@ -21,8 +21,8 @@
   "seo": {
     "siteUrl": "https://formosapacificadvisory.com",
     "defaultTitle": {
-      "en": "Formosa Pacific Advisory | Luxury Southern California Property Strategy",
-      "zh": "Formosa Pacific Advisory | 南加州精品不動產策略顧問"
+      "en": "BlueRock Capital Group | Luxury Southern California Property Strategy",
+      "zh": "BlueRock Capital Group | 南加州精品不動產策略顧問"
     },
     "defaultDescription": {
       "en": "Bilingual luxury real estate advisory for Taiwanese investors acquiring Southern California property across Orange County, Arcadia, Irvine, and South Bay.",

@@ -192,7 +192,7 @@ app.get('/api/health', async (_request, response) => {
   response.json({
     ok: true,
     emailProvider: resend ? 'resend' : 'disabled',
-    configuredBrand: siteConfig.brand?.name ?? 'Formosa Pacific Advisory',
+    configuredBrand: siteConfig.brand?.name ?? 'BlueRock Capital Group',
   })
 })
 
