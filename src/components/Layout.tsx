@@ -9,15 +9,13 @@ type LayoutProps = {
   onToggleLanguage: () => void
 }
 
-const CONTACT_EMAIL = 'invest@formosapacific.com'
-
 export function Layout({ children, content, language, onToggleLanguage }: LayoutProps) {
   return (
     <div className="page-shell">
       <header className="site-header">
         <div className="section site-header__inner">
           <Link className="brand" to="/">
-            <div className="brand__mark">PC</div>
+            <div className="brand__mark">{content.brand.mark}</div>
             <div className="brand__text">
               <span className="brand__name">{content.brand.name}</span>
               <span className="brand__subline">{content.brand.tagline}</span>
@@ -38,7 +36,7 @@ export function Layout({ children, content, language, onToggleLanguage }: Layout
             <button className="lang-toggle" type="button" onClick={onToggleLanguage}>
               {language === 'en' ? '中文' : 'EN'}
             </button>
-            <a className="header-cta" href={`mailto:${CONTACT_EMAIL}`}>
+            <a className="header-cta" href={`mailto:${content.site.contactEmail}`}>
               {content.navCta}
             </a>
           </nav>

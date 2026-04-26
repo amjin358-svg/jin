@@ -20,6 +20,7 @@ function ContactPage({ content, language }: ContactPageProps) {
       <div className="contact-layout">
         <div className="glass-card contact-copy-card">
           <h3>{content.contact.directTitle}</h3>
+          <p>{content.contact.directDescription}</p>
           <div className="contact-copy-stack">
             {content.contact.directItems.map((item) => (
               <p key={item}>{item}</p>

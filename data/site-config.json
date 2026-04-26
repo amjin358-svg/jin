@@ -1,0 +1,51 @@
+{
+  "brand": {
+    "name": "Formosa Pacific Advisory",
+    "tagline": {
+      "en": "Luxury Southern California property strategy for Taiwanese investors",
+      "zh": "專為台灣投資人打造的南加州精品不動產策略顧問"
+    },
+    "legalName": "Formosa Pacific Advisory LLC",
+    "logoMark": "FP"
+  },
+  "contact": {
+    "email": "invest@formosapacific.com",
+    "phone": "+1 (949) 555-0188",
+    "whatsapp": "+886 900 000 000",
+    "line": "@formosapacific",
+    "location": {
+      "en": "Orange County and Greater Los Angeles, California",
+      "zh": "加州橘郡與大洛杉磯地區"
+    }
+  },
+  "seo": {
+    "siteUrl": "https://formosapacificadvisory.com",
+    "defaultTitle": {
+      "en": "Formosa Pacific Advisory | Luxury Southern California Property Strategy",
+      "zh": "Formosa Pacific Advisory | 南加州精品不動產策略顧問"
+    },
+    "defaultDescription": {
+      "en": "Bilingual luxury real estate advisory for Taiwanese investors acquiring Southern California property across Orange County, Arcadia, Irvine, and South Bay.",
+      "zh": "為台灣投資人提供雙語南加州精品不動產顧問服務，涵蓋橘郡、Arcadia、Irvine 與 South Bay。"
+    },
+    "defaultOgImage": "https://images.unsplash.com/photo-1511818966892-d7d671e672a2?auto=format&fit=crop&w=1600&q=80"
+  },
+  "analytics": {
+    "googleAnalyticsId": "",
+    "metaPixelId": ""
+  },
+  "hero": {
+    "en": {
+      "eyebrow": "Bilingual acquisition platform for Taiwanese capital entering Southern California",
+      "title": "Acquire prestige California real estate with institutional clarity.",
+      "highlight": "Luxury homes, disciplined underwriting, cross-border execution.",
+      "description": "We help Taiwanese families, founders, and private investors buy Southern California properties through a premium advisory model that combines market selection, transaction coordination, and post-close stewardship."
+    },
+    "zh": {
+      "eyebrow": "專為台灣資本進入南加州而設計的雙語收購平台",
+      "title": "用機構級判斷，配置具地位感的加州不動產。",
+      "highlight": "精品住宅、嚴謹投資評估、跨境成交執行。",
+      "description": "我們協助台灣家庭、企業主與高資產投資人，以精品顧問模式進入南加州房地產市場，整合區域選擇、交易協調與交屋後資產管理。"
+    }
+  }
+}

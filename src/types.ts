@@ -31,6 +31,20 @@ export type MarketWatchItem = {
   image: string
 }
 
+export type SiteConfigMarketWatchItem = {
+  region: LocalizedText
+  address: string
+  price: string
+  specs: string[]
+  source: string
+  sourceUrl: string
+  status: LocalizedText
+  summary: LocalizedText
+  investmentAngle: LocalizedText
+  visualTag: string
+  image: string
+}
+
 export type ServicePillar = {
   eyebrow: string
   title: string
@@ -54,10 +68,82 @@ export type ContactFieldSet = {
   goals: string
 }
 
+export type InquiryRecord = ContactFieldSet & {
+  id: string
+  locale: Language
+  submittedAt: string
+  notificationStatus?: 'sent' | 'skipped' | 'failed'
+}
+
+export type HeroLocaleContent = {
+  eyebrow: string
+  title: string
+  highlight: string
+  description: string
+}
+
+export type SiteRuntimeConfig = {
+  brand: {
+    name: string
+    tagline: LocalizedText
+    legalName: string
+    logoMark: string
+  }
+  contact: {
+    email: string
+    phone: string
+    whatsapp: string
+    line: string
+    location: LocalizedText
+  }
+  seo: {
+    siteUrl: string
+    defaultTitle: LocalizedText
+    defaultDescription: LocalizedText
+    defaultOgImage: string
+    keywords: string[]
+  }
+  analytics: {
+    googleAnalyticsId: string
+    metaPixelId: string
+  }
+  media: {
+    heroImage: string
+    serviceImage: string
+  }
+  notifications: {
+    inquiryNotificationEmail: string
+  }
+  hero: Record<Language, HeroLocaleContent>
+  marketWatch?: SiteConfigMarketWatchItem[]
+}
+
+export type SiteConfigFile = SiteRuntimeConfig
+
+export type SiteConfigResponse = {
+  config: SiteConfigFile
+}
+
 export type SiteContent = {
   brand: {
     name: string
+    mark: string
     tagline: string
+  }
+  site: {
+    contactEmail: string
+    contactPhone: string
+    lineId: string
+    baseUrl: string
+  }
+  assets: {
+    ogImage: string
+    heroImage: string
+    serviceImage: string
+  }
+  tracking: {
+    gaMeasurementId: string
+    metaPixelId: string
   }
   nav: NavItem[]
   navCta: string
@@ -158,3 +244,10 @@ export type SiteContent = {
   marketWatch: MarketWatchItem[]
   servicePillars: ServicePillar[]
 }
+
+export type AdminDashboardResponse = {
+  config: SiteConfigFile
+  inquiries: InquiryRecord[]
+}
+
+export type InquiriesResponse = InquiryRecord[]
