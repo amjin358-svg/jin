@@ -8,8 +8,17 @@ Luxury bilingual real estate investment website for Taiwanese investors evaluati
 - Multi-page React frontend
 - Premium market-watch and advisory presentation
 - Express backend for inquiries
-- Resend email notification integration
-- Admin dashboard for site config and inquiry review
+- Resend email notification integration with graceful fallback
+- Admin login with session-style access token storage
+- Admin dashboard for:
+  - brand settings
+  - contact settings
+  - SEO metadata
+  - hero copy
+  - media URLs
+  - analytics IDs
+  - market-watch card editing
+  - inquiry review
 - SEO and Open Graph metadata support
 - Optional Google Analytics and Meta Pixel injection
 
@@ -50,7 +59,9 @@ Luxury bilingual real estate investment website for Taiwanese investors evaluati
 ## Environment variables
 
 - `PORT`: backend port
-- `ADMIN_API_KEY`: required to use admin APIs from the admin dashboard
+- `ADMIN_USERNAME`: admin login username
+- `ADMIN_PASSWORD`: admin login password
+- `ADMIN_SESSION_SECRET`: secret used to sign admin sessions
 - `RESEND_API_KEY`: enables real email delivery
 - `RESEND_FROM_EMAIL`: sender identity for inquiry notifications
 
@@ -58,11 +69,19 @@ Luxury bilingual real estate investment website for Taiwanese investors evaluati
 
 The admin dashboard is available at `/admin`.
 
-Enter the same value as `ADMIN_API_KEY` to:
+Log in with:
+
+- `ADMIN_USERNAME`
+- `ADMIN_PASSWORD`
+
+After login, you can:
 
 - review inbound inquiries
 - update brand and contact settings
+- update hero copy in Chinese and English
+- update SEO title, description, and OG image
 - update analytics IDs
+- update media URLs
 - edit featured market-watch items
 
 Site settings are stored in:
@@ -90,13 +109,14 @@ This repository includes:
 
 Recommended deployment:
 
-1. Deploy to Vercel
+1. Deploy to Vercel or Render
 2. Set environment variables from `.env.example`
 3. Configure `RESEND_API_KEY` and `RESEND_FROM_EMAIL` for live email delivery
-4. Set `ADMIN_API_KEY` to protect admin endpoints
+4. Set `ADMIN_USERNAME`, `ADMIN_PASSWORD`, and `ADMIN_SESSION_SECRET`
 5. Update `data/site-config.json` or use `/admin` after deployment
 
 ## Notes
 
 - Public property cards are market-watch references, not exclusive listings.
 - If no Resend key is provided, inquiries still save locally and email delivery is skipped.
+- For production persistence on serverless platforms, move `data/` storage to a database or object store if you need durable writes across deploys.

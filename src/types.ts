@@ -75,6 +75,10 @@ export type InquiryRecord = ContactFieldSet & {
   notificationStatus?: 'sent' | 'skipped' | 'failed'
 }
 
+export type AdminSession = {
+  authenticated: boolean
+}
+
 export type HeroLocaleContent = {
   eyebrow: string
   title: string
@@ -88,6 +92,7 @@ export type SiteRuntimeConfig = {
     tagline: LocalizedText
     legalName: string
     logoMark: string
+    primaryButtonLabel?: LocalizedText
   }
   contact: {
     email: string
@@ -122,6 +127,15 @@ export type SiteConfigFile = SiteRuntimeConfig
 
 export type SiteConfigResponse = {
   config: SiteConfigFile
+}
+
+export type AdminLoginResponse = {
+  ok: boolean
+  authenticated: boolean
+}
+
+export type AdminSessionResponse = {
+  authenticated: boolean
 }
 
 export type SiteContent = {

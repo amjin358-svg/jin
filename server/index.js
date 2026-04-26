@@ -1,5 +1,6 @@
 import express from 'express'
 import fs from 'node:fs/promises'
+import crypto from 'node:crypto'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { Resend } from 'resend'
@@ -14,10 +15,86 @@ const port = Number(process.env.PORT ?? 8787)
 const adminApiKey = process.env.ADMIN_API_KEY ?? 'local-admin-key'
 const resendApiKey = process.env.RESEND_API_KEY ?? ''
 const resendFromEmail = process.env.RESEND_FROM_EMAIL ?? 'Luxury Desk <onboarding@resend.dev>'
+const adminSessionSecret = process.env.ADMIN_SESSION_SECRET ?? 'local-admin-session-secret'
+const adminSessionTtlMs = 1000 * 60 * 60 * 12
+const adminSessions = new Map()
 
 const resend = resendApiKey ? new Resend(resendApiKey) : null
 
 app.use(express.json({ limit: '1mb' }))
+
+function parseCookies(headerValue) {
+  if (!headerValue) {
+    return {}
+  }
+
+  return headerValue.split(';').reduce((cookies, part) => {
+    const [name, ...rest] = part.trim().split('=')
+    if (!name) {
+      return cookies
+    }
+
+    cookies[name] = decodeURIComponent(rest.join('='))
+    return cookies
+  }, {})
+}
+
+function createSessionToken() {
+  return crypto.randomBytes(24).toString('hex')
+}
+
+function createSessionSignature(token) {
+  return crypto.createHmac('sha256', adminSessionSecret).update(token).digest('hex')
+}
+
+function createSessionCookieValue(token) {
+  return `${token}.${createSessionSignature(token)}`
+}
+
+function verifySessionCookie(cookieValue) {
+  if (!cookieValue || !cookieValue.includes('.')) {
+    return null
+  }
+
+  const [token, signature] = cookieValue.split('.')
+  const expected = createSessionSignature(token)
+
+  if (signature !== expected) {
+    return null
+  }
+
+  const session = adminSessions.get(token)
+  if (!session || session.expiresAt < Date.now()) {
+    adminSessions.delete(token)
+    return null
+  }
+
+  return { token, ...session }
+}
+
+function setAdminSession(response) {
+  const token = createSessionToken()
+  const expiresAt = Date.now() + adminSessionTtlMs
+  adminSessions.set(token, { expiresAt })
+  const cookieValue = createSessionCookieValue(token)
+  response.setHeader(
+    'Set-Cookie',
+    `admin_session=${cookieValue}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${Math.floor(adminSessionTtlMs / 1000)}`,
+  )
+}
+
+function clearAdminSession(request, response) {
+  const cookies = parseCookies(request.headers.cookie)
+  const session = verifySessionCookie(cookies.admin_session)
+  if (session?.token) {
+    adminSessions.delete(session.token)
+  }
+
+  response.setHeader(
+    'Set-Cookie',
+    'admin_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0',
+  )
+}
 
 function isLanguage(value) {
   return value === 'en' || value === 'zh'
@@ -62,7 +139,14 @@ function getPublicSiteConfig(config) {
 
 function requireAdmin(request, response, next) {
   const providedKey = request.headers['x-admin-key']
-  if (providedKey !== adminApiKey) {
+  if (providedKey === adminApiKey) {
+    next()
+    return
+  }
+
+  const cookies = parseCookies(request.headers.cookie)
+  const session = verifySessionCookie(cookies.admin_session)
+  if (!session) {
     response.status(401).json({ message: 'Unauthorized' })
     return
   }
@@ -110,6 +194,28 @@ app.get('/api/health', async (_request, response) => {
     emailProvider: resend ? 'resend' : 'disabled',
     configuredBrand: siteConfig.brand?.name ?? 'Formosa Pacific Advisory',
   })
+})
+
+app.post('/api/admin/login', (request, response) => {
+  const { password = '' } = request.body ?? {}
+  if (!password || password !== adminApiKey) {
+    response.status(401).json({ message: 'Invalid admin credentials.' })
+    return
+  }
+
+  setAdminSession(response)
+  response.json({ ok: true })
+})
+
+app.post('/api/admin/logout', (request, response) => {
+  clearAdminSession(request, response)
+  response.json({ ok: true })
+})
+
+app.get('/api/admin/session', (request, response) => {
+  const cookies = parseCookies(request.headers.cookie)
+  const session = verifySessionCookie(cookies.admin_session)
+  response.json({ authenticated: Boolean(session) })
 })
 
 app.get('/api/site-config/public', async (_request, response) => {

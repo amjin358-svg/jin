@@ -736,6 +736,129 @@ textarea {
   color: #ff8e8e;
 }
 
+.admin-login {
+  max-width: 34rem;
+  margin: 0 auto;
+}
+
+.admin-login .glass-card,
+.admin-form,
+.admin-inquiries {
+  display: grid;
+  gap: 1rem;
+}
+
+.admin-layout {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.admin-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.admin-grid label,
+.admin-section label {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.admin-grid__full,
+.admin-section__full {
+  grid-column: 1 / -1;
+}
+
+.admin-form input,
+.admin-form textarea,
+.admin-form select {
+  width: 100%;
+  border: 1px solid rgba(243, 215, 164, 0.12);
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 1rem;
+  padding: 0.95rem 1rem;
+  color: var(--text);
+}
+
+.admin-sections {
+  display: grid;
+  gap: 1rem;
+}
+
+.admin-section {
+  display: grid;
+  gap: 1rem;
+}
+
+.admin-section__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.admin-marketwatch-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.admin-marketwatch-card {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.admin-card-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn.btn--danger {
+  border-color: rgba(255, 142, 142, 0.24);
+  background: rgba(255, 142, 142, 0.08);
+  color: #ffb3b3;
+}
+
+.admin-inquiry-list {
+  display: grid;
+  gap: 1rem;
+  max-height: 42rem;
+  overflow: auto;
+}
+
+.admin-inquiry-card {
+  display: grid;
+  gap: 0.35rem;
+  padding: 1rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.admin-inquiry-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: baseline;
+}
+
+.admin-auth-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.admin-helper-text {
+  margin: 0;
+  color: var(--muted);
+}
+
 .cta {
   padding: 0 0 5.5rem;
 }
@@ -784,7 +907,8 @@ textarea {
   .services-layout,
   .market-layout,
   .contact-layout,
-  .cta-card {
+  .cta-card,
+  .admin-layout {
     grid-template-columns: 1fr;
   }
 
@@ -818,7 +942,8 @@ textarea {
   .listing-grid,
   .timeline-grid,
   .market-insight-grid,
-  .form-grid {
+  .form-grid,
+  .admin-grid {
     grid-template-columns: 1fr;
   }
 

@@ -1,39 +1,74 @@
-import type { AdminDashboardResponse, SiteRuntimeConfig } from '../types'
+import type {
+  AdminDashboardResponse,
+  AdminLoginResponse,
+  AdminSessionResponse,
+  SiteRuntimeConfig,
+} from '../types'
 
-function createHeaders(adminKey?: string) {
-  const headers: Record<string, string> = {
+function createHeaders() {
+  return {
     'Content-Type': 'application/json',
   }
-
-  if (adminKey) {
-    headers['x-admin-key'] = adminKey
-  }
-
-  return headers
 }
 
-export async function fetchAdminDashboard(adminKey: string) {
-  const response = await fetch('/api/admin/dashboard', {
-    headers: createHeaders(adminKey),
+async function unwrapError(response: Response, fallback: string) {
+  const payload = (await response.json().catch(() => null)) as { message?: string } | null
+  throw new Error(payload?.message ?? fallback)
+}
+
+export async function fetchAdminSession() {
+  const response = await fetch('/api/admin/session')
+  if (!response.ok) {
+    throw new Error('Unable to validate admin session.')
+  }
+
+  return (await response.json()) as AdminSessionResponse
+}
+
+export async function loginAdmin(password: string) {
+  const response = await fetch('/api/admin/login', {
+    method: 'POST',
+    headers: createHeaders(),
+    body: JSON.stringify({ password }),
   })
 
   if (!response.ok) {
-    throw new Error('Unable to load admin dashboard.')
+    await unwrapError(response, 'Unable to sign in.')
+  }
+
+  return (await response.json()) as AdminLoginResponse
+}
+
+export async function logoutAdmin() {
+  const response = await fetch('/api/admin/logout', {
+    method: 'POST',
+  })
+
+  if (!response.ok) {
+    await unwrapError(response, 'Unable to sign out.')
+  }
+
+  return (await response.json()) as { ok: true }
+}
+
+export async function fetchAdminDashboard() {
+  const response = await fetch('/api/admin/dashboard')
+  if (!response.ok) {
+    await unwrapError(response, 'Unable to load admin dashboard.')
   }
 
   return (await response.json()) as AdminDashboardResponse
 }
 
-export async function updateSiteConfig(adminKey: string, config: SiteRuntimeConfig) {
+export async function updateSiteConfig(config: SiteRuntimeConfig) {
   const response = await fetch('/api/admin/site-config', {
     method: 'PUT',
-    headers: createHeaders(adminKey),
+    headers: createHeaders(),
     body: JSON.stringify(config),
   })
 
   if (!response.ok) {
-    const payload = (await response.json().catch(() => null)) as { message?: string } | null
-    throw new Error(payload?.message ?? 'Unable to update site configuration.')
+    await unwrapError(response, 'Unable to update site configuration.')
   }
 
   return (await response.json()) as { ok: true; config: SiteRuntimeConfig }
