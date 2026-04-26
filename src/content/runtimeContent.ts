@@ -15,16 +15,16 @@ const fallbackConfig: SiteRuntimeConfig = {
   brand: {
     name: 'BlueRock Capital Group',
     tagline: text(
-      'Luxury Southern California property strategy for Taiwanese investors',
-      '專為台灣投資人打造的南加州精品不動產策略顧問',
+      'Cross-border luxury property advisory for Taiwanese investors in Southern California',
+      '專為台灣投資人提供南加州精品不動產跨境顧問服務',
     ),
     legalName: 'BlueRock Capital Group',
     logoMark: 'BR',
   },
   contact: {
     email: 'invest@bluerockcapitalgroup.com',
-    phone: '+1 (949) 555-0188',
-    whatsapp: '+886 900 000 000',
+    phone: '+1 (949) 629-8808',
+    whatsapp: '+1 (949) 629-8808',
     line: '@bluerockcapital',
     location: text('Orange County and Greater Los Angeles, California', '加州橘郡與大洛杉磯地區'),
   },
