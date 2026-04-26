@@ -158,7 +158,7 @@ async function sendInquiryNotification(siteConfig, inquiry) {
   const targetEmail =
     siteConfig.notifications?.inquiryNotificationEmail ||
     siteConfig.contact?.email ||
-    'invest@formosapacific.com'
+    'invest@bluerockcapitalgroup.com'
   if (!resend || !targetEmail) {
     return { delivered: false, provider: 'disabled' }
   }
