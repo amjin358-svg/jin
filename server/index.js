@@ -26,9 +26,11 @@ app.post('/api/inquiries', async (request, response) => {
     location = '',
     timeline = '',
     goals = '',
-    locale = 'en',
+    locale: rawLocale,
+    language,
     submittedAt = new Date().toISOString(),
   } = request.body ?? {}
+  const locale = rawLocale === 'zh' || rawLocale === 'en' ? rawLocale : language === 'zh' ? 'zh' : 'en'
 
   if (!name || !email || !budget || !goals) {
     response.status(400).json({
