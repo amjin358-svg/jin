@@ -235,22 +235,6 @@
     </main>
   </div>
 
-  <div class="modal-overlay" id="detailModal" aria-hidden="true">
-    <article class="panel modal-card">
-      <button class="modal-close" id="modalClose" type="button">×</button>
-      <p class="eyebrow" id="modalBadge">DETAIL</p>
-      <h3 id="modalTitle">Property Detail</h3>
-      <p id="modalSpecs"></p>
-      <div class="modal-grid">
-        <div><p class="mini-label">Price</p><strong id="modalPrice"></strong></div>
-        <div><p class="mini-label">Year Built</p><strong id="modalBuilt"></strong></div>
-        <div><p class="mini-label">ZIP</p><strong id="modalZip"></strong></div>
-        <div><p class="mini-label">Property Type</p><strong id="modalType"></strong></div>
-      </div>
-      <p class="modal-note" id="modalNote"></p>
-    </article>
-  </div>
-
   <div class="modal-overlay" id="compareModal" aria-hidden="true">
     <article class="panel compare-card">
       <button class="modal-close" id="compareClose" type="button">×</button>
@@ -280,22 +264,12 @@
     const resultText = document.getElementById("resultText");
     const savedCount = document.getElementById("savedCount");
     const compareCount = document.getElementById("compareCount");
-    const detailModal = document.getElementById("detailModal");
     const compareModal = document.getElementById("compareModal");
-    const modalClose = document.getElementById("modalClose");
     const compareClose = document.getElementById("compareClose");
     const compareTable = document.getElementById("compareTable");
     const openCompare = document.getElementById("openCompare");
     const exportSaved = document.getElementById("exportSaved");
     const statusPills = document.getElementById("statusPills");
-    const modalBadge = document.getElementById("modalBadge");
-    const modalTitle = document.getElementById("modalTitle");
-    const modalSpecs = document.getElementById("modalSpecs");
-    const modalPrice = document.getElementById("modalPrice");
-    const modalBuilt = document.getElementById("modalBuilt");
-    const modalZip = document.getElementById("modalZip");
-    const modalType = document.getElementById("modalType");
-    const modalNote = document.getElementById("modalNote");
     const mapListingMarkers = document.getElementById("mapListingMarkers");
     const heroSlides = document.querySelectorAll(".hero-slide");
     const heroDots = document.querySelectorAll("#heroDots .dot");
@@ -416,7 +390,6 @@
           "<p>ZIP " + item.zip + " · " + item.beds + " Beds · " + item.baths + " Baths · " + item.sqft.toLocaleString("en-US") + " sqft</p>" +
           "<div class=\"listing-meta\"><strong>" + formatPrice(item.price) + "</strong><span>" + item.note + "</span></div>" +
           "<div class=\"card-actions\">" +
-            "<button class=\"btn-mini\" data-action=\"detail\" data-id=\"" + item.id + "\">Details</button>" +
             "<button class=\"" + saveClass + "\" data-action=\"save\" data-id=\"" + item.id + "\">Save</button>" +
             "<button class=\"" + compareClass + "\" data-action=\"compare\" data-id=\"" + item.id + "\">Compare</button>" +
           "</div>" +
@@ -475,24 +448,6 @@
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-    }
-
-    function openModal(item) {
-      modalBadge.textContent = item.type === "new" ? "NEW CONSTRUCTION" : "RESALE";
-      modalTitle.textContent = item.name;
-      modalSpecs.textContent = item.beds + " Beds · " + item.baths + " Baths · " + item.sqft.toLocaleString("en-US") + " sqft";
-      modalPrice.textContent = formatPrice(item.price);
-      modalBuilt.textContent = String(item.built);
-      modalZip.textContent = item.zip;
-      modalType.textContent = item.type === "new" ? "New Construction" : "Resale / Existing";
-      modalNote.textContent = item.note;
-      detailModal.classList.add("open");
-      detailModal.setAttribute("aria-hidden", "false");
-    }
-
-    function closeModal() {
-      detailModal.classList.remove("open");
-      detailModal.setAttribute("aria-hidden", "true");
     }
 
     zoomSlider.addEventListener("input", () => {
@@ -571,10 +526,6 @@
       const item = properties.find((property) => property.id === id);
       if (!item) return;
 
-      if (action === "detail") {
-        openModal(item);
-        return;
-      }
       if (action === "save") {
         if (savedSet.has(id)) savedSet.delete(id);
         else savedSet.add(id);
@@ -586,10 +537,6 @@
       renderListings();
     });
 
-    modalClose.addEventListener("click", closeModal);
-    detailModal.addEventListener("click", (event) => {
-      if (event.target === detailModal) closeModal();
-    });
     compareClose.addEventListener("click", closeCompareModal);
     compareModal.addEventListener("click", (event) => {
       if (event.target === compareModal) closeCompareModal();
@@ -604,7 +551,6 @@
     });
     document.addEventListener("keydown", (event) => {
       if (event.key === "Escape") {
-        closeModal();
         closeCompareModal();
       }
     });
