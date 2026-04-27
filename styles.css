@@ -175,8 +175,8 @@ main > .bottom-panels {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(circle at 20% 20%, rgba(92, 156, 245, 0.26), transparent 46%),
-    linear-gradient(92deg, rgba(15, 40, 76, 0.82) 0%, rgba(19, 55, 102, 0.6) 42%, rgba(22, 62, 114, 0.32) 68%, rgba(32, 78, 135, 0.34) 100%);
+    radial-gradient(circle at 18% 22%, rgba(101, 168, 255, 0.2), transparent 42%),
+    linear-gradient(95deg, rgba(4, 12, 26, 0.96) 0%, rgba(8, 22, 45, 0.88) 34%, rgba(12, 34, 64, 0.58) 58%, rgba(18, 47, 84, 0.38) 100%);
 }
 
 .hero-overlay::after {
@@ -217,6 +217,12 @@ main > .bottom-panels {
 .hero-content {
   position: relative;
   z-index: 1;
+  max-width: 620px;
+  padding: 18px 20px;
+  border-radius: 14px;
+  background: linear-gradient(100deg, rgba(5, 14, 30, 0.66), rgba(5, 14, 30, 0.16));
+  border: 1px solid rgba(153, 201, 255, 0.16);
+  box-shadow: 0 12px 30px rgba(4, 14, 31, 0.36);
 }
 
 .hero h1 {
@@ -225,10 +231,12 @@ main > .bottom-panels {
   line-height: 1.06;
   color: #ffffff;
   letter-spacing: 0.01em;
+  text-shadow: 0 8px 22px rgba(2, 10, 22, 0.62);
 }
 
 .hero p {
-  color: #d8e8ff;
+  color: #e8f3ff;
+  text-shadow: 0 4px 14px rgba(3, 11, 23, 0.52);
 }
 
 .hero-actions {
