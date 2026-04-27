@@ -202,33 +202,28 @@
               <button class="active" data-type="new">New Construction</button>
               <button data-type="old">Resale / Existing</button>
             </div>
-            <div class="listing-group active" id="newListings">
-              <article class="listing-item">
-                <p class="badge">NEW</p>
-                <h4>West LA Skyline Residences</h4>
-                <p>ZIP 90001 · 4 Beds · 4 Baths · 3,200 sqft</p>
-                <div class="listing-meta"><strong>$2,680,000</strong><span>HOA $420/mo</span></div>
-              </article>
-              <article class="listing-item">
-                <p class="badge">NEW</p>
-                <h4>Oceanfront Vista Collection</h4>
-                <p>ZIP 92648 · 3 Beds · 3 Baths · 2,450 sqft</p>
-                <div class="listing-meta"><strong>$1,980,000</strong><span>Built 2025</span></div>
-              </article>
+            <div class="listing-filters">
+              <select id="priceFilter">
+                <option value="all">All Price</option>
+                <option value="lt2m">Under $2M</option>
+                <option value="2mto3m">$2M - $3M</option>
+                <option value="gt3m">Above $3M</option>
+              </select>
+              <select id="bedsFilter">
+                <option value="all">All Beds</option>
+                <option value="2">2+ Beds</option>
+                <option value="3">3+ Beds</option>
+                <option value="4">4+ Beds</option>
+              </select>
+              <select id="sortFilter">
+                <option value="priceDesc">Price: High to Low</option>
+                <option value="priceAsc">Price: Low to High</option>
+                <option value="newest">Newest Built</option>
+                <option value="sqftDesc">Largest sqft</option>
+              </select>
             </div>
-            <div class="listing-group" id="oldListings">
-              <article class="listing-item">
-                <p class="badge resale">RESALE</p>
-                <h4>Beverly Crest Classic Estate</h4>
-                <p>ZIP 90210 · 5 Beds · 5 Baths · 4,850 sqft</p>
-                <div class="listing-meta"><strong>$3,450,000</strong><span>Built 1998</span></div>
-              </article>
-              <article class="listing-item">
-                <p class="badge resale">RESALE</p>
-                <h4>Downtown SF Loft Signature</h4>
-                <p>ZIP 94107 · 2 Beds · 2 Baths · 1,720 sqft</p>
-                <div class="listing-meta"><strong>$1,320,000</strong><span>Built 2008</span></div>
-              </article>
+            <p class="result-text" id="resultText">Showing 0 properties</p>
+            <div class="listing-group active" id="listingResults">
             </div>
           </article>
         </div>
@@ -242,8 +237,69 @@
     const map = document.getElementById("caMap");
     const zipChips = document.querySelectorAll(".chip");
     const typeTabs = document.querySelectorAll(".listing-tabs button");
-    const newListings = document.getElementById("newListings");
-    const oldListings = document.getElementById("oldListings");
+    const priceFilter = document.getElementById("priceFilter");
+    const bedsFilter = document.getElementById("bedsFilter");
+    const sortFilter = document.getElementById("sortFilter");
+    const listingResults = document.getElementById("listingResults");
+    const resultText = document.getElementById("resultText");
+    let selectedType = "new";
+    let selectedZip = "90001";
+
+    const properties = [
+      { type: "new", zip: "90001", name: "West LA Skyline Residences", beds: 4, baths: 4, sqft: 3200, price: 2680000, built: 2025, note: "HOA $420/mo" },
+      { type: "new", zip: "92648", name: "Oceanfront Vista Collection", beds: 3, baths: 3, sqft: 2450, price: 1980000, built: 2025, note: "Built 2025" },
+      { type: "new", zip: "92037", name: "La Jolla Coastal New Homes", beds: 4, baths: 3, sqft: 2810, price: 2340000, built: 2024, note: "Solar + EV ready" },
+      { type: "old", zip: "90210", name: "Beverly Crest Classic Estate", beds: 5, baths: 5, sqft: 4850, price: 3450000, built: 1998, note: "Renovated 2021" },
+      { type: "old", zip: "94107", name: "Downtown SF Loft Signature", beds: 2, baths: 2, sqft: 1720, price: 1320000, built: 2008, note: "Built 2008" },
+      { type: "old", zip: "90001", name: "South LA Family Residence", beds: 3, baths: 2, sqft: 1840, price: 960000, built: 1989, note: "Lot 6,200 sqft" }
+    ];
+
+    function formatPrice(value) {
+      return "$" + value.toLocaleString("en-US");
+    }
+
+    function withinPrice(item, mode) {
+      if (mode === "lt2m") return item.price < 2000000;
+      if (mode === "2mto3m") return item.price >= 2000000 && item.price <= 3000000;
+      if (mode === "gt3m") return item.price > 3000000;
+      return true;
+    }
+
+    function renderListings() {
+      const minBeds = bedsFilter.value === "all" ? 0 : Number(bedsFilter.value);
+      const filtered = properties
+        .filter((item) => item.type === selectedType)
+        .filter((item) => item.zip === selectedZip)
+        .filter((item) => withinPrice(item, priceFilter.value))
+        .filter((item) => item.beds >= minBeds);
+
+      if (sortFilter.value === "priceAsc") {
+        filtered.sort((a, b) => a.price - b.price);
+      } else if (sortFilter.value === "newest") {
+        filtered.sort((a, b) => b.built - a.built);
+      } else if (sortFilter.value === "sqftDesc") {
+        filtered.sort((a, b) => b.sqft - a.sqft);
+      } else {
+        filtered.sort((a, b) => b.price - a.price);
+      }
+
+      resultText.textContent = "Showing " + filtered.length + " properties in ZIP " + selectedZip;
+      if (!filtered.length) {
+        listingResults.innerHTML = "<article class=\"listing-item\"><h4>No matched properties</h4><p>Try another ZIP or adjust filters.</p></article>";
+        return;
+      }
+
+      listingResults.innerHTML = filtered.map((item) => {
+        const badgeClass = item.type === "new" ? "badge" : "badge resale";
+        const badgeText = item.type === "new" ? "NEW" : "RESALE";
+        return "<article class=\"listing-item\">" +
+          "<p class=\"" + badgeClass + "\">" + badgeText + "</p>" +
+          "<h4>" + item.name + "</h4>" +
+          "<p>ZIP " + item.zip + " · " + item.beds + " Beds · " + item.baths + " Baths · " + item.sqft.toLocaleString("en-US") + " sqft</p>" +
+          "<div class=\"listing-meta\"><strong>" + formatPrice(item.price) + "</strong><span>" + item.note + "</span></div>" +
+          "</article>";
+      }).join("");
+    }
 
     zoomSlider.addEventListener("input", () => {
       const zoom = Number(zoomSlider.value);
@@ -255,7 +311,9 @@
       chip.addEventListener("click", () => {
         zipChips.forEach((item) => item.classList.remove("active"));
         chip.classList.add("active");
+        selectedZip = chip.dataset.zip;
         map.setAttribute("data-focus", chip.dataset.zip);
+        renderListings();
       });
     });
 
@@ -263,11 +321,16 @@
       tab.addEventListener("click", () => {
         typeTabs.forEach((item) => item.classList.remove("active"));
         tab.classList.add("active");
-        const isNew = tab.dataset.type === "new";
-        newListings.classList.toggle("active", isNew);
-        oldListings.classList.toggle("active", !isNew);
+        selectedType = tab.dataset.type;
+        renderListings();
       });
     });
+
+    [priceFilter, bedsFilter, sortFilter].forEach((control) => {
+      control.addEventListener("change", renderListings);
+    });
+
+    renderListings();
   </script>
 </body>
 </html>
