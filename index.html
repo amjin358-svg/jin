@@ -164,7 +164,110 @@
           <button class="btn-primary">Subscribe</button>
         </article>
       </section>
+
+      <section class="mls-zone glass">
+        <div class="mls-header">
+          <div>
+            <p class="eyebrow">MLS Zoom Map</p>
+            <h2>California ZIP Property Explorer</h2>
+          </div>
+          <div class="mls-controls">
+            <label for="mapZoom">Map Zoom</label>
+            <input id="mapZoom" type="range" min="1" max="5" value="2">
+            <span id="zoomValue">2x</span>
+          </div>
+        </div>
+
+        <div class="mls-layout">
+          <article class="panel mls-map-card">
+            <div class="map-toolbar">
+              <button class="chip active" data-zip="90001">90001 - Los Angeles</button>
+              <button class="chip" data-zip="90210">90210 - Beverly Hills</button>
+              <button class="chip" data-zip="92648">92648 - Huntington Beach</button>
+              <button class="chip" data-zip="92037">92037 - La Jolla</button>
+              <button class="chip" data-zip="94107">94107 - San Francisco</button>
+            </div>
+            <div class="ca-map" id="caMap">
+              <div class="zip-point z1">90001</div>
+              <div class="zip-point z2">90210</div>
+              <div class="zip-point z3">92648</div>
+              <div class="zip-point z4">92037</div>
+              <div class="zip-point z5">94107</div>
+            </div>
+            <p class="map-footnote">MLS-style map view for California ZIP zoning and property cluster lookup.</p>
+          </article>
+
+          <article class="panel mls-list-card">
+            <div class="listing-tabs">
+              <button class="active" data-type="new">New Construction</button>
+              <button data-type="old">Resale / Existing</button>
+            </div>
+            <div class="listing-group active" id="newListings">
+              <article class="listing-item">
+                <p class="badge">NEW</p>
+                <h4>West LA Skyline Residences</h4>
+                <p>ZIP 90001 · 4 Beds · 4 Baths · 3,200 sqft</p>
+                <div class="listing-meta"><strong>$2,680,000</strong><span>HOA $420/mo</span></div>
+              </article>
+              <article class="listing-item">
+                <p class="badge">NEW</p>
+                <h4>Oceanfront Vista Collection</h4>
+                <p>ZIP 92648 · 3 Beds · 3 Baths · 2,450 sqft</p>
+                <div class="listing-meta"><strong>$1,980,000</strong><span>Built 2025</span></div>
+              </article>
+            </div>
+            <div class="listing-group" id="oldListings">
+              <article class="listing-item">
+                <p class="badge resale">RESALE</p>
+                <h4>Beverly Crest Classic Estate</h4>
+                <p>ZIP 90210 · 5 Beds · 5 Baths · 4,850 sqft</p>
+                <div class="listing-meta"><strong>$3,450,000</strong><span>Built 1998</span></div>
+              </article>
+              <article class="listing-item">
+                <p class="badge resale">RESALE</p>
+                <h4>Downtown SF Loft Signature</h4>
+                <p>ZIP 94107 · 2 Beds · 2 Baths · 1,720 sqft</p>
+                <div class="listing-meta"><strong>$1,320,000</strong><span>Built 2008</span></div>
+              </article>
+            </div>
+          </article>
+        </div>
+      </section>
     </main>
   </div>
+
+  <script>
+    const zoomSlider = document.getElementById("mapZoom");
+    const zoomValue = document.getElementById("zoomValue");
+    const map = document.getElementById("caMap");
+    const zipChips = document.querySelectorAll(".chip");
+    const typeTabs = document.querySelectorAll(".listing-tabs button");
+    const newListings = document.getElementById("newListings");
+    const oldListings = document.getElementById("oldListings");
+
+    zoomSlider.addEventListener("input", () => {
+      const zoom = Number(zoomSlider.value);
+      map.style.setProperty("--map-scale", 1 + zoom * 0.08);
+      zoomValue.textContent = zoom + "x";
+    });
+
+    zipChips.forEach((chip) => {
+      chip.addEventListener("click", () => {
+        zipChips.forEach((item) => item.classList.remove("active"));
+        chip.classList.add("active");
+        map.setAttribute("data-focus", chip.dataset.zip);
+      });
+    });
+
+    typeTabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        typeTabs.forEach((item) => item.classList.remove("active"));
+        tab.classList.add("active");
+        const isNew = tab.dataset.type === "new";
+        newListings.classList.toggle("active", isNew);
+        oldListings.classList.toggle("active", !isNew);
+      });
+    });
+  </script>
 </body>
 </html>
