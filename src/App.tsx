@@ -125,7 +125,7 @@ function App() {
       onToggleLanguage={() => setLanguage((current) => (current === 'en' ? 'zh' : 'en'))}
     >
       <Routes>
-        <Route path="/" element={<HomePage content={content} />} />
+        <Route path="/" element={<HomePage content={content} language={language} />} />
         <Route path="/la-zip-market" element={<LaZipMarketPage language={language} />} />
         <Route
           path="/la-zip-market/:zipCode/:propertyId"
