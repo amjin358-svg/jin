@@ -465,6 +465,26 @@ select {
   color: #8dacd8;
 }
 
+.mode-switch {
+  margin-top: 10px;
+  display: inline-flex;
+  border: 1px solid rgba(119, 165, 238, 0.22);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.mode-switch button {
+  border: 0;
+  background: transparent;
+  color: #b9d1f4;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.mode-switch button.active {
+  background: rgba(31, 122, 255, 0.35);
+}
+
 .mls-layout {
   margin-top: 12px;
   display: grid;
@@ -564,6 +584,31 @@ select {
   font-weight: 700;
 }
 
+.price-marker {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  border-radius: 999px;
+  padding: 5px 9px;
+  font-size: 11px;
+  font-weight: 700;
+  border: 1px solid rgba(190, 226, 255, 0.44);
+  background: rgba(29, 132, 255, 0.86);
+  color: #eaf3ff;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.price-marker.old {
+  background: rgba(95, 124, 170, 0.9);
+}
+
+.price-marker:hover,
+.price-marker.active {
+  transform: translate(-50%, -50%) scale(1.06);
+  box-shadow: 0 0 0 5px rgba(48, 136, 255, 0.24);
+}
+
 .zip-point {
   position: absolute;
   width: 12px;
@@ -607,6 +652,32 @@ select {
   margin: 10px 0 0;
   color: #8da9d2;
   font-size: 13px;
+}
+
+.hot-list {
+  margin-top: 8px;
+  display: grid;
+  gap: 8px;
+}
+
+.hot-list button {
+  border: 1px solid rgba(119, 165, 238, 0.2);
+  border-radius: 8px;
+  background: rgba(8, 26, 48, 0.62);
+  color: #c9dcfa;
+  padding: 8px 10px;
+  text-align: left;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.hot-list button strong {
+  color: #8ed0ff;
+}
+
+.hot-list button.active {
+  border-color: rgba(152, 200, 255, 0.52);
+  background: rgba(30, 108, 217, 0.34);
 }
 
 .listing-tabs {

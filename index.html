@@ -173,6 +173,11 @@
 
         <div class="mls-layout">
           <article class="panel mls-map-card">
+            <div class="map-mode-tabs" id="mapModeTabs">
+              <button class="active" data-map-mode="price" type="button">Price</button>
+              <button data-map-mode="new" type="button">New Homes</button>
+              <button data-map-mode="old" type="button">Resale</button>
+            </div>
             <div class="map-toolbar">
               <button class="chip active" data-zip="90001">90001 - Los Angeles</button>
               <button class="chip" data-zip="90210">90210 - Beverly Hills</button>
@@ -197,6 +202,7 @@
                 <text class="ca-zip-label" x="96" y="387">92648</text>
                 <text class="ca-zip-label" x="82" y="448">92037</text>
               </svg>
+              <div class="map-listing-markers" id="mapListingMarkers"></div>
             </div>
             <p class="map-footnote">MLS-style map view for California ZIP zoning and property cluster lookup.</p>
           </article>
@@ -296,6 +302,7 @@
     const zoomValue = document.getElementById("zoomValue");
     const map = document.getElementById("caMap");
     const zipChips = document.querySelectorAll(".chip");
+    const mapModeTabs = document.querySelectorAll("#mapModeTabs button");
     const typeTabs = document.querySelectorAll(".listing-tabs button");
     const zipRegions = document.querySelectorAll(".zip-region");
     const zipFilter = document.getElementById("zipFilter");
@@ -322,10 +329,12 @@
     const modalZip = document.getElementById("modalZip");
     const modalType = document.getElementById("modalType");
     const modalNote = document.getElementById("modalNote");
+    const mapListingMarkers = document.getElementById("mapListingMarkers");
     const heroSlides = document.querySelectorAll(".hero-slide");
     const heroDots = document.querySelectorAll("#heroDots .dot");
     let selectedType = "new";
     let selectedZip = "90001";
+    let mapMode = "price";
     const savedSet = new Set();
     const compareSet = new Set();
     let currentHeroSlide = 0;
@@ -338,6 +347,13 @@
       { id: "p5", type: "old", zip: "94107", name: "Downtown SF Loft Signature", beds: 2, baths: 2, sqft: 1720, price: 1320000, built: 2008, note: "Built 2008" },
       { id: "p6", type: "old", zip: "90001", name: "South LA Family Residence", beds: 3, baths: 2, sqft: 1840, price: 960000, built: 1989, note: "Lot 6,200 sqft" }
     ];
+    const zipMarkerPositions = {
+      "94107": { top: "29%", left: "31%" },
+      "90210": { top: "58%", left: "37%" },
+      "90001": { top: "66%", left: "41%" },
+      "92648": { top: "73%", left: "35%" },
+      "92037": { top: "80%", left: "30%" }
+    };
 
     function formatPrice(value) {
       return "$" + value.toLocaleString("en-US");
@@ -373,11 +389,33 @@
       statusPills.innerHTML = allLabels.map((label) => "<span class=\"status-pill\">" + label + "</span>").join("");
     }
 
+    function renderMapMarkers() {
+      const markerPool = properties.filter((item) => {
+        if (mapMode === "new") return item.type === "new";
+        if (mapMode === "old") return item.type === "old";
+        return true;
+      });
+      const zipMap = new Map();
+      markerPool.forEach((item) => {
+        if (!zipMap.has(item.zip) || zipMap.get(item.zip).price < item.price) {
+          zipMap.set(item.zip, item);
+        }
+      });
+      mapListingMarkers.innerHTML = Array.from(zipMap.values()).map((item) => {
+        const pos = zipMarkerPositions[item.zip];
+        if (!pos) return "";
+        const badgeClass = item.type === "new" ? "map-badge new" : "map-badge old";
+        return "<button class=\"" + badgeClass + "\" data-map-zip=\"" + item.zip + "\" style=\"top:" + pos.top + ";left:" + pos.left + "\" type=\"button\">" +
+          formatPrice(item.price) +
+          "</button>";
+      }).join("");
+    }
+
     function renderListings() {
       const minBeds = bedsFilter.value === "all" ? 0 : Number(bedsFilter.value);
       const filtered = properties
         .filter((item) => item.type === selectedType)
-        .filter((item) => zipFilter.value === "all" ? item.zip === selectedZip : item.zip === zipFilter.value)
+        .filter((item) => zipFilter.value === "all" ? true : item.zip === zipFilter.value)
         .filter((item) => withinPrice(item, priceFilter.value))
         .filter((item) => item.beds >= minBeds);
 
@@ -417,6 +455,7 @@
           "</div>" +
           "</article>";
       }).join("");
+      renderMapMarkers();
     }
 
     function openCompareModal() {
@@ -500,7 +539,7 @@
         zipChips.forEach((item) => item.classList.remove("active"));
         chip.classList.add("active");
         selectedZip = chip.dataset.zip;
-        zipFilter.value = "all";
+        zipFilter.value = chip.dataset.zip;
         map.setAttribute("data-focus", chip.dataset.zip);
         renderListings();
       });
@@ -511,9 +550,23 @@
         const zip = region.dataset.zip;
         if (!zip) return;
         selectedZip = zip;
-        zipFilter.value = "all";
+        zipFilter.value = zip;
         map.setAttribute("data-focus", zip);
         zipChips.forEach((chip) => chip.classList.toggle("active", chip.dataset.zip === zip));
+        renderListings();
+      });
+    });
+
+    mapModeTabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        mapModeTabs.forEach((item) => item.classList.remove("active"));
+        tab.classList.add("active");
+        mapMode = tab.dataset.mapMode || "price";
+        if (mapMode === "new" || mapMode === "old") {
+          selectedType = mapMode;
+          typeTabs.forEach((item) => item.classList.toggle("active", item.dataset.type === selectedType));
+        }
+        renderMapMarkers();
         renderListings();
       });
     });
@@ -529,6 +582,17 @@
 
     [zipFilter, priceFilter, bedsFilter, sortFilter].forEach((control) => {
       control.addEventListener("change", renderListings);
+    });
+    mapListingMarkers.addEventListener("click", (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+      const zip = target.dataset.mapZip;
+      if (!zip) return;
+      selectedZip = zip;
+      zipFilter.value = zip;
+      map.setAttribute("data-focus", zip);
+      zipChips.forEach((chip) => chip.classList.toggle("active", chip.dataset.zip === zip));
+      renderListings();
     });
 
     listingResults.addEventListener("click", (event) => {
