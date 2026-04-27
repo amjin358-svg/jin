@@ -134,7 +134,9 @@ body {
 .hero-slide img {
   width: 100%;
   height: 100%;
+  display: block;
   object-fit: cover;
+  object-position: center center;
   filter: saturate(1.02) contrast(1.05);
   animation: hero-pan 11s ease-in-out infinite alternate;
 }
@@ -143,8 +145,8 @@ body {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(circle at 24% 18%, rgba(37, 122, 226, 0.28), transparent 40%),
-    linear-gradient(100deg, rgba(3, 10, 20, 0.38), rgba(3, 10, 20, 0.82));
+    radial-gradient(circle at 22% 22%, rgba(37, 122, 226, 0.2), transparent 42%),
+    linear-gradient(92deg, rgba(2, 9, 19, 0.9) 0%, rgba(4, 14, 27, 0.78) 38%, rgba(4, 14, 27, 0.52) 62%, rgba(4, 14, 27, 0.74) 100%);
 }
 
 .hero-overlay::after {
