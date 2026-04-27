@@ -9,7 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css">
 </head>
-<body>
+<body class="property-page">
   <div class="page-shell property-page">
     <header class="topbar glass">
       <a class="brand brand-link" href="./index.html">
@@ -39,22 +39,22 @@
           </div>
         </div>
         <aside class="property-side panel">
-          <p class="eyebrow">New Construction</p>
-          <h1>The Juniper Estate</h1>
-          <p class="property-address">Highland Valley, CA</p>
-          <p class="property-price">$3,450,000</p>
+          <p class="eyebrow" id="detailTag">New Construction</p>
+          <h1 id="detailName">The Juniper Estate</h1>
+          <p class="property-address" id="detailLocation">Highland Valley, CA</p>
+          <p class="property-price" id="detailPrice">$3,450,000</p>
           <div class="property-highlights">
-            <article><strong>4</strong><span>Beds</span></article>
-            <article><strong>3.5</strong><span>Baths</span></article>
-            <article><strong>4,200</strong><span>sqft</span></article>
-            <article><strong>2025</strong><span>Built</span></article>
+            <article><strong id="detailBeds">4</strong><span>Beds</span></article>
+            <article><strong id="detailBaths">3.5</strong><span>Baths</span></article>
+            <article><strong id="detailSqft">4,200</strong><span>sqft</span></article>
+            <article><strong id="detailBuilt">2025</strong><span>Built</span></article>
           </div>
           <div class="property-side-actions">
             <button class="btn-primary">Schedule Tour</button>
             <button class="btn-ghost">Download Brochure</button>
           </div>
           <ul class="property-kpis">
-            <li><span>Projected Yield</span><strong>7.8%</strong></li>
+            <li><span>Projected Yield</span><strong id="detailYield">7.8%</strong></li>
             <li><span>HOA</span><strong>$420 / month</strong></li>
             <li><span>Parking</span><strong>3-Car Garage</strong></li>
           </ul>
@@ -90,5 +90,71 @@
       </section>
     </main>
   </div>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const name = params.get("name");
+    const price = params.get("price");
+    const zip = params.get("zip");
+    const beds = params.get("beds");
+    const baths = params.get("baths");
+    const sqft = params.get("sqft");
+    const tag = params.get("tag");
+    const image = params.get("image");
+    const lot = params.get("lot");
+    const built = params.get("built");
+
+    const safeText = (value, fallback) => value ? value : fallback;
+    const safeNumber = (value, fallback) => {
+      const num = Number(value);
+      return Number.isFinite(num) ? num : fallback;
+    };
+    const formatPrice = (value) => "$" + Number(value).toLocaleString("en-US");
+
+    const detailName = document.getElementById("detailName");
+    const detailPrice = document.getElementById("detailPrice");
+    const detailLocation = document.getElementById("detailLocation");
+    const detailTag = document.getElementById("detailTag");
+    const detailBeds = document.getElementById("detailBeds");
+    const detailBaths = document.getElementById("detailBaths");
+    const detailSqft = document.getElementById("detailSqft");
+    const detailBuilt = document.getElementById("detailBuilt");
+    const detailYield = document.getElementById("detailYield");
+    const mainImage = document.querySelector(".property-main-image");
+    const thumbs = document.querySelectorAll(".property-thumb-row .property-thumb");
+
+    if (name && detailName) detailName.textContent = name;
+    if (price && detailPrice) detailPrice.textContent = formatPrice(price);
+    if (zip && detailLocation) detailLocation.textContent = "ZIP " + zip + ", California";
+    if (tag && detailTag) detailTag.textContent = tag;
+    if (beds && detailBeds) detailBeds.textContent = beds;
+    if (baths && detailBaths) detailBaths.textContent = baths;
+    if (sqft && detailSqft) detailSqft.textContent = Number(sqft).toLocaleString("en-US");
+    if (built && detailBuilt) detailBuilt.textContent = built;
+
+    const p = safeNumber(price, 3450000);
+    const rent = p * 0.0054;
+    const annualIncome = rent * 12;
+    const annualExpense = annualIncome * 0.28;
+    const capRate = ((annualIncome - annualExpense) / p) * 100;
+    if (detailYield) detailYield.textContent = capRate.toFixed(1) + "%";
+
+    if (image && mainImage) {
+      mainImage.style.backgroundImage = "url('" + image + "')";
+      thumbs.forEach((thumb, idx) => {
+        const delta = idx * 40;
+        thumb.style.backgroundImage = "url('" + image + "&sat=" + (100 + delta) + "')";
+      });
+    }
+
+    const goEstimate = document.getElementById("goEstimate");
+    if (goEstimate) {
+      goEstimate.href = "./index.html#invest-tools?zip=" + encodeURIComponent(safeText(zip, "90001")) +
+        "&price=" + encodeURIComponent(String(Math.round(p))) +
+        "&rent=" + encodeURIComponent(String(Math.round(rent))) +
+        "&sqft=" + encodeURIComponent(safeText(sqft, "4200")) +
+        "&lot=" + encodeURIComponent(safeText(lot, "6000")) +
+        "&built=" + encodeURIComponent(safeText(built, "2025"));
+    }
+  </script>
 </body>
 </html>
