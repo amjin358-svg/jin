@@ -429,6 +429,97 @@ main > .bottom-panels {
   font-size: 13px;
 }
 
+.integration-result a {
+  color: #7cd0ff;
+}
+
+.ops-hub {
+  margin-top: 12px;
+  padding: 12px;
+}
+
+.ops-hub h3 {
+  margin: 0 0 10px;
+  color: #e8f4ff;
+}
+
+.ops-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.ops-item {
+  padding: 12px;
+}
+
+.ops-item h4 {
+  margin: 0;
+  color: #eaf4ff;
+  font-size: 15px;
+}
+
+.ops-item p {
+  margin: 8px 0 0;
+  color: #9eb9dd;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.funnel-card {
+  margin-top: 12px;
+  padding: 14px;
+}
+
+.funnel-card h3 {
+  margin: 0;
+  color: #e8f4ff;
+}
+
+.funnel-grid {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.funnel-grid label {
+  display: grid;
+  gap: 6px;
+  font-size: 12px;
+  color: #9bb8dc;
+}
+
+.funnel-result {
+  margin-top: 12px;
+}
+
+.funnel-kpi {
+  margin: 8px 0 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.funnel-kpi article {
+  border: 1px solid rgba(120, 166, 233, 0.22);
+  border-radius: 10px;
+  padding: 10px;
+  background: rgba(10, 27, 48, 0.58);
+}
+
+.funnel-kpi p {
+  margin: 0;
+  color: #9eb9dd;
+  font-size: 12px;
+}
+
+.funnel-kpi strong {
+  display: block;
+  margin-top: 6px;
+  color: #eaf4ff;
+}
+
 .tabs {
   display: inline-flex;
   border: 1px solid rgba(118, 165, 243, 0.26);
@@ -1549,6 +1640,14 @@ select {
     grid-template-columns: 1fr;
   }
 
+  .ops-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .funnel-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .tools-grid {
     grid-template-columns: 1fr;
   }
@@ -1579,6 +1678,12 @@ select {
   .mls-layout,
   .stats-row,
   .filters {
+    grid-template-columns: 1fr;
+  }
+
+  .ops-grid,
+  .funnel-grid,
+  .funnel-kpi {
     grid-template-columns: 1fr;
   }
 
