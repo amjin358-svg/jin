@@ -98,7 +98,7 @@ body {
 
 .hero {
   position: relative;
-  min-height: 420px;
+  height: 460px;
   margin-top: 14px;
   padding: 28px;
   overflow: hidden;
@@ -978,6 +978,7 @@ select {
 
   .hero {
     grid-template-columns: 1fr;
+    height: 400px;
   }
 
   .snapshot {
@@ -1026,6 +1027,11 @@ select {
 
   .advanced-filters {
     grid-template-columns: 1fr;
+  }
+
+  .hero {
+    height: 320px;
+    padding: 20px;
   }
 
   .modal-grid {
