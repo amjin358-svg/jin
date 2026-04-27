@@ -520,7 +520,10 @@ select {
 .ca-map {
   --map-scale: 1.16;
   margin-top: 12px;
-  min-height: 320px;
+  min-height: 250px;
+  max-width: 540px;
+  margin-left: auto;
+  margin-right: auto;
   border-radius: 12px;
   border: 1px solid rgba(119, 165, 238, 0.2);
   background:
@@ -559,9 +562,9 @@ select {
 
 .ca-svg {
   position: absolute;
-  inset: 12px;
-  width: calc(100% - 24px);
-  height: calc(100% - 24px);
+  inset: 20px 36px;
+  width: calc(100% - 72px);
+  height: calc(100% - 40px);
 }
 
 .ca-outline {
@@ -998,6 +1001,10 @@ select {
   .stats-row {
     grid-template-columns: repeat(3, 1fr);
   }
+
+  .ca-map {
+    min-height: 220px;
+  }
 }
 
 @media (max-width: 760px) {
@@ -1020,5 +1027,16 @@ select {
 
   .modal-grid {
     grid-template-columns: 1fr;
+  }
+
+  .ca-map {
+    min-height: 210px;
+    max-width: 100%;
+  }
+
+  .ca-svg {
+    inset: 16px 24px;
+    width: calc(100% - 48px);
+    height: calc(100% - 32px);
   }
 }
