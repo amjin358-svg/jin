@@ -1,0 +1,13 @@
+<svg width="198" height="48" viewBox="0 0 198 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="brBlue" x1="4" y1="4" x2="44" y2="44" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#19B8FF"/>
+      <stop offset="1" stop-color="#2B4FFF"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="44" height="44" rx="12" fill="url(#brBlue)"/>
+  <path d="M14 13H25.5C30.7 13 34 15.8 34 20.2C34 23.1 32.6 25.1 29.8 26.1L35.6 35H29.5L24.6 27.4H19.3V35H14V13ZM25.2 23.3C27.5 23.3 28.8 22.2 28.8 20.4C28.8 18.6 27.5 17.5 25.2 17.5H19.3V23.3H25.2Z" fill="#051326"/>
+  <path d="M11 30.5C16.2 34.9 23.1 37.2 30.2 36.8" stroke="#D9F0FF" stroke-width="2.2" stroke-linecap="round" opacity="0.9"/>
+  <text x="58" y="22" fill="#EAF3FF" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="700">BlueRock</text>
+  <text x="58" y="36" fill="#9CB4DA" font-family="Inter, Arial, sans-serif" font-size="11" font-weight="500" letter-spacing="0.6">PROPERTY SOLUTION</text>
+</svg>
