@@ -224,7 +224,6 @@
               <p><strong id="savedCount">Saved 0</strong> · <strong id="compareCount">Compare 0</strong></p>
             </div>
             <div class="results-actions">
-              <button class="btn-mini" id="openCompare" type="button">Open Compare</button>
               <button class="btn-mini" id="exportSaved" type="button">Export Saved CSV</button>
             </div>
             <div class="action-status" id="statusPills"></div>
@@ -233,19 +232,6 @@
         </div>
       </section>
     </main>
-  </div>
-
-  <div class="modal-overlay" id="compareModal" aria-hidden="true">
-    <article class="panel compare-card">
-      <button class="modal-close" id="compareClose" type="button">×</button>
-      <h3>Property Compare Table</h3>
-      <div class="compare-table-wrap">
-        <table class="compare-table" id="compareTable">
-          <thead></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </article>
   </div>
 
   <script>
@@ -264,10 +250,6 @@
     const resultText = document.getElementById("resultText");
     const savedCount = document.getElementById("savedCount");
     const compareCount = document.getElementById("compareCount");
-    const compareModal = document.getElementById("compareModal");
-    const compareClose = document.getElementById("compareClose");
-    const compareTable = document.getElementById("compareTable");
-    const openCompare = document.getElementById("openCompare");
     const exportSaved = document.getElementById("exportSaved");
     const statusPills = document.getElementById("statusPills");
     const mapListingMarkers = document.getElementById("mapListingMarkers");
@@ -398,37 +380,6 @@
       renderMapMarkers();
     }
 
-    function openCompareModal() {
-      const items = properties.filter((item) => compareSet.has(item.id));
-      const tableHead = compareTable.querySelector("thead");
-      const tableBody = compareTable.querySelector("tbody");
-      if (!items.length) {
-        tableHead.innerHTML = "";
-        tableBody.innerHTML = "<tr><td>Add up to 3 properties to compare.</td></tr>";
-      } else {
-        tableHead.innerHTML = "<tr><th>Field</th>" + items.map((item) => "<th>" + item.name + "</th>").join("") + "</tr>";
-        const rows = [
-          { label: "Type", key: (item) => item.type === "new" ? "New Construction" : "Resale / Existing" },
-          { label: "ZIP", key: (item) => item.zip },
-          { label: "Beds / Baths", key: (item) => item.beds + " / " + item.baths },
-          { label: "Sqft", key: (item) => item.sqft.toLocaleString("en-US") },
-          { label: "Price", key: (item) => formatPrice(item.price) },
-          { label: "Year Built", key: (item) => String(item.built) },
-          { label: "Note", key: (item) => item.note }
-        ];
-        tableBody.innerHTML = rows.map((row) => {
-          return "<tr><th>" + row.label + "</th>" + items.map((item) => "<td>" + row.key(item) + "</td>").join("") + "</tr>";
-        }).join("");
-      }
-      compareModal.classList.add("open");
-      compareModal.setAttribute("aria-hidden", "false");
-    }
-
-    function closeCompareModal() {
-      compareModal.classList.remove("open");
-      compareModal.setAttribute("aria-hidden", "true");
-    }
-
     function exportSavedCsv() {
       const savedItems = properties.filter((item) => savedSet.has(item.id));
       if (!savedItems.length) return;
@@ -537,11 +488,6 @@
       renderListings();
     });
 
-    compareClose.addEventListener("click", closeCompareModal);
-    compareModal.addEventListener("click", (event) => {
-      if (event.target === compareModal) closeCompareModal();
-    });
-    openCompare.addEventListener("click", openCompareModal);
     exportSaved.addEventListener("click", exportSavedCsv);
     heroDots.forEach((dot) => {
       dot.addEventListener("click", () => {
@@ -551,7 +497,7 @@
     });
     document.addEventListener("keydown", (event) => {
       if (event.key === "Escape") {
-        closeCompareModal();
+        return;
       }
     });
     setInterval(() => {
