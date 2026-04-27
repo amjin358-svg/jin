@@ -15,6 +15,23 @@ body {
   padding: 0 12px 24px;
 }
 
+main {
+  display: flex;
+  flex-direction: column;
+}
+
+main > .mls-zone {
+  order: 3;
+}
+
+main > .cards-grid {
+  order: 4;
+}
+
+main > .bottom-panels {
+  order: 5;
+}
+
 .glass {
   background: linear-gradient(145deg, rgba(8, 22, 40, 0.86), rgba(4, 14, 28, 0.84));
   border: 1px solid rgba(122, 171, 255, 0.16);
