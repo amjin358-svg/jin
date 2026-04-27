@@ -246,6 +246,11 @@
               <p id="resultText">Showing 0 properties</p>
               <p><strong id="savedCount">Saved 0</strong> · <strong id="compareCount">Compare 0</strong></p>
             </div>
+            <div class="results-actions">
+              <button class="btn-mini" id="openCompare" type="button">Open Compare</button>
+              <button class="btn-mini" id="exportSaved" type="button">Export Saved CSV</button>
+            </div>
+            <div class="action-status" id="statusPills"></div>
             <div class="listing-group" id="listingResults"></div>
           </article>
         </div>
@@ -269,6 +274,19 @@
     </article>
   </div>
 
+  <div class="modal-overlay" id="compareModal" aria-hidden="true">
+    <article class="panel compare-card">
+      <button class="modal-close" id="compareClose" type="button">×</button>
+      <h3>Property Compare Table</h3>
+      <div class="compare-table-wrap">
+        <table class="compare-table" id="compareTable">
+          <thead></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </article>
+  </div>
+
   <script>
     const zoomSlider = document.getElementById("mapZoom");
     const zoomValue = document.getElementById("zoomValue");
@@ -284,7 +302,13 @@
     const savedCount = document.getElementById("savedCount");
     const compareCount = document.getElementById("compareCount");
     const detailModal = document.getElementById("detailModal");
+    const compareModal = document.getElementById("compareModal");
     const modalClose = document.getElementById("modalClose");
+    const compareClose = document.getElementById("compareClose");
+    const compareTable = document.getElementById("compareTable");
+    const openCompare = document.getElementById("openCompare");
+    const exportSaved = document.getElementById("exportSaved");
+    const statusPills = document.getElementById("statusPills");
     const modalBadge = document.getElementById("modalBadge");
     const modalTitle = document.getElementById("modalTitle");
     const modalSpecs = document.getElementById("modalSpecs");
@@ -318,6 +342,19 @@
       return true;
     }
 
+    function renderStatusPills() {
+      const savedItems = properties.filter((item) => savedSet.has(item.id));
+      const compareItems = properties.filter((item) => compareSet.has(item.id));
+      const savedLabels = savedItems.map((item) => "Saved: " + item.name);
+      const compareLabels = compareItems.map((item) => "Compare: " + item.name);
+      const allLabels = [...savedLabels, ...compareLabels];
+      if (!allLabels.length) {
+        statusPills.innerHTML = "<span class=\"status-pill\">No saved or compare items yet</span>";
+        return;
+      }
+      statusPills.innerHTML = allLabels.map((label) => "<span class=\"status-pill\">" + label + "</span>").join("");
+    }
+
     function renderListings() {
       const minBeds = bedsFilter.value === "all" ? 0 : Number(bedsFilter.value);
       const filtered = properties
@@ -339,6 +376,7 @@
       resultText.textContent = "Showing " + filtered.length + " properties";
       savedCount.textContent = "Saved " + savedSet.size;
       compareCount.textContent = "Compare " + compareSet.size;
+      renderStatusPills();
       if (!filtered.length) {
         listingResults.innerHTML = "<article class=\"listing-item\"><h4>No matched properties</h4><p>Try another ZIP or adjust filters.</p></article>";
         return;
@@ -347,20 +385,72 @@
       listingResults.innerHTML = filtered.map((item) => {
         const badgeClass = item.type === "new" ? "badge" : "badge resale";
         const badgeText = item.type === "new" ? "NEW" : "RESALE";
-        const saveClass = savedSet.has(item.id) ? "action-btn active" : "action-btn";
-        const compareClass = compareSet.has(item.id) ? "action-btn active" : "action-btn";
+        const saveClass = savedSet.has(item.id) ? "btn-mini active" : "btn-mini";
+        const compareClass = compareSet.has(item.id) ? "btn-mini active" : "btn-mini";
         return "<article class=\"listing-item\">" +
           "<p class=\"" + badgeClass + "\">" + badgeText + "</p>" +
           "<h4>" + item.name + "</h4>" +
           "<p>ZIP " + item.zip + " · " + item.beds + " Beds · " + item.baths + " Baths · " + item.sqft.toLocaleString("en-US") + " sqft</p>" +
           "<div class=\"listing-meta\"><strong>" + formatPrice(item.price) + "</strong><span>" + item.note + "</span></div>" +
-          "<div class=\"listing-actions\">" +
-            "<button class=\"action-btn\" data-action=\"detail\" data-id=\"" + item.id + "\">Details</button>" +
+          "<div class=\"card-actions\">" +
+            "<button class=\"btn-mini\" data-action=\"detail\" data-id=\"" + item.id + "\">Details</button>" +
             "<button class=\"" + saveClass + "\" data-action=\"save\" data-id=\"" + item.id + "\">Save</button>" +
             "<button class=\"" + compareClass + "\" data-action=\"compare\" data-id=\"" + item.id + "\">Compare</button>" +
           "</div>" +
           "</article>";
       }).join("");
+    }
+
+    function openCompareModal() {
+      const items = properties.filter((item) => compareSet.has(item.id));
+      const tableHead = compareTable.querySelector("thead");
+      const tableBody = compareTable.querySelector("tbody");
+      if (!items.length) {
+        tableHead.innerHTML = "";
+        tableBody.innerHTML = "<tr><td>Add up to 3 properties to compare.</td></tr>";
+      } else {
+        tableHead.innerHTML = "<tr><th>Field</th>" + items.map((item) => "<th>" + item.name + "</th>").join("") + "</tr>";
+        const rows = [
+          { label: "Type", key: (item) => item.type === "new" ? "New Construction" : "Resale / Existing" },
+          { label: "ZIP", key: (item) => item.zip },
+          { label: "Beds / Baths", key: (item) => item.beds + " / " + item.baths },
+          { label: "Sqft", key: (item) => item.sqft.toLocaleString("en-US") },
+          { label: "Price", key: (item) => formatPrice(item.price) },
+          { label: "Year Built", key: (item) => String(item.built) },
+          { label: "Note", key: (item) => item.note }
+        ];
+        tableBody.innerHTML = rows.map((row) => {
+          return "<tr><th>" + row.label + "</th>" + items.map((item) => "<td>" + row.key(item) + "</td>").join("") + "</tr>";
+        }).join("");
+      }
+      compareModal.classList.add("open");
+      compareModal.setAttribute("aria-hidden", "false");
+    }
+
+    function closeCompareModal() {
+      compareModal.classList.remove("open");
+      compareModal.setAttribute("aria-hidden", "true");
+    }
+
+    function exportSavedCsv() {
+      const savedItems = properties.filter((item) => savedSet.has(item.id));
+      if (!savedItems.length) return;
+      const headers = ["ID", "Name", "Type", "ZIP", "Beds", "Baths", "Sqft", "Price", "Built", "Note"];
+      const rows = savedItems.map((item) => [
+        item.id, item.name, item.type, item.zip, item.beds, item.baths, item.sqft, item.price, item.built, item.note
+      ]);
+      const csv = [headers, ...rows]
+        .map((line) => line.map((value) => "\"" + String(value).replace(/"/g, "\"\"") + "\"").join(","))
+        .join("\n");
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "saved-properties.csv";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     }
 
     function openModal(item) {
@@ -438,6 +528,18 @@
     modalClose.addEventListener("click", closeModal);
     detailModal.addEventListener("click", (event) => {
       if (event.target === detailModal) closeModal();
+    });
+    compareClose.addEventListener("click", closeCompareModal);
+    compareModal.addEventListener("click", (event) => {
+      if (event.target === compareModal) closeCompareModal();
+    });
+    openCompare.addEventListener("click", openCompareModal);
+    exportSaved.addEventListener("click", exportSavedCsv);
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        closeModal();
+        closeCompareModal();
+      }
     });
 
     renderListings();

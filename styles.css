@@ -530,6 +530,12 @@ select {
   color: #a5d4ff;
 }
 
+.head-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .action-status {
   margin-top: 10px;
   display: flex;
@@ -611,6 +617,11 @@ select {
 
 .btn-mini.active {
   background: linear-gradient(120deg, #1478f5, #2f50ff);
+}
+
+.btn-mini[disabled] {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .modal {
@@ -708,6 +719,29 @@ select {
   color: #75c4ff;
   font-size: 28px;
   font-weight: 700;
+}
+
+.compare-table-wrap {
+  overflow-x: auto;
+}
+
+.compare-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+}
+
+.compare-table th,
+.compare-table td {
+  border: 1px solid rgba(119, 165, 238, 0.16);
+  padding: 8px;
+  text-align: left;
+  font-size: 13px;
+}
+
+.compare-table th {
+  color: #88c9ff;
+  background: rgba(12, 31, 55, 0.6);
 }
 
 @media (max-width: 1120px) {
