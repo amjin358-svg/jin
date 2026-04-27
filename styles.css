@@ -103,7 +103,7 @@ body {
   padding: 28px;
   overflow: hidden;
   display: grid;
-  grid-template-columns: 1.15fr 0.85fr;
+  grid-template-columns: 1fr;
   gap: 18px;
 }
 
@@ -182,8 +182,7 @@ body {
   box-shadow: 0 0 0 5px rgba(68, 162, 255, 0.22);
 }
 
-.hero-content,
-.snapshot {
+.hero-content {
   position: relative;
   z-index: 1;
 }
