@@ -132,6 +132,51 @@
         </div>
       </section>
 
+      <section class="invest-tools glass" data-animate>
+        <article class="panel tool-card zip-tool">
+          <h3>ZIP CODE 地圖搜房</h3>
+          <p>輸入美國 ZIP CODE，快速定位區域物件與均價帶。</p>
+          <div class="tool-controls">
+            <input id="zipSearchInput" placeholder="例如 90001 / 90210 / 94107">
+            <button class="btn-primary" id="zipSearchBtn" type="button">搜尋 ZIP</button>
+          </div>
+          <div class="zip-map-sim" id="zipMapSim">
+            <button class="zip-node" data-zip="90001" style="left:55%;top:62%;">90001</button>
+            <button class="zip-node" data-zip="90210" style="left:50%;top:53%;">90210</button>
+            <button class="zip-node" data-zip="92648" style="left:48%;top:74%;">92648</button>
+            <button class="zip-node" data-zip="92037" style="left:42%;top:83%;">92037</button>
+            <button class="zip-node" data-zip="94107" style="left:41%;top:26%;">94107</button>
+          </div>
+          <p class="tool-result" id="zipResultText">請輸入 ZIP 或點擊地圖節點。</p>
+        </article>
+
+        <article class="panel tool-card roi-tool">
+          <h3>投報率估算</h3>
+          <p>以租金、總價、持有成本估算年化投報率。</p>
+          <div class="tool-grid">
+            <label>物件總價<input id="roiPrice" type="number" value="1500000"></label>
+            <label>月租收入<input id="roiRent" type="number" value="6200"></label>
+            <label>月持有成本<input id="roiCost" type="number" value="1400"></label>
+            <label>空置率(%)<input id="roiVacancy" type="number" value="5"></label>
+          </div>
+          <button class="btn-primary" id="roiCalcBtn" type="button">計算投報率</button>
+          <p class="tool-result" id="roiResultText">預估年化投報率：--</p>
+        </article>
+
+        <article class="panel tool-card ai-tool">
+          <h3>AI 估價</h3>
+          <p>輸入地址與坪數，取得 AI 估算價格區間。</p>
+          <div class="tool-grid">
+            <label>地址<input id="aiAddress" value="123 Ocean Ave, Santa Monica, CA"></label>
+            <label>建坪 / sqft<input id="aiSqft" type="number" value="2450"></label>
+            <label>屋齡(年)<input id="aiAge" type="number" value="8"></label>
+            <label>ZIP CODE<input id="aiZip" value="90401"></label>
+          </div>
+          <button class="btn-primary" id="aiEstimateBtn" type="button">產生 AI 估價</button>
+          <p class="tool-result" id="aiResultText">AI 估價：--</p>
+        </article>
+      </section>
+
       <section class="cards-grid" data-animate>
         <a class="panel card property-card property-link" href="./property.html">
           <div class="property-image" style="background-image:url('https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?auto=format&fit=crop&w=1200&h=780&q=80');">
@@ -239,6 +284,22 @@
     const heroSlides = document.querySelectorAll(".hero-slide");
     const heroDots = document.querySelectorAll("#heroDots .dot");
     let currentHeroSlide = 0;
+    const zipSearchInput = document.getElementById("zipSearchInput");
+    const zipSearchBtn = document.getElementById("zipSearchBtn");
+    const zipResultText = document.getElementById("zipResultText");
+    const zipNodes = document.querySelectorAll(".zip-node");
+    const roiPrice = document.getElementById("roiPrice");
+    const roiRent = document.getElementById("roiRent");
+    const roiCost = document.getElementById("roiCost");
+    const roiVacancy = document.getElementById("roiVacancy");
+    const roiCalcBtn = document.getElementById("roiCalcBtn");
+    const roiResultText = document.getElementById("roiResultText");
+    const aiAddress = document.getElementById("aiAddress");
+    const aiSqft = document.getElementById("aiSqft");
+    const aiAge = document.getElementById("aiAge");
+    const aiZip = document.getElementById("aiZip");
+    const aiEstimateBtn = document.getElementById("aiEstimateBtn");
+    const aiResultText = document.getElementById("aiResultText");
 
     function setHeroSlide(index) {
       currentHeroSlide = ((index % heroSlides.length) + heroSlides.length) % heroSlides.length;
@@ -256,6 +317,60 @@
         setHeroSlide(slideIndex);
       });
     });
+
+    function showZipResult(zip) {
+      const zipStats = {
+        "90001": "$1.18M｜34 Listings",
+        "90210": "$3.42M｜22 Listings",
+        "92648": "$1.97M｜27 Listings",
+        "92037": "$2.21M｜19 Listings",
+        "94107": "$1.36M｜31 Listings"
+      };
+      const stats = zipStats[zip] || "尚無該 ZIP 樣本資料";
+      zipResultText.textContent = "ZIP " + zip + " 物件概況：" + stats;
+      zipNodes.forEach((node) => node.classList.toggle("active", node.dataset.zip === zip));
+    }
+
+    zipSearchBtn.addEventListener("click", () => {
+      const zip = zipSearchInput.value.trim();
+      if (!zip) return;
+      showZipResult(zip);
+    });
+    zipNodes.forEach((node) => {
+      node.addEventListener("click", () => showZipResult(node.dataset.zip || ""));
+    });
+
+    roiCalcBtn.addEventListener("click", () => {
+      const price = Number(roiPrice.value) || 0;
+      const rent = Number(roiRent.value) || 0;
+      const cost = Number(roiCost.value) || 0;
+      const vacancy = (Number(roiVacancy.value) || 0) / 100;
+      if (!price || !rent) {
+        roiResultText.textContent = "請輸入有效總價與租金。";
+        return;
+      }
+      const annualNet = (rent * 12 * (1 - vacancy)) - (cost * 12);
+      const roi = (annualNet / price) * 100;
+      roiResultText.textContent = "預估年化投報率：" + roi.toFixed(2) + "%（年淨收益 $" + Math.round(annualNet).toLocaleString("en-US") + "）";
+    });
+
+    aiEstimateBtn.addEventListener("click", () => {
+      const sqft = Number(aiSqft.value) || 0;
+      const age = Number(aiAge.value) || 0;
+      const zip = aiZip.value.trim();
+      if (!sqft || !zip) {
+        aiResultText.textContent = "請輸入完整地址/坪數/ZIP。";
+        return;
+      }
+      const base = 620 * sqft;
+      const ageAdjust = Math.max(0.78, 1 - age * 0.01);
+      const zipBoost = zip.startsWith("90") ? 1.16 : zip.startsWith("94") ? 1.08 : 1.0;
+      const est = base * ageAdjust * zipBoost;
+      const low = Math.round(est * 0.92);
+      const high = Math.round(est * 1.08);
+      aiResultText.textContent = "AI 估價：" + aiAddress.value.trim() + " 約 $" + low.toLocaleString("en-US") + " - $" + high.toLocaleString("en-US");
+    });
+
     setInterval(() => {
       setHeroSlide((currentHeroSlide + 1) % heroSlides.length);
     }, 5200);
