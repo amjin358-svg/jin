@@ -5,8 +5,8 @@
 body {
   margin: 0;
   font-family: "Inter", sans-serif;
-  color: #e9f1ff;
-  background: radial-gradient(circle at 20% 0%, #123567 0%, #061529 48%, #050d1a 100%);
+  color: #17263f;
+  background: linear-gradient(180deg, #f3f6fb 0%, #e8eef8 100%);
 }
 
 .page-shell {
@@ -33,16 +33,18 @@ main > .bottom-panels {
 }
 
 .glass {
-  background: linear-gradient(145deg, rgba(8, 22, 40, 0.86), rgba(4, 14, 28, 0.84));
-  border: 1px solid rgba(122, 171, 255, 0.16);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(245, 249, 255, 0.92));
+  border: 1px solid rgba(130, 157, 201, 0.24);
   border-radius: 14px;
-  backdrop-filter: blur(8px);
+  box-shadow: 0 14px 36px rgba(23, 48, 92, 0.08);
+  backdrop-filter: blur(6px);
 }
 
 .panel {
-  background: linear-gradient(150deg, rgba(9, 24, 42, 0.92), rgba(5, 14, 27, 0.96));
-  border: 1px solid rgba(120, 164, 244, 0.15);
+  background: linear-gradient(150deg, rgba(255, 255, 255, 0.96), rgba(245, 250, 255, 0.95));
+  border: 1px solid rgba(141, 170, 220, 0.24);
   border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(24, 49, 92, 0.08);
 }
 
 .topbar {
@@ -84,18 +86,19 @@ main > .bottom-panels {
 }
 
 .menu a {
-  color: #dce8ff;
+  color: #35517d;
   text-decoration: none;
   font-size: 12px;
   letter-spacing: 0.03em;
+  font-weight: 600;
 }
 
 .cta-small,
 .btn-primary,
 .btn-ghost {
-  border: 1px solid rgba(113, 166, 255, 0.28);
+  border: 1px solid rgba(96, 136, 214, 0.28);
   border-radius: 8px;
-  color: #eff5ff;
+  color: #f6faff;
   padding: 10px 14px;
   font-weight: 600;
   cursor: pointer;
@@ -107,7 +110,7 @@ main > .bottom-panels {
 }
 
 .btn-ghost {
-  background: rgba(14, 35, 62, 0.5);
+  background: rgba(31, 79, 150, 0.82);
 }
 
 .hero {
@@ -159,8 +162,8 @@ main > .bottom-panels {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(circle at 22% 22%, rgba(37, 122, 226, 0.2), transparent 42%),
-    linear-gradient(92deg, rgba(2, 9, 19, 0.9) 0%, rgba(4, 14, 27, 0.78) 38%, rgba(4, 14, 27, 0.52) 62%, rgba(4, 14, 27, 0.74) 100%);
+    radial-gradient(circle at 20% 20%, rgba(92, 156, 245, 0.26), transparent 46%),
+    linear-gradient(92deg, rgba(15, 40, 76, 0.82) 0%, rgba(19, 55, 102, 0.6) 42%, rgba(22, 62, 114, 0.32) 68%, rgba(32, 78, 135, 0.34) 100%);
 }
 
 .hero-overlay::after {
@@ -207,10 +210,12 @@ main > .bottom-panels {
   margin: 22px 0 10px;
   font-size: clamp(36px, 4.2vw, 64px);
   line-height: 1.06;
+  color: #ffffff;
+  letter-spacing: 0.01em;
 }
 
 .hero p {
-  color: #c2d4f3;
+  color: #d8e8ff;
 }
 
 .hero-actions {
@@ -297,12 +302,14 @@ main > .bottom-panels {
 .tabs button {
   border: 0;
   padding: 8px 16px;
-  color: #d7e7ff;
+  color: #5675a2;
   background: transparent;
 }
 
 .tabs .active {
-  background: rgba(29, 125, 255, 0.35);
+  background: rgba(29, 125, 255, 0.16);
+  color: #1a4f95;
+  font-weight: 700;
 }
 
 .filters {
@@ -315,9 +322,9 @@ main > .bottom-panels {
 input,
 select {
   width: 100%;
-  background: rgba(5, 19, 38, 0.75);
-  color: #d4e3fd;
-  border: 1px solid rgba(115, 158, 237, 0.2);
+  background: rgba(255, 255, 255, 0.92);
+  color: #24406a;
+  border: 1px solid rgba(130, 162, 214, 0.28);
   border-radius: 8px;
   padding: 10px;
 }
@@ -367,7 +374,7 @@ select {
 
 .card p {
   margin: 8px 0 14px;
-  color: #9cb4d8;
+  color: #6584ae;
   font-size: 14px;
 }
 
@@ -382,7 +389,7 @@ select {
 .price {
   display: block;
   margin-top: 8px;
-  color: #5eb7ff;
+  color: #2275d3;
 }
 
 .metric {
@@ -472,13 +479,14 @@ select {
 
 .mls-header h2 {
   margin: 6px 0 0;
+  color: #1d3f6e;
 }
 
 .mls-controls {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #8dacd8;
+  color: #6686b2;
 }
 
 .mode-switch {
@@ -520,9 +528,9 @@ select {
 }
 
 .chip {
-  border: 1px solid rgba(119, 165, 238, 0.2);
-  background: rgba(10, 30, 53, 0.7);
-  color: #bdd5fa;
+  border: 1px solid rgba(130, 162, 214, 0.3);
+  background: rgba(236, 244, 255, 0.88);
+  color: #3f628e;
   border-radius: 999px;
   padding: 7px 12px;
   cursor: pointer;
@@ -541,12 +549,12 @@ select {
   margin-left: auto;
   margin-right: auto;
   border-radius: 12px;
-  border: 1px solid rgba(119, 165, 238, 0.2);
+  border: 1px solid rgba(130, 162, 214, 0.28);
   background:
-    radial-gradient(circle at 32% 70%, rgba(58, 126, 220, 0.28), transparent 34%),
-    radial-gradient(circle at 24% 28%, rgba(75, 154, 255, 0.22), transparent 30%),
-    linear-gradient(130deg, rgba(3, 11, 24, 0.7), rgba(3, 11, 24, 0.9)),
-    linear-gradient(180deg, rgba(31, 90, 163, 0.22), rgba(11, 31, 58, 0.15)),
+    radial-gradient(circle at 32% 70%, rgba(105, 161, 236, 0.28), transparent 34%),
+    radial-gradient(circle at 24% 28%, rgba(125, 181, 247, 0.22), transparent 30%),
+    linear-gradient(130deg, rgba(220, 234, 253, 0.94), rgba(207, 225, 251, 0.9)),
+    linear-gradient(180deg, rgba(178, 208, 245, 0.28), rgba(165, 196, 236, 0.18)),
     repeating-linear-gradient(
       90deg,
       rgba(137, 180, 246, 0.08) 0,
@@ -584,21 +592,21 @@ select {
 }
 
 .ca-outline {
-  fill: rgba(23, 62, 108, 0.55);
-  stroke: rgba(143, 191, 255, 0.5);
+  fill: rgba(93, 137, 199, 0.28);
+  stroke: rgba(82, 138, 214, 0.58);
   stroke-width: 2;
 }
 
 .ca-zip {
-  fill: rgba(31, 111, 199, 0.46);
-  stroke: rgba(143, 191, 255, 0.35);
+  fill: rgba(73, 133, 214, 0.38);
+  stroke: rgba(88, 146, 220, 0.45);
   stroke-width: 1.5;
   transition: fill 0.2s ease, stroke 0.2s ease;
   cursor: pointer;
 }
 
 .ca-zip-label {
-  fill: #d8e9ff;
+  fill: #2b4f7f;
   font-size: 13px;
   font-weight: 700;
 }
@@ -779,10 +787,10 @@ select {
 }
 
 .listing-item {
-  border: 1px solid rgba(119, 165, 238, 0.15);
+  border: 1px solid rgba(136, 171, 225, 0.26);
   border-radius: 10px;
   padding: 12px;
-  background: rgba(9, 25, 44, 0.55);
+  background: rgba(245, 250, 255, 0.92);
 }
 
 .listing-item h4 {
@@ -791,7 +799,7 @@ select {
 
 .listing-item p {
   margin: 0;
-  color: #97b2da;
+  color: #617ea7;
   font-size: 13px;
 }
 
@@ -807,15 +815,27 @@ select {
 }
 
 .badge.resale {
-  color: #e6f0ff;
-  background: #466390;
+  color: #f7fbff;
+  background: #6789b7;
 }
 
 .listing-meta {
   margin-top: 9px;
   display: flex;
   justify-content: space-between;
-  color: #8eb0de;
+  color: #5f7ea8;
+}
+
+/* Shinruenn-like reveal motion */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.65s ease, transform 0.65s ease;
+}
+
+[data-reveal].is-visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .card-actions {

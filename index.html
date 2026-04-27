@@ -9,9 +9,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css">
 </head>
-<body>
+<body class="theme-shinruenn">
   <div class="page-shell">
-    <header class="topbar glass">
+    <header class="topbar glass" data-animate>
       <div class="brand">
         <img class="brand-logo" src="./assets/bluerock-logo.svg" alt="BlueRock logo">
       </div>
@@ -29,7 +29,7 @@
     </header>
 
     <main>
-      <section class="hero glass">
+      <section class="hero glass" data-animate>
         <div class="hero-bg">
           <div class="hero-slide active" style="background-image: url('https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&crop=entropy&w=2400&h=1080&q=80');"></div>
           <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&crop=entropy&w=2400&h=1080&q=80');"></div>
@@ -43,6 +43,7 @@
           <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1460317442991-0ec209397118?auto=format&fit=crop&crop=entropy&w=2400&h=1080&q=80');"></div>
         </div>
         <div class="hero-content">
+          <p class="hero-kicker">線上熱銷</p>
           <h1>Building Wealth.<br>Creating Legacy.</h1>
           <p>
             Your trusted partner for real estate, investments,<br>
@@ -67,7 +68,7 @@
         </div>
       </section>
 
-      <section class="search-panel glass">
+      <section class="search-panel glass" data-animate>
         <div class="tabs">
           <button class="active">Buy</button>
           <button>Rent</button>
@@ -84,7 +85,7 @@
         </div>
       </section>
 
-      <section class="cards-grid">
+      <section class="cards-grid" data-animate>
         <article class="panel card">
           <h3>Featured Properties</h3>
           <p>Hand-picked premium properties</p>
@@ -116,7 +117,7 @@
         </article>
       </section>
 
-      <section class="bottom-panels">
+      <section class="bottom-panels" data-animate>
         <article class="panel updates-card">
           <h3>Get Market Updates</h3>
           <p>Stay ahead with exclusive market insights and investment opportunities.</p>
@@ -125,7 +126,7 @@
         </article>
       </section>
 
-      <section class="mls-zone glass">
+      <section class="mls-zone glass" data-animate>
         <div class="mls-header">
           <div>
             <p class="eyebrow">MLS Zoom Map</p>
@@ -503,6 +504,17 @@
     setInterval(() => {
       setHeroSlide((currentHeroSlide + 1) % heroSlides.length);
     }, 5200);
+
+    const animatedBlocks = document.querySelectorAll("[data-animate]");
+    const animateObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("in-view");
+          animateObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.2 });
+    animatedBlocks.forEach((block) => animateObserver.observe(block));
 
     renderListings();
   </script>
