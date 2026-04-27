@@ -188,17 +188,22 @@
               <button class="chip" data-zip="94107">94107 - San Francisco</button>
             </div>
             <div class="ca-map" id="caMap">
-              <svg class="ca-shape" viewBox="0 0 280 520" aria-label="California map">
+              <svg class="ca-svg" viewBox="0 0 280 520" aria-label="California map">
                 <path
                   d="M40 18 L112 34 L124 80 L168 118 L176 154 L214 210 L236 286 L228 330 L244 382 L216 504 L118 494 L86 420 L64 412 L32 338 L22 296 L42 256 L38 206 L48 154 L34 102 Z"
                   class="ca-outline"
                 ></path>
+                <path class="ca-zip zip-94107 zip-region" data-zip="94107" d="M74 96 L116 106 L126 136 L86 144 L66 124 Z"></path>
+                <path class="ca-zip zip-90210 zip-region" data-zip="90210" d="M98 252 L142 262 L136 302 L88 296 L80 268 Z"></path>
+                <path class="ca-zip zip-90001 zip-region" data-zip="90001" d="M108 284 L164 296 L158 342 L100 336 L94 308 Z"></path>
+                <path class="ca-zip zip-92648 zip-region" data-zip="92648" d="M104 356 L156 366 L150 402 L96 394 L92 372 Z"></path>
+                <path class="ca-zip zip-92037 zip-region" data-zip="92037" d="M90 416 L136 424 L130 466 L84 458 L78 434 Z"></path>
+                <text class="ca-zip-label" x="74" y="120">94107</text>
+                <text class="ca-zip-label" x="90" y="279">90210</text>
+                <text class="ca-zip-label" x="104" y="320">90001</text>
+                <text class="ca-zip-label" x="96" y="387">92648</text>
+                <text class="ca-zip-label" x="82" y="448">92037</text>
               </svg>
-              <button class="zip-point z1" data-zip="90001" type="button">90001</button>
-              <button class="zip-point z2" data-zip="90210" type="button">90210</button>
-              <button class="zip-point z3" data-zip="92648" type="button">92648</button>
-              <button class="zip-point z4" data-zip="92037" type="button">92037</button>
-              <button class="zip-point z5" data-zip="94107" type="button">94107</button>
             </div>
             <p class="map-footnote">MLS-style map view for California ZIP zoning and property cluster lookup.</p>
           </article>
@@ -299,6 +304,7 @@
     const map = document.getElementById("caMap");
     const zipChips = document.querySelectorAll(".chip");
     const typeTabs = document.querySelectorAll(".listing-tabs button");
+    const zipRegions = document.querySelectorAll(".zip-region");
     const zipFilter = document.getElementById("zipFilter");
     const priceFilter = document.getElementById("priceFilter");
     const bedsFilter = document.getElementById("bedsFilter");
@@ -490,6 +496,18 @@
         selectedZip = chip.dataset.zip;
         zipFilter.value = "all";
         map.setAttribute("data-focus", chip.dataset.zip);
+        renderListings();
+      });
+    });
+
+    zipRegions.forEach((region) => {
+      region.addEventListener("click", () => {
+        const zip = region.dataset.zip;
+        if (!zip) return;
+        selectedZip = zip;
+        zipFilter.value = "all";
+        map.setAttribute("data-focus", zip);
+        zipChips.forEach((chip) => chip.classList.toggle("active", chip.dataset.zip === zip));
         renderListings();
       });
     });

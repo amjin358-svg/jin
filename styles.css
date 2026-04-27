@@ -490,6 +490,7 @@ select {
   stroke: rgba(143, 191, 255, 0.35);
   stroke-width: 1.5;
   transition: fill 0.2s ease, stroke 0.2s ease;
+  cursor: pointer;
 }
 
 .ca-zip-label {
@@ -521,6 +522,11 @@ select {
 .ca-map[data-focus="94107"] .zip-94107 {
   fill: rgba(47, 154, 255, 0.68);
   stroke: rgba(188, 224, 255, 0.84);
+}
+
+.ca-zip:hover {
+  fill: rgba(47, 154, 255, 0.56);
+  stroke: rgba(188, 224, 255, 0.7);
 }
 
 .ca-map[data-focus="90001"] .z1,
