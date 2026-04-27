@@ -331,29 +331,102 @@ main > .bottom-panels {
   gap: 12px;
 }
 
-.service-item {
+.service-item,
+.service-card {
   padding: 14px;
   text-decoration: none;
   color: inherit;
   transition: transform 0.2s ease, border-color 0.2s ease;
 }
 
-.service-item:hover {
+.service-item:hover,
+.service-card:hover {
   transform: translateY(-2px);
   border-color: rgba(104, 186, 255, 0.42);
 }
 
-.service-item h3 {
+.service-item h3,
+.service-card h3 {
   margin: 0;
   color: #e8f4ff;
   font-size: 18px;
 }
 
-.service-item p {
+.service-item p,
+.service-card p {
   margin: 8px 0 0;
   color: #9eb9dd;
   font-size: 13px;
   line-height: 1.5;
+}
+
+.integration-hub {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding: 12px;
+}
+
+.integration-card {
+  padding: 14px;
+}
+
+.integration-card h3 {
+  margin: 0;
+  color: #e8f4ff;
+}
+
+.integration-card p {
+  margin: 8px 0 12px;
+  color: #9eb9dd;
+  font-size: 13px;
+}
+
+.integration-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.integration-grid label,
+.integration-card > label {
+  display: grid;
+  gap: 6px;
+  font-size: 12px;
+  color: #9bb8dc;
+}
+
+.integration-result {
+  margin-top: 10px;
+  color: #d9eaff;
+}
+
+.integration-list {
+  margin-top: 10px;
+  display: grid;
+  gap: 8px;
+}
+
+.integration-list article {
+  border: 1px solid rgba(120, 166, 233, 0.22);
+  border-radius: 10px;
+  padding: 10px;
+  background: rgba(10, 27, 48, 0.58);
+  color: #a7c2e7;
+}
+
+.integration-list h4 {
+  margin: 0 0 4px;
+  color: #eaf4ff;
+  font-size: 15px;
+}
+
+.integration-list p {
+  margin: 0;
+  color: #a7c2e7;
+  font-size: 13px;
 }
 
 .tabs {
@@ -1472,6 +1545,10 @@ select {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .integration-hub {
+    grid-template-columns: 1fr;
+  }
+
   .tools-grid {
     grid-template-columns: 1fr;
   }
@@ -1511,6 +1588,10 @@ select {
   }
 
   .advanced-filters {
+    grid-template-columns: 1fr;
+  }
+
+  .integration-grid {
     grid-template-columns: 1fr;
   }
 

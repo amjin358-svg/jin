@@ -151,6 +151,37 @@
         </article>
       </section>
 
+      <section class="integration-hub glass" data-animate>
+        <article class="panel integration-card">
+          <h3>1) Real MLS Integration</h3>
+          <p>CRMLS / MLS Grid</p>
+          <div class="integration-grid">
+            <label>ZIP CODE<input id="mlsZipInput" value="90210"></label>
+            <label>Limit<input id="mlsLimitInput" type="number" min="1" max="20" value="6"></label>
+          </div>
+          <button class="btn-primary" id="mlsFetchBtn" type="button">Fetch Live MLS</button>
+          <div class="tool-result integration-result" id="mlsResultText">尚未查詢 MLS。</div>
+          <div class="integration-list" id="mlsListings"></div>
+        </article>
+        <article class="panel integration-card">
+          <h3>2) Payment System</h3>
+          <p>佣金、管理費、投資款</p>
+          <div class="integration-grid">
+            <label>Payment Type
+              <select id="paymentType">
+                <option value="commission">Commission</option>
+                <option value="management_fee">Management Fee</option>
+                <option value="investment_fund">Investment Fund</option>
+              </select>
+            </label>
+            <label>Amount (USD)<input id="paymentAmount" type="number" min="1" value="2500"></label>
+          </div>
+          <label>Description<input id="paymentDesc" value="BlueRock service payment"></label>
+          <button class="btn-primary" id="paymentCreateBtn" type="button">Create Payment Link</button>
+          <div class="tool-result integration-result" id="paymentResultText">尚未建立付款。</div>
+        </article>
+      </section>
+
       <section class="invest-tools glass" data-animate>
         <article class="panel tool-card zip-tool">
           <h3>ZIP CODE 地圖搜房</h3>
@@ -319,6 +350,16 @@
     const aiZip = document.getElementById("aiZip");
     const aiEstimateBtn = document.getElementById("aiEstimateBtn");
     const aiResultText = document.getElementById("aiResultText");
+    const mlsZipInput = document.getElementById("mlsZipInput");
+    const mlsLimitInput = document.getElementById("mlsLimitInput");
+    const mlsFetchBtn = document.getElementById("mlsFetchBtn");
+    const mlsResultText = document.getElementById("mlsResultText");
+    const mlsListings = document.getElementById("mlsListings");
+    const paymentType = document.getElementById("paymentType");
+    const paymentAmount = document.getElementById("paymentAmount");
+    const paymentDesc = document.getElementById("paymentDesc");
+    const paymentCreateBtn = document.getElementById("paymentCreateBtn");
+    const paymentResultText = document.getElementById("paymentResultText");
 
     function setHeroSlide(index) {
       currentHeroSlide = ((index % heroSlides.length) + heroSlides.length) % heroSlides.length;
@@ -389,6 +430,69 @@
       const high = Math.round(est * 1.08);
       aiResultText.textContent = "AI 估價：" + aiAddress.value.trim() + " 約 $" + low.toLocaleString("en-US") + " - $" + high.toLocaleString("en-US");
     });
+
+    async function fetchMlsListings() {
+      const zip = mlsZipInput.value.trim();
+      const limit = Number(mlsLimitInput.value) || 6;
+      if (!zip) {
+        mlsResultText.textContent = "請輸入 ZIP CODE。";
+        return;
+      }
+      mlsResultText.textContent = "查詢中...";
+      mlsListings.innerHTML = "";
+      try {
+        const response = await fetch("/api/mls/listings?zip=" + encodeURIComponent(zip) + "&limit=" + encodeURIComponent(limit));
+        if (!response.ok) {
+          throw new Error("MLS API error " + response.status);
+        }
+        const payload = await response.json();
+        const listings = payload.listings || [];
+        mlsResultText.textContent = "來源：" + payload.provider + "｜共 " + listings.length + " 筆";
+        if (!listings.length) {
+          mlsListings.innerHTML = "<p class='integration-empty'>查無資料。</p>";
+          return;
+        }
+        mlsListings.innerHTML = listings.map((listing) => (
+          "<article class='integration-listing'>" +
+          "<h4>" + listing.address + "</h4>" +
+          "<p>" + listing.city + " ・ " + listing.zip + " ・ " + listing.beds + " Beds / " + listing.baths + " Baths</p>" +
+          "<strong>$" + Number(listing.price || 0).toLocaleString("en-US") + "</strong>" +
+          "</article>"
+        )).join("");
+      } catch (error) {
+        mlsResultText.textContent = "MLS 查詢失敗：" + error.message;
+      }
+    }
+
+    async function createPaymentLink() {
+      const amount = Number(paymentAmount.value) || 0;
+      if (!amount) {
+        paymentResultText.textContent = "請輸入有效金額。";
+        return;
+      }
+      paymentResultText.textContent = "建立付款連結中...";
+      try {
+        const response = await fetch("/api/payments/create-link", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            type: paymentType.value,
+            amountUsd: amount,
+            description: paymentDesc.value.trim()
+          })
+        });
+        const payload = await response.json();
+        if (!response.ok) {
+          throw new Error(payload.error || "Payment API error");
+        }
+        paymentResultText.innerHTML = "已建立 " + payload.type + " 付款連結：<a href='" + payload.url + "' target='_blank' rel='noreferrer'>Open Link</a>";
+      } catch (error) {
+        paymentResultText.textContent = "建立失敗：" + error.message;
+      }
+    }
+
+    mlsFetchBtn.addEventListener("click", fetchMlsListings);
+    paymentCreateBtn.addEventListener("click", createPaymentLink);
 
     setInterval(() => {
       setHeroSlide((currentHeroSlide + 1) % heroSlides.length);
