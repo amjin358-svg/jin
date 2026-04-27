@@ -202,33 +202,71 @@
               <button class="active" data-type="new">New Construction</button>
               <button data-type="old">Resale / Existing</button>
             </div>
-            <div class="listing-filters">
+            <div class="advanced-filters">
+              <label>
+                ZIP
+                <select id="zipFilter">
+                  <option value="all">All ZIP</option>
+                  <option value="90001">90001</option>
+                  <option value="90210">90210</option>
+                  <option value="92648">92648</option>
+                  <option value="92037">92037</option>
+                  <option value="94107">94107</option>
+                </select>
+              </label>
+              <label>
+                Minimum Beds
+                <select id="bedsFilter">
+                  <option value="all">Any</option>
+                  <option value="2">2+</option>
+                  <option value="3">3+</option>
+                  <option value="4">4+</option>
+                </select>
+              </label>
+              <label>
+                Max Price
               <select id="priceFilter">
                 <option value="all">All Price</option>
                 <option value="lt2m">Under $2M</option>
                 <option value="2mto3m">$2M - $3M</option>
                 <option value="gt3m">Above $3M</option>
               </select>
-              <select id="bedsFilter">
-                <option value="all">All Beds</option>
-                <option value="2">2+ Beds</option>
-                <option value="3">3+ Beds</option>
-                <option value="4">4+ Beds</option>
-              </select>
+              </label>
+              <label>
+                Sort
               <select id="sortFilter">
                 <option value="priceDesc">Price: High to Low</option>
                 <option value="priceAsc">Price: Low to High</option>
                 <option value="newest">Newest Built</option>
                 <option value="sqftDesc">Largest sqft</option>
               </select>
+              </label>
             </div>
-            <p class="result-text" id="resultText">Showing 0 properties</p>
-            <div class="listing-group active" id="listingResults">
+            <div class="results-head">
+              <p id="resultText">Showing 0 properties</p>
+              <p><strong id="savedCount">Saved 0</strong> · <strong id="compareCount">Compare 0</strong></p>
             </div>
+            <div class="listing-group" id="listingResults"></div>
           </article>
         </div>
       </section>
     </main>
+  </div>
+
+  <div class="modal-overlay" id="detailModal" aria-hidden="true">
+    <article class="panel modal-card">
+      <button class="modal-close" id="modalClose" type="button">×</button>
+      <p class="eyebrow" id="modalBadge">DETAIL</p>
+      <h3 id="modalTitle">Property Detail</h3>
+      <p id="modalSpecs"></p>
+      <div class="modal-grid">
+        <div><p class="mini-label">Price</p><strong id="modalPrice"></strong></div>
+        <div><p class="mini-label">Year Built</p><strong id="modalBuilt"></strong></div>
+        <div><p class="mini-label">ZIP</p><strong id="modalZip"></strong></div>
+        <div><p class="mini-label">Property Type</p><strong id="modalType"></strong></div>
+      </div>
+      <p class="modal-note" id="modalNote"></p>
+    </article>
   </div>
 
   <script>
@@ -237,21 +275,36 @@
     const map = document.getElementById("caMap");
     const zipChips = document.querySelectorAll(".chip");
     const typeTabs = document.querySelectorAll(".listing-tabs button");
+    const zipFilter = document.getElementById("zipFilter");
     const priceFilter = document.getElementById("priceFilter");
     const bedsFilter = document.getElementById("bedsFilter");
     const sortFilter = document.getElementById("sortFilter");
     const listingResults = document.getElementById("listingResults");
     const resultText = document.getElementById("resultText");
+    const savedCount = document.getElementById("savedCount");
+    const compareCount = document.getElementById("compareCount");
+    const detailModal = document.getElementById("detailModal");
+    const modalClose = document.getElementById("modalClose");
+    const modalBadge = document.getElementById("modalBadge");
+    const modalTitle = document.getElementById("modalTitle");
+    const modalSpecs = document.getElementById("modalSpecs");
+    const modalPrice = document.getElementById("modalPrice");
+    const modalBuilt = document.getElementById("modalBuilt");
+    const modalZip = document.getElementById("modalZip");
+    const modalType = document.getElementById("modalType");
+    const modalNote = document.getElementById("modalNote");
     let selectedType = "new";
     let selectedZip = "90001";
+    const savedSet = new Set();
+    const compareSet = new Set();
 
     const properties = [
-      { type: "new", zip: "90001", name: "West LA Skyline Residences", beds: 4, baths: 4, sqft: 3200, price: 2680000, built: 2025, note: "HOA $420/mo" },
-      { type: "new", zip: "92648", name: "Oceanfront Vista Collection", beds: 3, baths: 3, sqft: 2450, price: 1980000, built: 2025, note: "Built 2025" },
-      { type: "new", zip: "92037", name: "La Jolla Coastal New Homes", beds: 4, baths: 3, sqft: 2810, price: 2340000, built: 2024, note: "Solar + EV ready" },
-      { type: "old", zip: "90210", name: "Beverly Crest Classic Estate", beds: 5, baths: 5, sqft: 4850, price: 3450000, built: 1998, note: "Renovated 2021" },
-      { type: "old", zip: "94107", name: "Downtown SF Loft Signature", beds: 2, baths: 2, sqft: 1720, price: 1320000, built: 2008, note: "Built 2008" },
-      { type: "old", zip: "90001", name: "South LA Family Residence", beds: 3, baths: 2, sqft: 1840, price: 960000, built: 1989, note: "Lot 6,200 sqft" }
+      { id: "p1", type: "new", zip: "90001", name: "West LA Skyline Residences", beds: 4, baths: 4, sqft: 3200, price: 2680000, built: 2025, note: "HOA $420/mo" },
+      { id: "p2", type: "new", zip: "92648", name: "Oceanfront Vista Collection", beds: 3, baths: 3, sqft: 2450, price: 1980000, built: 2025, note: "Built 2025" },
+      { id: "p3", type: "new", zip: "92037", name: "La Jolla Coastal New Homes", beds: 4, baths: 3, sqft: 2810, price: 2340000, built: 2024, note: "Solar + EV ready" },
+      { id: "p4", type: "old", zip: "90210", name: "Beverly Crest Classic Estate", beds: 5, baths: 5, sqft: 4850, price: 3450000, built: 1998, note: "Renovated 2021" },
+      { id: "p5", type: "old", zip: "94107", name: "Downtown SF Loft Signature", beds: 2, baths: 2, sqft: 1720, price: 1320000, built: 2008, note: "Built 2008" },
+      { id: "p6", type: "old", zip: "90001", name: "South LA Family Residence", beds: 3, baths: 2, sqft: 1840, price: 960000, built: 1989, note: "Lot 6,200 sqft" }
     ];
 
     function formatPrice(value) {
@@ -269,7 +322,7 @@
       const minBeds = bedsFilter.value === "all" ? 0 : Number(bedsFilter.value);
       const filtered = properties
         .filter((item) => item.type === selectedType)
-        .filter((item) => item.zip === selectedZip)
+        .filter((item) => zipFilter.value === "all" ? item.zip === selectedZip : item.zip === zipFilter.value)
         .filter((item) => withinPrice(item, priceFilter.value))
         .filter((item) => item.beds >= minBeds);
 
@@ -283,7 +336,9 @@
         filtered.sort((a, b) => b.price - a.price);
       }
 
-      resultText.textContent = "Showing " + filtered.length + " properties in ZIP " + selectedZip;
+      resultText.textContent = "Showing " + filtered.length + " properties";
+      savedCount.textContent = "Saved " + savedSet.size;
+      compareCount.textContent = "Compare " + compareSet.size;
       if (!filtered.length) {
         listingResults.innerHTML = "<article class=\"listing-item\"><h4>No matched properties</h4><p>Try another ZIP or adjust filters.</p></article>";
         return;
@@ -292,13 +347,38 @@
       listingResults.innerHTML = filtered.map((item) => {
         const badgeClass = item.type === "new" ? "badge" : "badge resale";
         const badgeText = item.type === "new" ? "NEW" : "RESALE";
+        const saveClass = savedSet.has(item.id) ? "action-btn active" : "action-btn";
+        const compareClass = compareSet.has(item.id) ? "action-btn active" : "action-btn";
         return "<article class=\"listing-item\">" +
           "<p class=\"" + badgeClass + "\">" + badgeText + "</p>" +
           "<h4>" + item.name + "</h4>" +
           "<p>ZIP " + item.zip + " · " + item.beds + " Beds · " + item.baths + " Baths · " + item.sqft.toLocaleString("en-US") + " sqft</p>" +
           "<div class=\"listing-meta\"><strong>" + formatPrice(item.price) + "</strong><span>" + item.note + "</span></div>" +
+          "<div class=\"listing-actions\">" +
+            "<button class=\"action-btn\" data-action=\"detail\" data-id=\"" + item.id + "\">Details</button>" +
+            "<button class=\"" + saveClass + "\" data-action=\"save\" data-id=\"" + item.id + "\">Save</button>" +
+            "<button class=\"" + compareClass + "\" data-action=\"compare\" data-id=\"" + item.id + "\">Compare</button>" +
+          "</div>" +
           "</article>";
       }).join("");
+    }
+
+    function openModal(item) {
+      modalBadge.textContent = item.type === "new" ? "NEW CONSTRUCTION" : "RESALE";
+      modalTitle.textContent = item.name;
+      modalSpecs.textContent = item.beds + " Beds · " + item.baths + " Baths · " + item.sqft.toLocaleString("en-US") + " sqft";
+      modalPrice.textContent = formatPrice(item.price);
+      modalBuilt.textContent = String(item.built);
+      modalZip.textContent = item.zip;
+      modalType.textContent = item.type === "new" ? "New Construction" : "Resale / Existing";
+      modalNote.textContent = item.note;
+      detailModal.classList.add("open");
+      detailModal.setAttribute("aria-hidden", "false");
+    }
+
+    function closeModal() {
+      detailModal.classList.remove("open");
+      detailModal.setAttribute("aria-hidden", "true");
     }
 
     zoomSlider.addEventListener("input", () => {
@@ -312,6 +392,7 @@
         zipChips.forEach((item) => item.classList.remove("active"));
         chip.classList.add("active");
         selectedZip = chip.dataset.zip;
+        zipFilter.value = "all";
         map.setAttribute("data-focus", chip.dataset.zip);
         renderListings();
       });
@@ -326,8 +407,37 @@
       });
     });
 
-    [priceFilter, bedsFilter, sortFilter].forEach((control) => {
+    [zipFilter, priceFilter, bedsFilter, sortFilter].forEach((control) => {
       control.addEventListener("change", renderListings);
+    });
+
+    listingResults.addEventListener("click", (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+      const action = target.dataset.action;
+      const id = target.dataset.id;
+      if (!action || !id) return;
+      const item = properties.find((property) => property.id === id);
+      if (!item) return;
+
+      if (action === "detail") {
+        openModal(item);
+        return;
+      }
+      if (action === "save") {
+        if (savedSet.has(id)) savedSet.delete(id);
+        else savedSet.add(id);
+      }
+      if (action === "compare") {
+        if (compareSet.has(id)) compareSet.delete(id);
+        else if (compareSet.size < 3) compareSet.add(id);
+      }
+      renderListings();
+    });
+
+    modalClose.addEventListener("click", closeModal);
+    detailModal.addEventListener("click", (event) => {
+      if (event.target === detailModal) closeModal();
     });
 
     renderListings();
