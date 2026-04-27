@@ -76,11 +76,54 @@
         </div>
         <div class="filters">
           <input placeholder="City, Neighborhood, Address or ZIP">
-          <select><option>Property Type</option></select>
-          <select><option>Min Price</option></select>
-          <select><option>Max Price</option></select>
-          <select><option>Beds</option></select>
-          <select><option>Baths</option></select>
+          <select>
+            <option>Home Type</option>
+            <option>Houses</option>
+            <option>Townhomes</option>
+            <option>Multi-family</option>
+            <option>Condos/Co-ops</option>
+            <option>Lots/Land</option>
+            <option>Apartments</option>
+            <option>Manufactured</option>
+          </select>
+          <select>
+            <option>Min Price</option>
+            <option>$100,000</option>
+            <option>$250,000</option>
+            <option>$500,000</option>
+            <option>$750,000</option>
+            <option>$1,000,000</option>
+            <option>$2,000,000</option>
+            <option>$3,000,000</option>
+          </select>
+          <select>
+            <option>Max Price</option>
+            <option>$250,000</option>
+            <option>$500,000</option>
+            <option>$750,000</option>
+            <option>$1,000,000</option>
+            <option>$2,000,000</option>
+            <option>$3,000,000</option>
+            <option>$5,000,000+</option>
+          </select>
+          <select>
+            <option>Beds</option>
+            <option>Any</option>
+            <option>1+</option>
+            <option>2+</option>
+            <option>3+</option>
+            <option>4+</option>
+            <option>5+</option>
+          </select>
+          <select>
+            <option>Baths</option>
+            <option>Any</option>
+            <option>1+</option>
+            <option>1.5+</option>
+            <option>2+</option>
+            <option>3+</option>
+            <option>4+</option>
+          </select>
           <button class="btn-primary">Search</button>
         </div>
       </section>
@@ -196,6 +239,19 @@
                 Minimum Beds
                 <select id="bedsFilter">
                   <option value="all">Any</option>
+                  <option value="1">1+</option>
+                  <option value="2">2+</option>
+                  <option value="3">3+</option>
+                  <option value="4">4+</option>
+                  <option value="5">5+</option>
+                </select>
+              </label>
+              <label>
+                Minimum Baths
+                <select id="bathsFilter">
+                  <option value="all">Any</option>
+                  <option value="1">1+</option>
+                  <option value="1.5">1.5+</option>
                   <option value="2">2+</option>
                   <option value="3">3+</option>
                   <option value="4">4+</option>
@@ -205,9 +261,11 @@
                 Max Price
               <select id="priceFilter">
                 <option value="all">All Price</option>
+                <option value="lt1m">Under $1M</option>
                 <option value="lt2m">Under $2M</option>
                 <option value="2mto3m">$2M - $3M</option>
                 <option value="gt3m">Above $3M</option>
+                <option value="gt5m">Above $5M</option>
               </select>
               </label>
               <label>
@@ -294,9 +352,12 @@
     }
 
     function withinPrice(item, mode) {
-      if (mode === "lt2m") return item.price < 2000000;
-      if (mode === "2mto3m") return item.price >= 2000000 && item.price <= 3000000;
-      if (mode === "gt3m") return item.price > 3000000;
+      if (mode === "lt500k") return item.price < 500000;
+      if (mode === "500kto1m") return item.price >= 500000 && item.price <= 1000000;
+      if (mode === "1mto2m") return item.price > 1000000 && item.price <= 2000000;
+      if (mode === "2mto3m") return item.price > 2000000 && item.price <= 3000000;
+      if (mode === "3mto5m") return item.price > 3000000 && item.price <= 5000000;
+      if (mode === "gt5m") return item.price > 5000000;
       return true;
     }
 
