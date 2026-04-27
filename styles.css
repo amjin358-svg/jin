@@ -324,6 +324,38 @@ main > .bottom-panels {
   padding: 12px;
 }
 
+.service-hub {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.service-item {
+  padding: 14px;
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.service-item:hover {
+  transform: translateY(-2px);
+  border-color: rgba(104, 186, 255, 0.42);
+}
+
+.service-item h3 {
+  margin: 0;
+  color: #e8f4ff;
+  font-size: 18px;
+}
+
+.service-item p {
+  margin: 8px 0 0;
+  color: #9eb9dd;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
 .tabs {
   display: inline-flex;
   border: 1px solid rgba(118, 165, 243, 0.26);
@@ -1436,6 +1468,10 @@ select {
     grid-template-columns: repeat(2, 1fr);
   }
 
+  .service-hub {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .tools-grid {
     grid-template-columns: 1fr;
   }
@@ -1460,6 +1496,7 @@ select {
 
 @media (max-width: 760px) {
   .cards-grid,
+  .service-hub,
   .tools-grid,
   .bottom-panels,
   .mls-layout,
