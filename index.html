@@ -35,9 +35,16 @@
     <main>
       <section class="hero glass">
         <div class="hero-bg">
-          <div class="hero-slide active" style="background-image: url('https://images.unsplash.com/photo-1613977257593-487ecd136cc3?auto=format&fit=crop&w=1700&q=80');"></div>
-          <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1700&q=80');"></div>
-          <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?auto=format&fit=crop&w=1700&q=80');"></div>
+          <div class="hero-slide active" style="background-image: url('https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=2000&q=80');"></div>
+          <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=2000&q=80');"></div>
+          <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1600607687644-c7f34b1e6f50?auto=format&fit=crop&w=2000&q=80');"></div>
+          <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=2000&q=80');"></div>
+          <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=2000&q=80');"></div>
+          <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=2000&q=80');"></div>
+          <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=2000&q=80');"></div>
+          <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1448630360428-65456885c650?auto=format&fit=crop&w=2000&q=80');"></div>
+          <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=2000&q=80');"></div>
+          <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1460317442991-0ec209397118?auto=format&fit=crop&w=2000&q=80');"></div>
         </div>
         <div class="hero-content">
           <h1>Building Wealth.<br>Creating Legacy.</h1>
@@ -53,6 +60,13 @@
             <button class="dot active" data-slide="0" type="button" aria-label="Slide 1"></button>
             <button class="dot" data-slide="1" type="button" aria-label="Slide 2"></button>
             <button class="dot" data-slide="2" type="button" aria-label="Slide 3"></button>
+            <button class="dot" data-slide="3" type="button" aria-label="Slide 4"></button>
+            <button class="dot" data-slide="4" type="button" aria-label="Slide 5"></button>
+            <button class="dot" data-slide="5" type="button" aria-label="Slide 6"></button>
+            <button class="dot" data-slide="6" type="button" aria-label="Slide 7"></button>
+            <button class="dot" data-slide="7" type="button" aria-label="Slide 8"></button>
+            <button class="dot" data-slide="8" type="button" aria-label="Slide 9"></button>
+            <button class="dot" data-slide="9" type="button" aria-label="Slide 10"></button>
           </div>
         </div>
       </section>
@@ -330,7 +344,7 @@
     }
 
     function setHeroSlide(index) {
-      currentHeroSlide = index % heroSlides.length;
+      currentHeroSlide = ((index % heroSlides.length) + heroSlides.length) % heroSlides.length;
       heroSlides.forEach((slide, slideIndex) => {
         slide.classList.toggle("active", slideIndex === currentHeroSlide);
       });
