@@ -1,0 +1,16 @@
+<svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="logoBlue" x1="11" y1="8" x2="45" y2="47" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4DD5FF"/>
+      <stop offset="1" stop-color="#1687FF"/>
+    </linearGradient>
+  </defs>
+  <rect width="56" height="56" rx="14" fill="#071A34"/>
+  <path d="M16 12H38L43 20H21L16 12Z" fill="url(#logoBlue)"/>
+  <path d="M12 20L17 12L33 12L28 20H12Z" fill="url(#logoBlue)" opacity="0.92"/>
+  <path d="M11 26L20 21H29L24 29H15L11 26Z" fill="url(#logoBlue)" opacity="0.94"/>
+  <path d="M16 34L25 29H34L29 37H20L16 34Z" fill="url(#logoBlue)" opacity="0.96"/>
+  <path d="M22 43L31 38H40L35 46H26L22 43Z" fill="url(#logoBlue)"/>
+  <path d="M40 20L45 28L39 43H31L36 27L31 20H40Z" fill="url(#logoBlue)"/>
+  <path d="M28 20L33 28L27 36H19L25 28L20 20H28Z" fill="url(#logoBlue)"/>
+</svg>
