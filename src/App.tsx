@@ -8,7 +8,9 @@ import MarketPage from './pages/MarketPage'
 import AdminPage from './pages/AdminPage'
 import ContactPage from './pages/ContactPage'
 import HomePage from './pages/HomePage'
+import LaZipMarketPage from './pages/LaZipMarketPage'
 import OpportunitiesPage from './pages/OpportunitiesPage'
+import PropertyDetailPage from './pages/PropertyDetailPage'
 import ServicesPage from './pages/ServicesPage'
 import type { Language, SiteRuntimeConfig } from './types'
 
@@ -124,6 +126,11 @@ function App() {
     >
       <Routes>
         <Route path="/" element={<HomePage content={content} />} />
+        <Route path="/la-zip-market" element={<LaZipMarketPage language={language} />} />
+        <Route
+          path="/la-zip-market/:zipCode/:propertyId"
+          element={<PropertyDetailPage language={language} />}
+        />
         <Route path="/opportunities" element={<OpportunitiesPage content={content} />} />
         <Route path="/services" element={<ServicesPage content={content} />} />
         <Route path="/market" element={<MarketPage content={content} />} />
