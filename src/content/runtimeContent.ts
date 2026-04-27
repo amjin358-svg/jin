@@ -15,17 +15,17 @@ const fallbackConfig: SiteRuntimeConfig = {
   brand: {
     name: 'BlueRock Capital Group',
     tagline: text(
-      'Cross-border luxury property advisory for Taiwanese investors in Southern California',
-      '專為台灣投資人提供南加州精品不動產跨境顧問服務',
+      'Private capital and luxury property advisory for Taiwanese investors in Southern California',
+      '專注台灣投資人配置南加州資產的跨境精品不動產顧問',
     ),
     legalName: 'BlueRock Capital Group',
     logoMark: 'BR',
   },
   contact: {
     email: 'invest@bluerockcapitalgroup.com',
-    phone: '+1 (949) 629-8808',
-    whatsapp: '+1 (949) 629-8808',
-    line: '@bluerockcapital',
+    phone: '+1 (949) 555-0188',
+    whatsapp: '+1 949 555 0188',
+    line: '@bluerockcapitalgroup',
     location: text('Orange County and Greater Los Angeles, California', '加州橘郡與大洛杉磯地區'),
   },
   seo: {
@@ -63,18 +63,18 @@ const fallbackConfig: SiteRuntimeConfig = {
   },
   hero: {
     en: {
-      eyebrow: 'Bilingual acquisition platform for Taiwanese capital entering Southern California',
-      title: 'Acquire prestige California real estate with institutional clarity.',
-      highlight: 'Luxury homes, disciplined underwriting, cross-border execution.',
+      eyebrow: 'BlueRock Capital Group | private advisory for cross-border capital entering Southern California',
+      title: 'Position Southern California property with family-office discipline.',
+      highlight: 'Prestige residences, capital preservation, and cross-border execution.',
       description:
-        'We help Taiwanese families, founders, and private investors buy Southern California properties through a premium advisory model that combines market selection, transaction coordination, and post-close stewardship.',
+        'BlueRock Capital Group advises Taiwanese principals, entrepreneurs, and family capital on acquiring luxury Southern California residences through a discreet model that combines market selection, negotiation strategy, transaction management, and post-close stewardship.',
     },
     zh: {
-      eyebrow: '專為台灣資本進入南加州而設計的雙語收購平台',
-      title: '用機構級判斷，配置具地位感的加州不動產。',
-      highlight: '精品住宅、嚴謹投資評估、跨境成交執行。',
+      eyebrow: 'BlueRock Capital Group | 專為台灣資本進入南加州而設計的私密顧問服務',
+      title: '以家族辦公室等級的紀律，配置南加州核心不動產。',
+      highlight: '地位型住宅、資產保全、跨境執行整合。',
       description:
-        '我們協助台灣家庭、企業主與高資產投資人，以精品顧問模式進入南加州房地產市場，整合區域選擇、交易協調與交屋後資產管理。',
+        'BlueRock Capital Group 協助台灣企業主、高資產家庭與私人資本，以低調而高效的顧問模式進入南加州不動產市場，整合區域選擇、談判策略、成交協調與交屋後資產管理。',
     },
   },
   marketWatch: [

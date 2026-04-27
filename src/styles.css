@@ -389,6 +389,15 @@ textarea {
   font-size: 1.25rem;
 }
 
+.hero-note {
+  max-width: 32rem;
+  margin-top: 1.2rem;
+  padding-left: 1rem;
+  border-left: 2px solid rgba(243, 215, 164, 0.32);
+  color: rgba(246, 242, 234, 0.7);
+  font-size: 0.98rem;
+}
+
 .section-intro {
   display: flex;
   justify-content: space-between;
@@ -548,6 +557,10 @@ textarea {
 
 .listing-angle {
   color: rgba(246, 242, 234, 0.86);
+}
+
+.listing-summary {
+  line-height: 1.65;
 }
 
 .listing-details {

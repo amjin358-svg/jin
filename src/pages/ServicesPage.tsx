@@ -29,7 +29,12 @@ function ServicesPage({ content }: ServicesPageProps) {
             ))}
           </div>
 
-          <aside className="services-visual">
+          <aside
+            className="services-visual"
+            style={{
+              backgroundImage: `linear-gradient(180deg, rgba(9, 11, 15, 0.25), rgba(9, 11, 15, 0.9)), url("${content.assets.serviceImage}")`,
+            }}
+          >
             <div>
               <div className="section-label">{content.services.advisoryTitle}</div>
               <h3>{content.services.advisoryHeading}</h3>

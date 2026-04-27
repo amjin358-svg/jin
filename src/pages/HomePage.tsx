@@ -39,7 +39,12 @@ function HomePage({ content }: HomePageProps) {
         </div>
 
         <aside className="hero-panel">
-          <div className="hero-visual">
+          <div
+            className="hero-visual"
+            style={{
+              backgroundImage: `linear-gradient(180deg, rgba(9, 11, 15, 0.05), rgba(9, 11, 15, 0.78)), url("${content.assets.heroImage}")`,
+            }}
+          >
             <div className="floating-card">
               <p>{content.home.hero.heroCardTop.label}</p>
               <strong>{content.home.hero.heroCardTop.value}</strong>
