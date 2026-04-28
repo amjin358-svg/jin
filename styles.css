@@ -28,6 +28,50 @@ body {
   padding: 0 12px 24px;
 }
 
+.newsletter-bar {
+  margin-top: 12px;
+  padding: 12px 16px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 16px;
+}
+
+.newsletter-bar-copy {
+  flex: 1 1 280px;
+  min-width: 0;
+}
+
+.newsletter-bar-copy h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #eaf4ff;
+}
+
+.newsletter-bar-copy p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #9eb9dd;
+  line-height: 1.45;
+}
+
+.newsletter-bar-form {
+  flex: 1 1 320px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.newsletter-bar-form input {
+  flex: 1 1 200px;
+  min-width: 180px;
+  max-width: 320px;
+}
+
 main {
   display: flex;
   flex-direction: column;
@@ -41,9 +85,6 @@ main > .cards-grid {
   order: 4;
 }
 
-main > .bottom-panels {
-  order: 5;
-}
 
 .glass {
   background: linear-gradient(145deg, rgba(17, 37, 64, 0.9), rgba(11, 27, 47, 0.92));
@@ -2048,6 +2089,19 @@ select {
 }
 
 @media (max-width: 760px) {
+  .newsletter-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .newsletter-bar-form {
+    justify-content: stretch;
+  }
+
+  .newsletter-bar-form input {
+    max-width: none;
+  }
+
   .property-content-grid {
     grid-template-columns: 1fr;
   }
