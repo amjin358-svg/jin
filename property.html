@@ -90,16 +90,18 @@
       </section>
     </main>
   </div>
+  <script src="./property-helpers.js"></script>
   <script>
     const params = new URLSearchParams(window.location.search);
-    const name = params.get("name");
+    const name = params.get("title") || params.get("name");
     const price = params.get("price");
     const zip = params.get("zip");
     const beds = params.get("beds");
     const baths = params.get("baths");
     const sqft = params.get("sqft");
-    const tag = params.get("tag");
+    const tag = params.get("type") || params.get("tag");
     const image = params.get("image");
+    const locationLabel = params.get("location");
     const lot = params.get("lot");
     const built = params.get("built");
 
@@ -122,10 +124,33 @@
     const mainImage = document.querySelector(".property-main-image");
     const thumbs = document.querySelectorAll(".property-thumb-row .property-thumb");
 
-    if (name && detailName) detailName.textContent = name;
+    function safeDecode(value) {
+      if (!value) return value;
+      try {
+        return decodeURIComponent(value.replace(/\+/g, " "));
+      } catch {
+        return value;
+      }
+    }
+
+    if (name && detailName) detailName.textContent = safeDecode(name);
     if (price && detailPrice) detailPrice.textContent = formatPrice(price);
-    if (zip && detailLocation) detailLocation.textContent = "ZIP " + zip + ", California";
-    if (tag && detailTag) detailTag.textContent = tag;
+    if (detailLocation) {
+      if (locationLabel) {
+        detailLocation.textContent = safeDecode(locationLabel);
+      } else if (zip) {
+        detailLocation.textContent = "ZIP " + zip + ", California";
+      }
+    }
+    if (tag && detailTag) {
+      const tagMap = {
+        new: "New Construction",
+        resale: "Resale",
+        featured: "Featured",
+        commercial: "Commercial"
+      };
+      detailTag.textContent = tagMap[tag.toLowerCase()] || tag;
+    }
     if (beds && detailBeds) detailBeds.textContent = beds;
     if (baths && detailBaths) detailBaths.textContent = baths;
     if (sqft && detailSqft) detailSqft.textContent = Number(sqft).toLocaleString("en-US");
@@ -138,13 +163,14 @@
     const capRate = ((annualIncome - annualExpense) / p) * 100;
     if (detailYield) detailYield.textContent = capRate.toFixed(1) + "%";
 
-    if (image && mainImage) {
-      mainImage.style.backgroundImage = "url('" + image + "')";
-      thumbs.forEach((thumb, idx) => {
-        const delta = idx * 40;
-        thumb.style.backgroundImage = "url('" + image + "&sat=" + (100 + delta) + "')";
-      });
+    const gallery = propertyGalleryForQuery(params);
+    if (mainImage && gallery.length) {
+      mainImage.style.backgroundImage = "url('" + gallery[0] + "')";
     }
+    thumbs.forEach((thumb, idx) => {
+      const src = gallery[idx + 1] || gallery[idx] || gallery[0];
+      if (src) thumb.style.backgroundImage = "url('" + src + "')";
+    });
 
     const goEstimate = document.getElementById("goEstimate");
     if (goEstimate) {
