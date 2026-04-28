@@ -189,18 +189,6 @@
           <span class="ops-card-cta">開啟後台 →</span>
         </a>
         <article class="panel ops-card">
-          <h3>每月成交漏斗</h3>
-          <p>快速輸入月度數據，自動計算各階段轉換率。</p>
-          <div class="funnel-grid">
-            <label>Leads<input id="funnelLeads" type="number" min="0" value="320"></label>
-            <label>Appointments<input id="funnelAppointments" type="number" min="0" value="120"></label>
-            <label>Offers<input id="funnelOffers" type="number" min="0" value="48"></label>
-            <label>Closings<input id="funnelClosings" type="number" min="0" value="21"></label>
-          </div>
-          <button class="btn-primary" id="funnelCalcBtn" type="button">更新漏斗</button>
-          <p class="tool-result integration-result" id="funnelResultText">Leads→Appointment: --｜Offer→Close: --</p>
-        </article>
-        <article class="panel ops-card">
           <h3>房仲招募頁</h3>
           <p>提供品牌優勢、獎酬制度、加入流程與線上履歷投遞入口。</p>
         </article>
@@ -392,12 +380,6 @@
     const paymentDesc = document.getElementById("paymentDesc");
     const paymentCreateBtn = document.getElementById("paymentCreateBtn");
     const paymentResultText = document.getElementById("paymentResultText");
-    const funnelLeads = document.getElementById("funnelLeads");
-    const funnelAppointments = document.getElementById("funnelAppointments");
-    const funnelOffers = document.getElementById("funnelOffers");
-    const funnelClosings = document.getElementById("funnelClosings");
-    const funnelCalcBtn = document.getElementById("funnelCalcBtn");
-    const funnelResultText = document.getElementById("funnelResultText");
 
     function setHeroSlide(index) {
       currentHeroSlide = ((index % heroSlides.length) + heroSlides.length) % heroSlides.length;
@@ -530,28 +512,8 @@
       }
     }
 
-    function updateFunnel() {
-      const leads = Number(funnelLeads.value) || 0;
-      const appointments = Number(funnelAppointments.value) || 0;
-      const offers = Number(funnelOffers.value) || 0;
-      const closings = Number(funnelClosings.value) || 0;
-      if (!leads || !appointments || !offers || !closings) {
-        funnelResultText.textContent = "請輸入完整漏斗數據。";
-        return;
-      }
-      const leadToAppt = (appointments / leads) * 100;
-      const apptToOffer = (offers / appointments) * 100;
-      const offerToClose = (closings / offers) * 100;
-      funnelResultText.textContent =
-        "Leads→Appointment: " + leadToAppt.toFixed(1) +
-        "% ｜ Appointment→Offer: " + apptToOffer.toFixed(1) +
-        "% ｜ Offer→Close: " + offerToClose.toFixed(1) + "%";
-    }
-
     mlsFetchBtn.addEventListener("click", fetchMlsListings);
     paymentCreateBtn.addEventListener("click", createPaymentLink);
-    funnelCalcBtn.addEventListener("click", updateFunnel);
-    updateFunnel();
 
     setInterval(() => {
       setHeroSlide((currentHeroSlide + 1) % heroSlides.length);
