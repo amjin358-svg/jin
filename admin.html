@@ -29,6 +29,7 @@
         <p class="admin-sidebar-title">模組</p>
         <a class="admin-nav-link active" href="#lead-automation">客戶自動開發系統</a>
         <a class="admin-nav-link" href="#property-management">租賃代管系統</a>
+        <a class="admin-nav-link" href="#investor-crm">投資人 CRM 後台</a>
         <a class="admin-nav-link" href="./index.html#ops-suite">其他營運模組（首頁）</a>
       </aside>
 
@@ -179,13 +180,85 @@
             <p class="admin-hint">上線時可與帳務與工單 API 或第三方物業系統整合。</p>
           </article>
         </section>
+
+        <section class="glass admin-section" id="investor-crm" data-animate>
+          <h1 class="admin-section-title">投資人 CRM 後台</h1>
+          <p class="admin-section-lead">集中管理投資人檔案、投資標的、回報與配息、以及溝通紀錄。以下為後台預覽介面。</p>
+
+          <div class="admin-subgrid">
+            <article class="panel admin-tile">
+              <h2>投資人概況</h2>
+              <p class="admin-metric">活躍投資人 <strong>86</strong> 位</p>
+              <p class="admin-metric">本月待配息 <strong>12</strong> 筆</p>
+              <p class="admin-metric">平均持有標的 <strong>2.4</strong> 件</p>
+            </article>
+            <article class="panel admin-tile">
+              <h2>常用操作</h2>
+              <ul class="admin-checklist">
+                <li><span>新增 / 編輯投資人檔案</span></li>
+                <li><span>登錄投資標的與出資比例</span></li>
+                <li><span>排程配息與對帳</span></li>
+                <li><span>匯出投資人報表</span></li>
+              </ul>
+            </article>
+          </div>
+
+          <article class="panel admin-tile admin-tile-wide">
+            <h2>投資人與標的一覽</h2>
+            <div class="admin-table-wrap">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>投資人</th>
+                    <th>標的 / 專案</th>
+                    <th>投入金額</th>
+                    <th>預估年化</th>
+                    <th>上次聯繫</th>
+                    <th>狀態</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>H. **</td>
+                    <td>LA Multifamily A</td>
+                    <td>$500,000</td>
+                    <td>8.2%</td>
+                    <td>4/20</td>
+                    <td><span class="admin-pill ok">持續</span></td>
+                  </tr>
+                  <tr>
+                    <td>M. **</td>
+                    <td>Retail Fund Q1</td>
+                    <td>$120,000</td>
+                    <td>7.5%</td>
+                    <td>4/15</td>
+                    <td><span class="admin-pill">持續</span></td>
+                  </tr>
+                  <tr>
+                    <td>R. **</td>
+                    <td>—</td>
+                    <td>—</td>
+                    <td>—</td>
+                    <td>4/25</td>
+                    <td><span class="admin-pill warn">洽談中</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="admin-hint">上線時可與帳務、法遵與既有 CRM 或試算表匯出整合。</p>
+          </article>
+        </section>
       </main>
     </div>
   </div>
 
   <script>
     const adminNav = document.querySelectorAll(".admin-nav-link");
-    const hashTargets = { "#lead-automation": "lead-automation", "#property-management": "property-management" };
+    const hashTargets = {
+      "#lead-automation": "lead-automation",
+      "#property-management": "property-management",
+      "#investor-crm": "investor-crm"
+    };
 
     function setActiveByHash() {
       const h = location.hash;
@@ -204,12 +277,12 @@
         }
       });
     });
-    if (location.hash === "#lead-automation" || location.hash === "#property-management") {
+    if (hashTargets[location.hash]) {
       document.getElementById(hashTargets[location.hash])?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
     setActiveByHash();
     window.addEventListener("hashchange", () => {
-      if (location.hash === "#lead-automation" || location.hash === "#property-management") {
+      if (hashTargets[location.hash]) {
         document.getElementById(hashTargets[location.hash])?.scrollIntoView({ behavior: "smooth", block: "start" });
       }
       setActiveByHash();
