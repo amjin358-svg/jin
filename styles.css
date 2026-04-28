@@ -455,6 +455,10 @@ main > .bottom-panels {
   min-width: 0;
 }
 
+.admin-section + .admin-section {
+  margin-top: 14px;
+}
+
 .admin-section {
   padding: 20px;
 }
@@ -472,6 +476,18 @@ main > .bottom-panels {
   font-size: 14px;
   line-height: 1.6;
   max-width: 720px;
+}
+
+.admin-metric {
+  margin: 8px 0 0;
+  font-size: 14px;
+  color: #a7c2e7;
+}
+
+.admin-metric strong {
+  color: #7cd0ff;
+  font-weight: 700;
+  margin-left: 4px;
 }
 
 .admin-subgrid {

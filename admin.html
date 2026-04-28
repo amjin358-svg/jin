@@ -28,6 +28,7 @@
       <aside class="admin-sidebar glass" data-animate>
         <p class="admin-sidebar-title">模組</p>
         <a class="admin-nav-link active" href="#lead-automation">客戶自動開發系統</a>
+        <a class="admin-nav-link" href="#property-management">租賃代管系統</a>
         <a class="admin-nav-link" href="./index.html#ops-suite">其他營運模組（首頁）</a>
       </aside>
 
@@ -110,12 +111,91 @@
             <p class="admin-hint">實際上線時可串接您指定的 CRM 或儲存 API。</p>
           </article>
         </section>
+
+        <section class="glass admin-section" id="property-management" data-animate>
+          <h1 class="admin-section-title">租賃代管系統</h1>
+          <p class="admin-section-lead">招租、租約、收帳、維修工單與房東報表集中管理。以下為後台預覽介面。</p>
+
+          <div class="admin-subgrid">
+            <article class="panel admin-tile">
+              <h2>管轄物件</h2>
+              <p class="admin-metric">活躍租約 <strong>24</strong> 戶</p>
+              <p class="admin-metric">待招租 <strong>3</strong> 戶</p>
+              <p class="admin-metric">本月到期 <strong>2</strong> 戶</p>
+            </article>
+            <article class="panel admin-tile">
+              <h2>流程捷徑</h2>
+              <ul class="admin-checklist">
+                <li><span>新刊登招租</span></li>
+                <li><span>產生租賃合約範本</span></li>
+                <li><span>建維修工單</span></li>
+                <li><span>匯出月報表（房東）</span></li>
+              </ul>
+            </article>
+          </div>
+
+          <article class="panel admin-tile admin-tile-wide">
+            <h2>代管物件與帳務概況</h2>
+            <div class="admin-table-wrap">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>物件 / 單位</th>
+                    <th>房客</th>
+                    <th>月租</th>
+                    <th>下期收租</th>
+                    <th>工單</th>
+                    <th>狀態</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Ocean Ave #4B</td>
+                    <td>K. **</td>
+                    <td>$3,200</td>
+                    <td>5/1</td>
+                    <td>0</td>
+                    <td><span class="admin-pill ok">在租</span></td>
+                  </tr>
+                  <tr>
+                    <td>Maple St Duplex A</td>
+                    <td>—</td>
+                    <td>—</td>
+                    <td>—</td>
+                    <td>1</td>
+                    <td><span class="admin-pill warn">待租</span></td>
+                  </tr>
+                  <tr>
+                    <td>Pine Ln #12</td>
+                    <td>L. **</td>
+                    <td>$2,450</td>
+                    <td>5/1</td>
+                    <td>1</td>
+                    <td><span class="admin-pill">在租</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="admin-hint">上線時可與帳務與工單 API 或第三方物業系統整合。</p>
+          </article>
+        </section>
       </main>
     </div>
   </div>
 
   <script>
     const adminNav = document.querySelectorAll(".admin-nav-link");
+    const hashTargets = { "#lead-automation": "lead-automation", "#property-management": "property-management" };
+
+    function setActiveByHash() {
+      const h = location.hash;
+      if (!h || !hashTargets[h]) return;
+      adminNav.forEach((l) => {
+        if (l.getAttribute("href") === h) l.classList.add("active");
+        else if (l.getAttribute("href")?.startsWith("#")) l.classList.remove("active");
+      });
+    }
+
     adminNav.forEach((link) => {
       link.addEventListener("click", () => {
         if (link.getAttribute("href")?.startsWith("#")) {
@@ -124,9 +204,16 @@
         }
       });
     });
-    if (location.hash === "#lead-automation") {
-      document.getElementById("lead-automation")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (location.hash === "#lead-automation" || location.hash === "#property-management") {
+      document.getElementById(hashTargets[location.hash])?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
+    setActiveByHash();
+    window.addEventListener("hashchange", () => {
+      if (location.hash === "#lead-automation" || location.hash === "#property-management") {
+        document.getElementById(hashTargets[location.hash])?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+      setActiveByHash();
+    });
   </script>
 </body>
 </html>
