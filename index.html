@@ -29,17 +29,20 @@
         <a href="#">COMPANY</a>
         <a href="#">RESOURCES</a>
       </nav>
-      <button class="cta-small">Client / Investor Login</button>
+      <div class="topbar-actions">
+        <button class="lang-toggle" type="button" id="langToggle" aria-label="Toggle language">中 / EN</button>
+        <button class="cta-small" data-i18n="topbar.login">Client / Investor Login</button>
+      </div>
     </header>
 
       <section class="newsletter-bar glass" data-animate>
         <div class="newsletter-bar-copy">
-          <h3>Get Market Updates</h3>
-          <p>Stay ahead with exclusive market insights and investment opportunities.</p>
+          <h3 data-i18n="newsletter.title">Get Market Updates</h3>
+          <p data-i18n="newsletter.desc">Stay ahead with exclusive market insights and investment opportunities.</p>
         </div>
         <div class="newsletter-bar-form">
-          <input type="email" placeholder="Enter your email" autocomplete="email" aria-label="Email for market updates">
-          <button class="btn-primary" type="button">Subscribe</button>
+          <input type="email" data-i18n-placeholder="newsletter.email" placeholder="Enter your email" autocomplete="email" aria-label="Email for market updates">
+          <button class="btn-primary" type="button" data-i18n="newsletter.subscribe">Subscribe</button>
         </div>
       </section>
 
@@ -58,15 +61,15 @@
           <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&crop=entropy&w=2400&h=1080&q=95');"></div>
         </div>
         <div class="hero-content">
-          <p class="hero-kicker">線上熱銷</p>
+          <p class="hero-kicker" data-i18n="hero.kicker">線上熱銷</p>
           <h1>Building Wealth.<br>Creating Legacy.</h1>
           <p>
             Your trusted partner for real estate, investments,<br>
             and property management in Los Angeles.
           </p>
           <div class="hero-actions">
-            <button class="btn-primary">Explore Properties</button>
-            <button class="btn-ghost">Watch Our Story</button>
+            <button class="btn-primary" data-i18n="hero.explore">Explore Properties</button>
+            <button class="btn-ghost" data-i18n="hero.story">Watch Our Story</button>
           </div>
           <div class="hero-dots" id="heroDots">
             <button class="dot active" data-slide="0" type="button" aria-label="Slide 1"></button>
@@ -85,12 +88,12 @@
 
       <section class="search-panel glass" data-animate>
         <div class="tabs">
-          <button class="active">Buy</button>
-          <button>Rent</button>
-          <button>Investments</button>
+          <button class="active" data-i18n="tabs.buy">Buy</button>
+          <button data-i18n="tabs.rent">Rent</button>
+          <button data-i18n="tabs.invest">Investments</button>
         </div>
         <div class="filters">
-          <input placeholder="City, Neighborhood, Address or ZIP">
+          <input data-i18n-placeholder="search.location" placeholder="City, Neighborhood, Address or ZIP">
           <select>
             <option>Home Type</option>
             <option>Houses</option>
@@ -139,56 +142,56 @@
             <option>3+</option>
             <option>4+</option>
           </select>
-          <button class="btn-primary">Search</button>
+          <button class="btn-primary" data-i18n="search.button">Search</button>
         </div>
       </section>
 
       <section class="service-hub" data-animate>
         <article class="panel service-card">
           <h3>Live MLS Listings</h3>
-          <p>房源平台</p>
+          <p data-i18n="services.listings">房源平台</p>
         </article>
         <article class="panel service-card">
           <h3>Map Search</h3>
-          <p>地圖畫區搜尋</p>
+          <p data-i18n="services.map">地圖畫區搜尋</p>
         </article>
         <article class="panel service-card">
           <h3>Book Showing / Consultation</h3>
-          <p>預約帶看</p>
+          <p data-i18n="services.booking">預約帶看</p>
         </article>
         <article class="panel service-card">
           <h3>Client Portal</h3>
-          <p>客戶入口</p>
+          <p data-i18n="services.portal">客戶入口</p>
         </article>
       </section>
 
       <section class="integration-hub glass" data-animate>
         <article class="panel integration-card">
-          <h3>1) Real MLS Integration</h3>
-          <p>CRMLS / MLS Grid</p>
+          <h3 data-i18n="integration.mlsTitle">1) Real MLS Integration</h3>
+          <p data-i18n="integration.mlsSub">CRMLS / MLS Grid</p>
           <div class="integration-grid">
-            <label>ZIP CODE<input id="mlsZipInput" value="90210"></label>
-            <label>Limit<input id="mlsLimitInput" type="number" min="1" max="20" value="6"></label>
+            <label data-i18n="integration.zip">ZIP CODE<input id="mlsZipInput" value="90210"></label>
+            <label data-i18n="integration.limit">Limit<input id="mlsLimitInput" type="number" min="1" max="20" value="6"></label>
           </div>
-          <button class="btn-primary" id="mlsFetchBtn" type="button">Fetch Live MLS</button>
+          <button class="btn-primary" id="mlsFetchBtn" type="button" data-i18n="integration.fetch">Fetch Live MLS</button>
           <div class="tool-result integration-result" id="mlsResultText">尚未查詢 MLS。</div>
           <div class="integration-list" id="mlsListings"></div>
         </article>
         <article class="panel integration-card">
-          <h3>2) Payment System</h3>
-          <p>佣金、管理費、投資款</p>
+          <h3 data-i18n="integration.payTitle">2) Payment System</h3>
+          <p data-i18n="integration.paySub">佣金、管理費、投資款</p>
           <div class="integration-grid">
-            <label>Payment Type
+            <label data-i18n="integration.payType">Payment Type
               <select id="paymentType">
                 <option value="commission">Commission</option>
                 <option value="management_fee">Management Fee</option>
                 <option value="investment_fund">Investment Fund</option>
               </select>
             </label>
-            <label>Amount (USD)<input id="paymentAmount" type="number" min="1" value="2500"></label>
+            <label data-i18n="integration.amount">Amount (USD)<input id="paymentAmount" type="number" min="1" value="2500"></label>
           </div>
-          <label>Description<input id="paymentDesc" value="BlueRock service payment"></label>
-          <button class="btn-primary" id="paymentCreateBtn" type="button">Create Payment Link</button>
+          <label data-i18n="integration.desc">Description<input id="paymentDesc" value="BlueRock service payment"></label>
+          <button class="btn-primary" id="paymentCreateBtn" type="button" data-i18n="integration.create">Create Payment Link</button>
           <div class="tool-result integration-result" id="paymentResultText">尚未建立付款。</div>
         </article>
       </section>
@@ -196,32 +199,32 @@
       <section class="ops-suite glass" id="ops-suite" data-animate>
         <a class="panel ops-card ops-card-link" href="./admin.html#lead-automation">
           <h3>客戶自動開發系統</h3>
-          <p>已移至後台管理。整合網站表單、LINE/Email、廣告名單，自動分派與追蹤進度。</p>
-          <span class="ops-card-cta">開啟後台 →</span>
+          <p data-i18n="ops.lead">已移至後台管理。整合網站表單、LINE/Email、廣告名單，自動分派與追蹤進度。</p>
+          <span class="ops-card-cta" data-i18n="ops.openAdmin">開啟後台 →</span>
         </a>
         <article class="panel ops-card">
           <h3>房仲招募頁</h3>
-          <p>提供品牌優勢、獎酬制度、加入流程與線上履歷投遞入口。</p>
+          <p data-i18n="ops.recruit">提供品牌優勢、獎酬制度、加入流程與線上履歷投遞入口。</p>
         </article>
         <a class="panel ops-card ops-card-link" href="./admin.html#property-management">
           <h3>租賃代管系統</h3>
-          <p>已移至後台管理。涵蓋招租、合約、收租、維修工單與房東報表。</p>
-          <span class="ops-card-cta">開啟後台 →</span>
+          <p data-i18n="ops.rental">已移至後台管理。涵蓋招租、合約、收租、維修工單與房東報表。</p>
+          <span class="ops-card-cta" data-i18n="ops.openAdmin">開啟後台 →</span>
         </a>
         <a class="panel ops-card ops-card-link" href="./admin.html#investor-crm">
           <h3>投資人 CRM 後台</h3>
-          <p>已移至後台管理。投資人檔案、投資組合、回報率、配息與溝通紀錄。</p>
-          <span class="ops-card-cta">開啟後台 →</span>
+          <p data-i18n="ops.investor">已移至後台管理。投資人檔案、投資組合、回報率、配息與溝通紀錄。</p>
+          <span class="ops-card-cta" data-i18n="ops.openAdmin">開啟後台 →</span>
         </a>
       </section>
 
       <section class="invest-tools glass" data-animate>
         <article class="panel tool-card zip-tool">
-          <h3>ZIP CODE 地圖搜房</h3>
-          <p>輸入美國 ZIP CODE，快速定位區域物件與均價帶。</p>
+          <h3 data-i18n="tools.zipTitle">ZIP CODE 地圖搜房</h3>
+          <p data-i18n="tools.zipDesc">輸入美國 ZIP CODE，快速定位區域物件與均價帶。</p>
           <div class="tool-controls">
             <input id="zipSearchInput" placeholder="例如 90001 / 90210 / 94107">
-            <button class="btn-primary" id="zipSearchBtn" type="button">搜尋 ZIP</button>
+            <button class="btn-primary" id="zipSearchBtn" type="button" data-i18n="tools.zipBtn">搜尋 ZIP</button>
           </div>
           <div class="zip-map-sim" id="zipMapSim">
             <button class="zip-node" data-zip="90001" style="left:55%;top:62%;">90001</button>
@@ -234,28 +237,28 @@
         </article>
 
         <article class="panel tool-card roi-tool">
-          <h3>投報率估算</h3>
-          <p>以租金、總價、持有成本估算年化投報率。</p>
+          <h3 data-i18n="tools.roiTitle">投報率估算</h3>
+          <p data-i18n="tools.roiDesc">以租金、總價、持有成本估算年化投報率。</p>
           <div class="tool-grid">
             <label>物件總價<input id="roiPrice" type="number" value="1500000"></label>
             <label>月租收入<input id="roiRent" type="number" value="6200"></label>
             <label>月持有成本<input id="roiCost" type="number" value="1400"></label>
             <label>空置率(%)<input id="roiVacancy" type="number" value="5"></label>
           </div>
-          <button class="btn-primary" id="roiCalcBtn" type="button">計算投報率</button>
+          <button class="btn-primary" id="roiCalcBtn" type="button" data-i18n="tools.roiBtn">計算投報率</button>
           <p class="tool-result" id="roiResultText">預估年化投報率：--</p>
         </article>
 
         <article class="panel tool-card ai-tool">
-          <h3>AI 估價</h3>
-          <p>輸入地址與坪數，取得 AI 估算價格區間。</p>
+          <h3 data-i18n="tools.aiTitle">AI 估價</h3>
+          <p data-i18n="tools.aiDesc">輸入地址與坪數，取得 AI 估算價格區間。</p>
           <div class="tool-grid">
             <label>地址<input id="aiAddress" value="123 Ocean Ave, Santa Monica, CA"></label>
             <label>建坪 / sqft<input id="aiSqft" type="number" value="2450"></label>
             <label>屋齡(年)<input id="aiAge" type="number" value="8"></label>
             <label>ZIP CODE<input id="aiZip" value="90401"></label>
           </div>
-          <button class="btn-primary" id="aiEstimateBtn" type="button">產生 AI 估價</button>
+          <button class="btn-primary" id="aiEstimateBtn" type="button" data-i18n="tools.aiBtn">產生 AI 估價</button>
           <p class="tool-result" id="aiResultText">AI 估價：--</p>
         </article>
       </section>
@@ -354,7 +357,103 @@
     </main>
   </div>
 
+  <script src="./i18n.js"></script>
   <script>
+    const i18nConfig = {
+      langToggleId: "langToggle",
+      translations: {
+        zh: {
+          "topbar.login": "客戶 / 投資人登入",
+          "newsletter.title": "市場快訊電子報",
+          "newsletter.desc": "掌握專屬市場洞察與投資機會。",
+          "newsletter.email": "請輸入電子郵件",
+          "newsletter.subscribe": "訂閱",
+          "hero.kicker": "線上熱銷",
+          "hero.explore": "探索物件",
+          "hero.story": "觀看品牌故事",
+          "tabs.buy": "買屋",
+          "tabs.rent": "租屋",
+          "tabs.invest": "投資",
+          "search.location": "城市、社區、地址或 ZIP",
+          "search.button": "搜尋",
+          "services.listings": "房源平台",
+          "services.map": "地圖畫區搜尋",
+          "services.booking": "預約帶看",
+          "services.portal": "客戶入口",
+          "integration.mlsTitle": "1) MLS 即時串接",
+          "integration.mlsSub": "CRMLS / MLS Grid",
+          "integration.zip": "ZIP CODE",
+          "integration.limit": "筆數上限",
+          "integration.fetch": "查詢 MLS",
+          "integration.payTitle": "2) 收款系統",
+          "integration.paySub": "佣金、管理費、投資款",
+          "integration.payType": "付款類型",
+          "integration.amount": "金額 (USD)",
+          "integration.desc": "說明",
+          "integration.create": "建立付款連結",
+          "ops.lead": "已移至後台管理。整合網站表單、LINE/Email、廣告名單，自動分派與追蹤進度。",
+          "ops.rental": "已移至後台管理。涵蓋招租、合約、收租、維修工單與房東報表。",
+          "ops.investor": "已移至後台管理。投資人檔案、投資組合、回報率、配息與溝通紀錄。",
+          "ops.recruit": "提供品牌優勢、獎酬制度、加入流程與線上履歷投遞入口。",
+          "ops.openAdmin": "開啟後台 →",
+          "tools.zipTitle": "ZIP CODE 地圖搜房",
+          "tools.zipDesc": "輸入美國 ZIP CODE，快速定位區域物件與均價帶。",
+          "tools.zipBtn": "搜尋 ZIP",
+          "tools.roiTitle": "投報率估算",
+          "tools.roiDesc": "以租金、總價、持有成本估算年化投報率。",
+          "tools.roiBtn": "計算投報率",
+          "tools.aiTitle": "AI 估價",
+          "tools.aiDesc": "輸入地址與坪數，取得 AI 估算價格區間。",
+          "tools.aiBtn": "產生 AI 估價"
+        },
+        en: {
+          "topbar.login": "Client / Investor Login",
+          "newsletter.title": "Get Market Updates",
+          "newsletter.desc": "Stay ahead with exclusive market insights and investment opportunities.",
+          "newsletter.email": "Enter your email",
+          "newsletter.subscribe": "Subscribe",
+          "hero.kicker": "Trending Now",
+          "hero.explore": "Explore Properties",
+          "hero.story": "Watch Our Story",
+          "tabs.buy": "Buy",
+          "tabs.rent": "Rent",
+          "tabs.invest": "Investments",
+          "search.location": "City, Neighborhood, Address or ZIP",
+          "search.button": "Search",
+          "services.listings": "Listing Platform",
+          "services.map": "Map Draw Search",
+          "services.booking": "Book Showing",
+          "services.portal": "Client Portal",
+          "integration.mlsTitle": "1) Real MLS Integration",
+          "integration.mlsSub": "CRMLS / MLS Grid",
+          "integration.zip": "ZIP CODE",
+          "integration.limit": "Limit",
+          "integration.fetch": "Fetch Live MLS",
+          "integration.payTitle": "2) Payment System",
+          "integration.paySub": "Commission, Management Fee, Investment Fund",
+          "integration.payType": "Payment Type",
+          "integration.amount": "Amount (USD)",
+          "integration.desc": "Description",
+          "integration.create": "Create Payment Link",
+          "ops.lead": "Moved to admin backend. Integrates web forms, LINE/Email, ad leads, and auto-routing.",
+          "ops.rental": "Moved to admin backend. Covers leasing, contracts, rent collection, work orders, and owner reports.",
+          "ops.investor": "Moved to admin backend. Investor profiles, portfolios, returns, payouts, and communication history.",
+          "ops.recruit": "Showcases brand strengths, commission plans, onboarding flow, and resume submission.",
+          "ops.openAdmin": "Open Admin →",
+          "tools.zipTitle": "ZIP Code Map Search",
+          "tools.zipDesc": "Enter a US ZIP code to quickly locate listings and average price ranges.",
+          "tools.zipBtn": "Search ZIP",
+          "tools.roiTitle": "ROI Estimator",
+          "tools.roiDesc": "Estimate annualized ROI from rent, purchase price, and carrying costs.",
+          "tools.roiBtn": "Calculate ROI",
+          "tools.aiTitle": "AI Valuation",
+          "tools.aiDesc": "Enter address and size to generate an AI price estimate range.",
+          "tools.aiBtn": "Generate Estimate"
+        }
+      }
+    };
+    initI18n(i18nConfig);
+
     const heroSlides = document.querySelectorAll(".hero-slide");
     const heroDots = document.querySelectorAll("#heroDots .dot");
     let currentHeroSlide = 0;

@@ -158,6 +158,33 @@ main > .cards-grid {
   font-weight: 600;
 }
 
+.lang-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px;
+  border-radius: 999px;
+  border: 1px solid rgba(119, 165, 238, 0.22);
+  background: rgba(9, 26, 47, 0.56);
+}
+
+.lang-btn {
+  border: 0;
+  background: transparent;
+  color: #cddcf5;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 6px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.lang-btn.active {
+  color: #f2f8ff;
+  background: linear-gradient(120deg, #1478f5, #2f50ff);
+}
+
 .cta-small,
 .btn-primary,
 .btn-ghost {

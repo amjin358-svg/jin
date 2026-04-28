@@ -25,7 +25,13 @@
         <a href="#">SELL</a>
         <a href="#">RENT</a>
       </nav>
-      <button class="cta-small">Contact Advisor</button>
+      <div class="topbar-actions">
+        <div class="lang-switch" role="group" aria-label="Language switcher">
+          <button type="button" class="lang-btn active" data-lang="zh">中</button>
+          <button type="button" class="lang-btn" data-lang="en">EN</button>
+        </div>
+        <button class="cta-small" data-i18n="property.contact">Contact Advisor</button>
+      </div>
     </header>
 
     <main>
@@ -44,54 +50,121 @@
           <p class="property-address" id="detailLocation">Highland Valley, CA</p>
           <p class="property-price" id="detailPrice">$3,450,000</p>
           <div class="property-highlights">
-            <article><strong id="detailBeds">4</strong><span>Beds</span></article>
-            <article><strong id="detailBaths">3.5</strong><span>Baths</span></article>
-            <article><strong id="detailSqft">4,200</strong><span>sqft</span></article>
-            <article><strong id="detailBuilt">2025</strong><span>Built</span></article>
+            <article><strong id="detailBeds">4</strong><span data-i18n="property.beds">Beds</span></article>
+            <article><strong id="detailBaths">3.5</strong><span data-i18n="property.baths">Baths</span></article>
+            <article><strong id="detailSqft">4,200</strong><span data-i18n="property.sqft">sqft</span></article>
+            <article><strong id="detailBuilt">2025</strong><span data-i18n="property.built">Built</span></article>
           </div>
           <div class="property-side-actions">
-            <button class="btn-primary">Schedule Tour</button>
-            <button class="btn-ghost">Download Brochure</button>
+            <button class="btn-primary" data-i18n="property.schedule">Schedule Tour</button>
+            <button class="btn-ghost" data-i18n="property.brochure">Download Brochure</button>
           </div>
           <ul class="property-kpis">
-            <li><span>Projected Yield</span><strong id="detailYield">7.8%</strong></li>
-            <li><span>HOA</span><strong>$420 / month</strong></li>
-            <li><span>Parking</span><strong>3-Car Garage</strong></li>
+            <li><span data-i18n="property.yield">Projected Yield</span><strong id="detailYield">7.8%</strong></li>
+            <li><span data-i18n="property.hoa">HOA</span><strong>$420 / month</strong></li>
+            <li><span data-i18n="property.parking">Parking</span><strong data-i18n="property.parkingValue">3-Car Garage</strong></li>
           </ul>
         </aside>
       </section>
 
       <section class="property-content-grid">
         <article class="panel property-content-card">
-          <h2>Overview</h2>
-          <p>
+          <h2 data-i18n="property.overview">Overview</h2>
+          <p data-i18n="property.overviewText">
             Designed with a modern mountain aesthetic, this residence features full-height glazing,
             premium imported stone, and seamless indoor-outdoor living areas for upscale California lifestyles.
           </p>
         </article>
         <article class="panel property-content-card">
-          <h2>Interior Highlights</h2>
+          <h2 data-i18n="property.interior">Interior Highlights</h2>
           <ul>
-            <li>Chef's kitchen with integrated appliances</li>
-            <li>Double-height living room with custom millwork</li>
-            <li>Primary suite with spa-style bathroom</li>
-            <li>Smart home climate and security systems</li>
+            <li data-i18n="property.interior1">Chef's kitchen with integrated appliances</li>
+            <li data-i18n="property.interior2">Double-height living room with custom millwork</li>
+            <li data-i18n="property.interior3">Primary suite with spa-style bathroom</li>
+            <li data-i18n="property.interior4">Smart home climate and security systems</li>
           </ul>
         </article>
         <article class="panel property-content-card">
-          <h2>Neighborhood</h2>
+          <h2 data-i18n="property.neighborhood">Neighborhood</h2>
           <ul>
-            <li>8 mins to shopping and restaurants</li>
-            <li>12 mins to private schools</li>
-            <li>15 mins to downtown business district</li>
-            <li>Easy freeway access for commuters</li>
+            <li data-i18n="property.neighborhood1">8 mins to shopping and restaurants</li>
+            <li data-i18n="property.neighborhood2">12 mins to private schools</li>
+            <li data-i18n="property.neighborhood3">15 mins to downtown business district</li>
+            <li data-i18n="property.neighborhood4">Easy freeway access for commuters</li>
           </ul>
         </article>
       </section>
     </main>
   </div>
+  <script src="./i18n.js"></script>
   <script src="./property-helpers.js"></script>
+  <script src="./i18n.js"></script>
   <script>
+    initI18n({
+      translations: {
+        zh: {
+          "topbar.contact": "聯絡顧問",
+          "property.beds": "房",
+          "property.baths": "衛",
+          "property.sqft": "平方呎",
+          "property.built": "完工",
+          "property.schedule": "預約帶看",
+          "property.brochure": "下載簡介",
+          "property.yield": "預估投報率",
+          "property.hoa": "管理費",
+          "property.parking": "停車",
+          "property.parkingValue": "三車位車庫",
+          "property.overview": "物件概覽",
+          "property.overviewText": "本案以現代山景美學打造，採用大面積落地採光、進口石材與室內外無縫動線，滿足高端加州居住需求。",
+          "property.interior": "室內亮點",
+          "property.interior1": "主廚等級廚房與整合式設備",
+          "property.interior2": "挑高客廳與訂製木作",
+          "property.interior3": "主臥套房搭配 SPA 級衛浴",
+          "property.interior4": "智慧家庭環控與安防系統",
+          "property.neighborhood": "生活機能",
+          "property.neighborhood1": "8 分鐘可達商場與餐飲",
+          "property.neighborhood2": "12 分鐘可達私立學校",
+          "property.neighborhood3": "15 分鐘可達商業核心區",
+          "property.neighborhood4": "快速連接主要高速公路",
+          "property.tag.new": "新成屋",
+          "property.tag.resale": "中古屋",
+          "property.tag.featured": "精選物件",
+          "property.tag.commercial": "商用物件",
+          "property.defaultLocation": "美國加州 ZIP {zip}"
+        },
+        en: {
+          "topbar.contact": "Contact Advisor",
+          "property.beds": "Beds",
+          "property.baths": "Baths",
+          "property.sqft": "sqft",
+          "property.built": "Built",
+          "property.schedule": "Schedule Tour",
+          "property.brochure": "Download Brochure",
+          "property.yield": "Projected Yield",
+          "property.hoa": "HOA",
+          "property.parking": "Parking",
+          "property.parkingValue": "3-Car Garage",
+          "property.overview": "Overview",
+          "property.overviewText": "Designed with a modern mountain aesthetic, this residence features full-height glazing, premium imported stone, and seamless indoor-outdoor living areas for upscale California lifestyles.",
+          "property.interior": "Interior Highlights",
+          "property.interior1": "Chef's kitchen with integrated appliances",
+          "property.interior2": "Double-height living room with custom millwork",
+          "property.interior3": "Primary suite with spa-style bathroom",
+          "property.interior4": "Smart home climate and security systems",
+          "property.neighborhood": "Neighborhood",
+          "property.neighborhood1": "8 mins to shopping and restaurants",
+          "property.neighborhood2": "12 mins to private schools",
+          "property.neighborhood3": "15 mins to downtown business district",
+          "property.neighborhood4": "Easy freeway access for commuters",
+          "property.tag.new": "New Construction",
+          "property.tag.resale": "Resale",
+          "property.tag.featured": "Featured",
+          "property.tag.commercial": "Commercial",
+          "property.defaultLocation": "ZIP {zip}, California, USA"
+        }
+      }
+    });
+    initLanguageSwitcher();
     const params = new URLSearchParams(window.location.search);
     const name = params.get("title") || params.get("name");
     const price = params.get("price");
@@ -139,15 +212,15 @@
       if (locationLabel) {
         detailLocation.textContent = safeDecode(locationLabel);
       } else if (zip) {
-        detailLocation.textContent = "ZIP " + zip + ", California";
+        detailLocation.textContent = t("property.defaultLocation", { zip });
       }
     }
     if (tag && detailTag) {
       const tagMap = {
-        new: "New Construction",
-        resale: "Resale",
-        featured: "Featured",
-        commercial: "Commercial"
+        new: t("property.tag.new"),
+        resale: t("property.tag.resale"),
+        featured: t("property.tag.featured"),
+        commercial: t("property.tag.commercial")
       };
       detailTag.textContent = tagMap[tag.toLowerCase()] || tag;
     }
@@ -162,6 +235,17 @@
     const annualExpense = annualIncome * 0.28;
     const capRate = ((annualIncome - annualExpense) / p) * 100;
     if (detailYield) detailYield.textContent = capRate.toFixed(1) + "%";
+
+    window.addEventListener("bluerock:langchange", () => {
+      if (tag && detailTag) {
+        const key = tag.toLowerCase();
+        const mapped = t("property.tag." + key);
+        detailTag.textContent = mapped === "property.tag." + key ? tag : mapped;
+      }
+      if (detailLocation && !locationLabel && zip) {
+        detailLocation.textContent = t("property.defaultLocation", { zip });
+      }
+    });
 
     const gallery = propertyGalleryForQuery(params);
     if (mainImage && gallery.length) {
