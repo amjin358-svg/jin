@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>後台管理 — BlueRock</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body class="theme-shinruenn">
+  <div class="page-shell admin-page">
+    <header class="topbar glass" data-animate>
+      <div class="brand">
+        <img class="brand-mark" src="./assets/bluerock-logo-mark-dark-en.svg" alt="BlueRock mark">
+        <div class="brand-copy">
+          <p class="brand-name">BlueRock Property Soultion</p>
+          <p class="brand-tagline">後台管理系統</p>
+        </div>
+      </div>
+      <nav class="menu admin-top-nav">
+        <a href="./index.html">返回首頁</a>
+      </nav>
+    </header>
+
+    <div class="admin-layout">
+      <aside class="admin-sidebar glass" data-animate>
+        <p class="admin-sidebar-title">模組</p>
+        <a class="admin-nav-link active" href="#lead-automation">客戶自動開發系統</a>
+        <a class="admin-nav-link" href="./index.html#ops-suite">其他營運模組（首頁）</a>
+      </aside>
+
+      <main class="admin-main">
+        <section class="glass admin-section" id="lead-automation" data-animate>
+          <h1 class="admin-section-title">客戶自動開發系統</h1>
+          <p class="admin-section-lead">整合網站表單、LINE、Email、廣告名單，自動分派與追蹤進度。以下為後台預覽介面。</p>
+
+          <div class="admin-subgrid">
+            <article class="panel admin-tile">
+              <h2>線索來源</h2>
+              <ul class="admin-checklist">
+                <li><label><input type="checkbox" checked disabled> 官網表單</label></li>
+                <li><label><input type="checkbox" checked disabled> LINE 官方帳號</label></li>
+                <li><label><input type="checkbox" disabled> Email 行銷</label></li>
+                <li><label><input type="checkbox" checked disabled> 廣告落地頁</label></li>
+              </ul>
+            </article>
+            <article class="panel admin-tile">
+              <h2>派單規則</h2>
+              <label class="admin-field">預設負責人
+                <select>
+                  <option>依 ZIP 輪值</option>
+                  <option>依件數負載</option>
+                  <option>手動指定</option>
+                </select>
+              </label>
+              <label class="admin-field">新線索 SLA
+                <select>
+                  <option>15 分鐘內回覆</option>
+                  <option>1 小時內回覆</option>
+                  <option>當日下班前</option>
+                </select>
+              </label>
+            </article>
+          </div>
+
+          <article class="panel admin-tile admin-tile-wide">
+            <h2>待處理線索</h2>
+            <div class="admin-table-wrap">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>時間</th>
+                    <th>姓名</th>
+                    <th>來源</th>
+                    <th>需求</th>
+                    <th>階段</th>
+                    <th>負責人</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>今天 10:20</td>
+                    <td>陳**</td>
+                    <td>官網</td>
+                    <td>90210 買屋</td>
+                    <td><span class="admin-pill">已派單</span></td>
+                    <td>Agent A</td>
+                  </tr>
+                  <tr>
+                    <td>今天 09:05</td>
+                    <td>林**</td>
+                    <td>LINE</td>
+                    <td>租屋諮詢</td>
+                    <td><span class="admin-pill warn">待回覆</span></td>
+                    <td>—</td>
+                  </tr>
+                  <tr>
+                    <td>昨天 16:40</td>
+                    <td>W. **</td>
+                    <td>廣告</td>
+                    <td>投資物件</td>
+                    <td><span class="admin-pill ok">已聯繫</span></td>
+                    <td>Agent B</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="admin-hint">實際上線時可串接您指定的 CRM 或儲存 API。</p>
+          </article>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    const adminNav = document.querySelectorAll(".admin-nav-link");
+    adminNav.forEach((link) => {
+      link.addEventListener("click", () => {
+        if (link.getAttribute("href")?.startsWith("#")) {
+          adminNav.forEach((l) => l.classList.remove("active"));
+          link.classList.add("active");
+        }
+      });
+    });
+    if (location.hash === "#lead-automation") {
+      document.getElementById("lead-automation")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  </script>
+</body>
+</html>

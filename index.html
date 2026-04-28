@@ -182,11 +182,12 @@
         </article>
       </section>
 
-      <section class="ops-suite glass" data-animate>
-        <article class="panel ops-card">
+      <section class="ops-suite glass" id="ops-suite" data-animate>
+        <a class="panel ops-card ops-card-link" href="./admin.html#lead-automation">
           <h3>客戶自動開發系統</h3>
-          <p>整合網站表單、LINE/Email、廣告名單，自動分派與追蹤進度。</p>
-        </article>
+          <p>已移至後台管理。整合網站表單、LINE/Email、廣告名單，自動分派與追蹤進度。</p>
+          <span class="ops-card-cta">開啟後台 →</span>
+        </a>
         <article class="panel ops-card">
           <h3>每月成交漏斗</h3>
           <p>快速輸入月度數據，自動計算各階段轉換率。</p>
@@ -513,8 +514,8 @@
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            type: paymentType.value,
-            amountUsd: amount,
+            paymentType: paymentType.value,
+            amount: amount,
             description: paymentDesc.value.trim()
           })
         });
@@ -522,7 +523,8 @@
         if (!response.ok) {
           throw new Error(payload.error || "Payment API error");
         }
-        paymentResultText.innerHTML = "已建立 " + payload.type + " 付款連結：<a href='" + payload.url + "' target='_blank' rel='noreferrer'>Open Link</a>";
+        const payUrl = payload.checkoutUrl || payload.url || "";
+        paymentResultText.innerHTML = "已建立 " + (payload.paymentType || payload.type || "") + " 付款連結：<a href='" + payUrl + "' target='_blank' rel='noreferrer'>Open Link</a>";
       } catch (error) {
         paymentResultText.textContent = "建立失敗：" + error.message;
       }

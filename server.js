@@ -226,7 +226,9 @@ app.post("/api/payments/create-link", async (req, res) => {
     res.json({
       ok: true,
       paymentType: normalizedType,
+      type: normalizedType,
       amount: amountNumber,
+      url: session.url,
       checkoutUrl: session.url
     });
   } catch (error) {
