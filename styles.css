@@ -188,21 +188,46 @@ main > .cards-grid {
 .cta-small,
 .btn-primary,
 .btn-ghost {
-  border: 1px solid rgba(96, 136, 214, 0.28);
-  border-radius: 8px;
+  border: 1px solid rgba(126, 170, 255, 0.34);
+  border-radius: 999px;
   color: #f6faff;
-  padding: 10px 14px;
-  font-weight: 600;
+  padding: 11px 18px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
   cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease, border-color 0.2s ease;
 }
 
 .cta-small,
 .btn-primary {
-  background: linear-gradient(120deg, #1581ff, #254fff);
+  background: linear-gradient(135deg, #3d8bff 0%, #2b63ff 52%, #2149de 100%);
+  box-shadow: 0 10px 20px rgba(20, 76, 192, 0.34), inset 0 1px 0 rgba(230, 241, 255, 0.2);
 }
 
 .btn-ghost {
-  background: rgba(20, 52, 93, 0.76);
+  background: linear-gradient(135deg, rgba(26, 64, 113, 0.9), rgba(20, 52, 93, 0.78));
+  box-shadow: 0 8px 18px rgba(5, 18, 38, 0.36), inset 0 1px 0 rgba(188, 214, 255, 0.1);
+}
+
+.cta-small:hover,
+.btn-primary:hover,
+.btn-ghost:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.04);
+}
+
+.cta-small:active,
+.btn-primary:active,
+.btn-ghost:active {
+  transform: translateY(1px);
+}
+
+.cta-small:focus-visible,
+.btn-primary:focus-visible,
+.btn-ghost:focus-visible {
+  outline: none;
+  border-color: rgba(171, 206, 255, 0.95);
+  box-shadow: 0 0 0 3px rgba(102, 174, 255, 0.28), 0 10px 20px rgba(20, 76, 192, 0.34);
 }
 
 .hero {
