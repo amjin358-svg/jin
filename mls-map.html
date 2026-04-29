@@ -63,11 +63,16 @@
 
   <main class="container section subpage">
     <article class="panel subpage-panel">
-      <h2>MLS LISTING MAP</h2>
-      <p>Street-mode map with curated listings. Click each marker to view the total property price and core details.</p>
+      <h2>L.A. MLS LISTING HUB</h2>
+      <p>Search Los Angeles listings, browse eight featured properties, and click map markers to view each total asking price.</p>
+      <div class="listing-toolbar">
+        <label for="listingSearch">搜尋 L.A. 物件</label>
+        <input id="listingSearch" type="search" placeholder="輸入地區、社區或關鍵字（例如 Beverly Hills）">
+      </div>
       <div id="map" class="map"></div>
       <p class="map-note">Map data shown for demonstration and brokerage presentation use.</p>
     </article>
+    <section id="listingGrid" class="listing-grid"></section>
   </main>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="mls-map.js"></script>
