@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BlueRock | Property Detail</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body class="property-page">
+  <div class="page-shell property-page">
+    <header class="topbar glass">
+      <a class="brand brand-link" href="./index.html">
+        <img class="brand-mark" src="./assets/bluerock-logo-mark-dark-en.svg" alt="BlueRock mark">
+        <div class="brand-copy">
+          <p class="brand-en">BlueRock</p>
+          <p class="brand-subline">property solution</p>
+        </div>
+      </a>
+      <nav class="menu">
+        <a href="./index.html">HOME</a>
+        <a href="#">BUY</a>
+        <a href="#">SELL</a>
+        <a href="#">RENT</a>
+      </nav>
+      <div class="topbar-actions">
+        <div class="lang-switch" role="group" aria-label="Language switcher">
+          <button type="button" class="lang-btn active" data-lang="zh">中</button>
+          <button type="button" class="lang-btn" data-lang="en">EN</button>
+        </div>
+        <button class="cta-small" data-i18n="property.contact">Contact Advisor</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="property-hero glass">
+        <div class="property-main-media">
+          <div class="property-main-image"></div>
+          <div class="property-thumb-row">
+            <div class="property-thumb t1"></div>
+            <div class="property-thumb t2"></div>
+            <div class="property-thumb t3"></div>
+          </div>
+        </div>
+        <aside class="property-side panel">
+          <p class="eyebrow" id="detailTag">New Construction</p>
+          <h1 id="detailName">The Juniper Estate</h1>
+          <p class="property-address" id="detailLocation">Highland Valley, CA</p>
+          <p class="property-price" id="detailPrice">$3,450,000</p>
+          <div class="property-highlights">
+            <article><strong id="detailBeds">4</strong><span data-i18n="property.beds">Beds</span></article>
+            <article><strong id="detailBaths">3.5</strong><span data-i18n="property.baths">Baths</span></article>
+            <article><strong id="detailSqft">4,200</strong><span data-i18n="property.sqft">sqft</span></article>
+            <article><strong id="detailBuilt">2025</strong><span data-i18n="property.built">Built</span></article>
+          </div>
+          <div class="property-side-actions">
+            <button class="btn-primary" data-i18n="property.schedule">Schedule Tour</button>
+            <button class="btn-ghost" data-i18n="property.brochure">Download Brochure</button>
+          </div>
+          <ul class="property-kpis">
+            <li><span data-i18n="property.yield">Projected Yield</span><strong id="detailYield">7.8%</strong></li>
+            <li><span data-i18n="property.hoa">HOA</span><strong>$420 / month</strong></li>
+            <li><span data-i18n="property.parking">Parking</span><strong data-i18n="property.parkingValue">3-Car Garage</strong></li>
+          </ul>
+        </aside>
+      </section>
+
+      <section class="property-content-grid">
+        <article class="panel property-content-card">
+          <h2 data-i18n="property.overview">Overview</h2>
+          <p data-i18n="property.overviewText">
+            Designed with a modern mountain aesthetic, this residence features full-height glazing,
+            premium imported stone, and seamless indoor-outdoor living areas for upscale California lifestyles.
+          </p>
+        </article>
+        <article class="panel property-content-card">
+          <h2 data-i18n="property.interior">Interior Highlights</h2>
+          <ul>
+            <li data-i18n="property.interior1">Chef's kitchen with integrated appliances</li>
+            <li data-i18n="property.interior2">Double-height living room with custom millwork</li>
+            <li data-i18n="property.interior3">Primary suite with spa-style bathroom</li>
+            <li data-i18n="property.interior4">Smart home climate and security systems</li>
+          </ul>
+        </article>
+        <article class="panel property-content-card">
+          <h2 data-i18n="property.neighborhood">Neighborhood</h2>
+          <ul>
+            <li data-i18n="property.neighborhood1">8 mins to shopping and restaurants</li>
+            <li data-i18n="property.neighborhood2">12 mins to private schools</li>
+            <li data-i18n="property.neighborhood3">15 mins to downtown business district</li>
+            <li data-i18n="property.neighborhood4">Easy freeway access for commuters</li>
+          </ul>
+        </article>
+      </section>
+    </main>
+  </div>
+  <script src="./i18n.js"></script>
+  <script src="./property-helpers.js"></script>
+  <script src="./i18n.js"></script>
+  <script>
+    initI18n({
+      translations: {
+        zh: {
+          "topbar.contact": "聯絡顧問",
+          "property.beds": "房",
+          "property.baths": "衛",
+          "property.sqft": "平方呎",
+          "property.built": "完工",
+          "property.schedule": "預約帶看",
+          "property.brochure": "下載簡介",
+          "property.yield": "預估投報率",
+          "property.hoa": "管理費",
+          "property.parking": "停車",
+          "property.parkingValue": "三車位車庫",
+          "property.overview": "物件概覽",
+          "property.overviewText": "本案以現代山景美學打造，採用大面積落地採光、進口石材與室內外無縫動線，滿足高端加州居住需求。",
+          "property.interior": "室內亮點",
+          "property.interior1": "主廚等級廚房與整合式設備",
+          "property.interior2": "挑高客廳與訂製木作",
+          "property.interior3": "主臥套房搭配 SPA 級衛浴",
+          "property.interior4": "智慧家庭環控與安防系統",
+          "property.neighborhood": "生活機能",
+          "property.neighborhood1": "8 分鐘可達商場與餐飲",
+          "property.neighborhood2": "12 分鐘可達私立學校",
+          "property.neighborhood3": "15 分鐘可達商業核心區",
+          "property.neighborhood4": "快速連接主要高速公路",
+          "property.tag.new": "新成屋",
+          "property.tag.resale": "中古屋",
+          "property.tag.featured": "精選物件",
+          "property.tag.commercial": "商用物件",
+          "property.defaultLocation": "美國加州 ZIP {zip}"
+        },
+        en: {
+          "topbar.contact": "Contact Advisor",
+          "property.beds": "Beds",
+          "property.baths": "Baths",
+          "property.sqft": "sqft",
+          "property.built": "Built",
+          "property.schedule": "Schedule Tour",
+          "property.brochure": "Download Brochure",
+          "property.yield": "Projected Yield",
+          "property.hoa": "HOA",
+          "property.parking": "Parking",
+          "property.parkingValue": "3-Car Garage",
+          "property.overview": "Overview",
+          "property.overviewText": "Designed with a modern mountain aesthetic, this residence features full-height glazing, premium imported stone, and seamless indoor-outdoor living areas for upscale California lifestyles.",
+          "property.interior": "Interior Highlights",
+          "property.interior1": "Chef's kitchen with integrated appliances",
+          "property.interior2": "Double-height living room with custom millwork",
+          "property.interior3": "Primary suite with spa-style bathroom",
+          "property.interior4": "Smart home climate and security systems",
+          "property.neighborhood": "Neighborhood",
+          "property.neighborhood1": "8 mins to shopping and restaurants",
+          "property.neighborhood2": "12 mins to private schools",
+          "property.neighborhood3": "15 mins to downtown business district",
+          "property.neighborhood4": "Easy freeway access for commuters",
+          "property.tag.new": "New Construction",
+          "property.tag.resale": "Resale",
+          "property.tag.featured": "Featured",
+          "property.tag.commercial": "Commercial",
+          "property.defaultLocation": "ZIP {zip}, California, USA"
+        }
+      }
+    });
+    initLanguageSwitcher();
+    const params = new URLSearchParams(window.location.search);
+    const name = params.get("title") || params.get("name");
+    const price = params.get("price");
+    const zip = params.get("zip");
+    const beds = params.get("beds");
+    const baths = params.get("baths");
+    const sqft = params.get("sqft");
+    const tag = params.get("type") || params.get("tag");
+    const image = params.get("image");
+    const locationLabel = params.get("location");
+    const lot = params.get("lot");
+    const built = params.get("built");
+
+    const safeText = (value, fallback) => value ? value : fallback;
+    const safeNumber = (value, fallback) => {
+      const num = Number(value);
+      return Number.isFinite(num) ? num : fallback;
+    };
+    const formatPrice = (value) => "$" + Number(value).toLocaleString("en-US");
+
+    const detailName = document.getElementById("detailName");
+    const detailPrice = document.getElementById("detailPrice");
+    const detailLocation = document.getElementById("detailLocation");
+    const detailTag = document.getElementById("detailTag");
+    const detailBeds = document.getElementById("detailBeds");
+    const detailBaths = document.getElementById("detailBaths");
+    const detailSqft = document.getElementById("detailSqft");
+    const detailBuilt = document.getElementById("detailBuilt");
+    const detailYield = document.getElementById("detailYield");
+    const mainImage = document.querySelector(".property-main-image");
+    const thumbs = document.querySelectorAll(".property-thumb-row .property-thumb");
+
+    function safeDecode(value) {
+      if (!value) return value;
+      try {
+        return decodeURIComponent(value.replace(/\+/g, " "));
+      } catch {
+        return value;
+      }
+    }
+
+    if (name && detailName) detailName.textContent = safeDecode(name);
+    if (price && detailPrice) detailPrice.textContent = formatPrice(price);
+    if (detailLocation) {
+      if (locationLabel) {
+        detailLocation.textContent = safeDecode(locationLabel);
+      } else if (zip) {
+        detailLocation.textContent = t("property.defaultLocation", { zip });
+      }
+    }
+    if (tag && detailTag) {
+      const tagMap = {
+        new: t("property.tag.new"),
+        resale: t("property.tag.resale"),
+        featured: t("property.tag.featured"),
+        commercial: t("property.tag.commercial")
+      };
+      detailTag.textContent = tagMap[tag.toLowerCase()] || tag;
+    }
+    if (beds && detailBeds) detailBeds.textContent = beds;
+    if (baths && detailBaths) detailBaths.textContent = baths;
+    if (sqft && detailSqft) detailSqft.textContent = Number(sqft).toLocaleString("en-US");
+    if (built && detailBuilt) detailBuilt.textContent = built;
+
+    const p = safeNumber(price, 3450000);
+    const rent = p * 0.0054;
+    const annualIncome = rent * 12;
+    const annualExpense = annualIncome * 0.28;
+    const capRate = ((annualIncome - annualExpense) / p) * 100;
+    if (detailYield) detailYield.textContent = capRate.toFixed(1) + "%";
+
+    window.addEventListener("bluerock:langchange", () => {
+      if (tag && detailTag) {
+        const key = tag.toLowerCase();
+        const mapped = t("property.tag." + key);
+        detailTag.textContent = mapped === "property.tag." + key ? tag : mapped;
+      }
+      if (detailLocation && !locationLabel && zip) {
+        detailLocation.textContent = t("property.defaultLocation", { zip });
+      }
+    });
+
+    const gallery = propertyGalleryForQuery(params);
+    if (mainImage && gallery.length) {
+      mainImage.style.backgroundImage = "url('" + gallery[0] + "')";
+    }
+    thumbs.forEach((thumb, idx) => {
+      const src = gallery[idx + 1] || gallery[idx] || gallery[0];
+      if (src) thumb.style.backgroundImage = "url('" + src + "')";
+    });
+
+    const goEstimate = document.getElementById("goEstimate");
+    if (goEstimate) {
+      goEstimate.href = "./index.html#invest-tools?zip=" + encodeURIComponent(safeText(zip, "90001")) +
+        "&price=" + encodeURIComponent(String(Math.round(p))) +
+        "&rent=" + encodeURIComponent(String(Math.round(rent))) +
+        "&sqft=" + encodeURIComponent(safeText(sqft, "4200")) +
+        "&lot=" + encodeURIComponent(safeText(lot, "6000")) +
+        "&built=" + encodeURIComponent(safeText(built, "2025"));
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BlueRock Property Solution</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body class="theme-corporate">
+  <div class="page-shell">
+    <header class="topbar glass" data-animate>
+      <div class="brand">
+        <img class="brand-mark" src="./assets/bluerock-logo-mark-dark-en.svg" alt="BlueRock mark">
+        <div class="brand-copy">
+          <p class="brand-name">BlueRock Property Soultion</p>
+          <p class="brand-tagline">real estate investment advisors</p>
+        </div>
+      </div>
+      <nav class="menu">
+        <a href="#">HOME</a>
+        <a href="#">BUY</a>
+        <a href="#">SELL</a>
+        <a href="#">RENT</a>
+        <a href="#">INVEST</a>
+        <a href="#">MANAGEMENT</a>
+        <a href="#">COMPANY</a>
+        <a href="#">RESOURCES</a>
+      </nav>
+      <div class="topbar-actions">
+        <button class="lang-toggle" type="button" id="langToggle" aria-label="Toggle language">中 / EN</button>
+      <button class="cta-small btn-secondary" data-i18n="topbar.login">Client / Investor Login</button>
+      </div>
+    </header>
+
+      <section class="newsletter-bar corner-newsletter glass" data-animate>
+        <div class="newsletter-bar-copy">
+          <h3 data-i18n="newsletter.title">Get Market Updates</h3>
+          <p data-i18n="newsletter.desc">Stay ahead with exclusive market insights and investment opportunities.</p>
+        </div>
+        <div class="newsletter-bar-form">
+          <input type="email" data-i18n-placeholder="newsletter.email" placeholder="Enter your email" autocomplete="email" aria-label="Email for market updates">
+          <button class="btn-primary" type="button" data-i18n="newsletter.subscribe">Subscribe</button>
+        </div>
+      </section>
+
+    <main>
+      <section class="hero glass" data-animate>
+        <div class="hero-bg">
+          <div class="hero-slide active" style="background-image: url('https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&crop=entropy&w=2400&h=1080&q=95');"></div>
+          <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1604014237800-1c9102c219da?auto=format&fit=crop&crop=entropy&w=2400&h=1080&q=95');"></div>
+          <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1460317442991-0ec209397118?auto=format&fit=crop&crop=entropy&w=2400&h=1080&q=95');"></div>
+          <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&crop=entropy&w=2400&h=1080&q=95');"></div>
+          <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&crop=entropy&w=2400&h=1080&q=95');"></div>
+          <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&crop=entropy&w=2400&h=1080&q=95');"></div>
+          <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&crop=entropy&w=2400&h=1080&q=95');"></div>
+          <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&crop=entropy&w=2400&h=1080&q=95');"></div>
+          <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1515263487990-61b07816b324?auto=format&fit=crop&crop=entropy&w=2400&h=1080&q=95');"></div>
+          <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&crop=entropy&w=2400&h=1080&q=95');"></div>
+        </div>
+        <div class="hero-content">
+          <p class="hero-kicker" data-i18n="hero.kicker">線上熱銷</p>
+          <h1>Building Wealth.<br>Creating Legacy.</h1>
+          <p>
+            Your trusted partner for real estate, investments,<br>
+            and property management in Los Angeles.
+          </p>
+          <div class="hero-actions">
+            <button class="btn-primary" data-i18n="hero.explore">Explore Properties</button>
+            <button class="btn-ghost btn-tertiary" data-i18n="hero.story">Watch Our Story</button>
+          </div>
+          <div class="hero-dots" id="heroDots">
+            <button class="dot active" data-slide="0" type="button" aria-label="Slide 1"></button>
+            <button class="dot" data-slide="1" type="button" aria-label="Slide 2"></button>
+            <button class="dot" data-slide="2" type="button" aria-label="Slide 3"></button>
+            <button class="dot" data-slide="3" type="button" aria-label="Slide 4"></button>
+            <button class="dot" data-slide="4" type="button" aria-label="Slide 5"></button>
+            <button class="dot" data-slide="5" type="button" aria-label="Slide 6"></button>
+            <button class="dot" data-slide="6" type="button" aria-label="Slide 7"></button>
+            <button class="dot" data-slide="7" type="button" aria-label="Slide 8"></button>
+            <button class="dot" data-slide="8" type="button" aria-label="Slide 9"></button>
+            <button class="dot" data-slide="9" type="button" aria-label="Slide 10"></button>
+          </div>
+        </div>
+      </section>
+
+      <section class="search-panel glass" data-animate>
+        <div class="tabs">
+          <button class="active" data-i18n="tabs.buy">Buy</button>
+          <button data-i18n="tabs.rent">Rent</button>
+          <button data-i18n="tabs.invest">Investments</button>
+        </div>
+        <div class="filters">
+          <input data-i18n-placeholder="search.location" placeholder="City, Neighborhood, Address or ZIP">
+          <select>
+            <option>Home Type</option>
+            <option>Houses</option>
+            <option>Townhomes</option>
+            <option>Multi-family</option>
+            <option>Condos/Co-ops</option>
+            <option>Lots/Land</option>
+            <option>Apartments</option>
+            <option>Manufactured</option>
+          </select>
+          <select>
+            <option>Min Price</option>
+            <option>$100,000</option>
+            <option>$250,000</option>
+            <option>$500,000</option>
+            <option>$750,000</option>
+            <option>$1,000,000</option>
+            <option>$2,000,000</option>
+            <option>$3,000,000</option>
+          </select>
+          <select>
+            <option>Max Price</option>
+            <option>$250,000</option>
+            <option>$500,000</option>
+            <option>$750,000</option>
+            <option>$1,000,000</option>
+            <option>$2,000,000</option>
+            <option>$3,000,000</option>
+            <option>$5,000,000+</option>
+          </select>
+          <select>
+            <option>Beds</option>
+            <option>Any</option>
+            <option>1+</option>
+            <option>2+</option>
+            <option>3+</option>
+            <option>4+</option>
+            <option>5+</option>
+          </select>
+          <select>
+            <option>Baths</option>
+            <option>Any</option>
+            <option>1+</option>
+            <option>1.5+</option>
+            <option>2+</option>
+            <option>3+</option>
+            <option>4+</option>
+          </select>
+          <button class="btn-primary" data-i18n="search.button">Search</button>
+        </div>
+      </section>
+
+      <section class="service-hub" data-animate>
+        <article class="panel service-card">
+          <h3>Live MLS Listings</h3>
+          <p data-i18n="services.listings">房源平台</p>
+        </article>
+        <article class="panel service-card">
+          <h3>Map Search</h3>
+          <p data-i18n="services.map">地圖畫區搜尋</p>
+        </article>
+        <article class="panel service-card">
+          <h3>Book Showing / Consultation</h3>
+          <p data-i18n="services.booking">預約帶看</p>
+        </article>
+        <article class="panel service-card">
+          <h3>Client Portal</h3>
+          <p data-i18n="services.portal">客戶入口</p>
+        </article>
+      </section>
+
+      <section class="integration-hub glass" data-animate>
+        <article class="panel integration-card">
+          <h3 data-i18n="integration.mlsTitle">1) Real MLS Integration</h3>
+          <p data-i18n="integration.mlsSub">CRMLS / MLS Grid</p>
+          <div class="integration-grid">
+            <label data-i18n="integration.zip">ZIP CODE<input id="mlsZipInput" value="90210"></label>
+            <label data-i18n="integration.limit">Limit<input id="mlsLimitInput" type="number" min="1" max="20" value="6"></label>
+          </div>
+          <button class="btn-primary" id="mlsFetchBtn" type="button" data-i18n="integration.fetch">Fetch Live MLS</button>
+          <div class="tool-result integration-result" id="mlsResultText">尚未查詢 MLS。</div>
+          <div class="integration-list" id="mlsListings"></div>
+        </article>
+        <article class="panel integration-card">
+          <h3 data-i18n="integration.payTitle">2) Payment System</h3>
+          <p data-i18n="integration.paySub">佣金、管理費、投資款</p>
+          <div class="integration-grid">
+            <label data-i18n="integration.payType">Payment Type
+              <select id="paymentType">
+                <option value="commission">Commission</option>
+                <option value="management_fee">Management Fee</option>
+                <option value="investment_fund">Investment Fund</option>
+              </select>
+            </label>
+            <label data-i18n="integration.amount">Amount (USD)<input id="paymentAmount" type="number" min="1" value="2500"></label>
+          </div>
+          <label data-i18n="integration.desc">Description<input id="paymentDesc" value="BlueRock service payment"></label>
+          <button class="btn-primary" id="paymentCreateBtn" type="button" data-i18n="integration.create">Create Payment Link</button>
+          <div class="tool-result integration-result" id="paymentResultText">尚未建立付款。</div>
+        </article>
+      </section>
+
+      <section class="ops-suite glass" id="ops-suite" data-animate>
+        <a class="panel ops-card ops-card-link" href="./admin.html#lead-automation">
+          <h3>客戶自動開發系統</h3>
+          <p data-i18n="ops.lead">已移至後台管理。整合網站表單、LINE/Email、廣告名單，自動分派與追蹤進度。</p>
+          <span class="ops-card-cta" data-i18n="ops.openAdmin">開啟後台 →</span>
+        </a>
+        <article class="panel ops-card">
+          <h3>房仲招募頁</h3>
+          <p data-i18n="ops.recruit">提供品牌優勢、獎酬制度、加入流程與線上履歷投遞入口。</p>
+        </article>
+        <a class="panel ops-card ops-card-link" href="./admin.html#property-management">
+          <h3>租賃代管系統</h3>
+          <p data-i18n="ops.rental">已移至後台管理。涵蓋招租、合約、收租、維修工單與房東報表。</p>
+          <span class="ops-card-cta" data-i18n="ops.openAdmin">開啟後台 →</span>
+        </a>
+        <a class="panel ops-card ops-card-link" href="./admin.html#investor-crm">
+          <h3>投資人 CRM 後台</h3>
+          <p data-i18n="ops.investor">已移至後台管理。投資人檔案、投資組合、回報率、配息與溝通紀錄。</p>
+          <span class="ops-card-cta" data-i18n="ops.openAdmin">開啟後台 →</span>
+        </a>
+      </section>
+
+      <section class="invest-tools glass" data-animate>
+        <article class="panel tool-card zip-tool">
+          <h3 data-i18n="tools.zipTitle">ZIP CODE 地圖搜房</h3>
+          <p data-i18n="tools.zipDesc">輸入美國 ZIP CODE，快速定位區域物件與均價帶。</p>
+          <div class="tool-controls">
+            <input id="zipSearchInput" placeholder="例如 90001 / 90210 / 94107">
+            <button class="btn-primary" id="zipSearchBtn" type="button" data-i18n="tools.zipBtn">搜尋 ZIP</button>
+          </div>
+          <div class="zip-map-sim" id="zipMapSim">
+            <button class="zip-node" data-zip="90001" style="left:55%;top:62%;">90001</button>
+            <button class="zip-node" data-zip="90210" style="left:50%;top:53%;">90210</button>
+            <button class="zip-node" data-zip="92648" style="left:48%;top:74%;">92648</button>
+            <button class="zip-node" data-zip="92037" style="left:42%;top:83%;">92037</button>
+            <button class="zip-node" data-zip="94107" style="left:41%;top:26%;">94107</button>
+          </div>
+          <p class="tool-result" id="zipResultText">請輸入 ZIP 或點擊地圖節點。</p>
+        </article>
+
+        <article class="panel tool-card roi-tool">
+          <h3 data-i18n="tools.roiTitle">投報率估算</h3>
+          <p data-i18n="tools.roiDesc">以租金、總價、持有成本估算年化投報率。</p>
+          <div class="tool-grid">
+            <label>物件總價<input id="roiPrice" type="number" value="1500000"></label>
+            <label>月租收入<input id="roiRent" type="number" value="6200"></label>
+            <label>月持有成本<input id="roiCost" type="number" value="1400"></label>
+            <label>空置率(%)<input id="roiVacancy" type="number" value="5"></label>
+          </div>
+          <button class="btn-primary btn-secondary" id="roiCalcBtn" type="button" data-i18n="tools.roiBtn">計算投報率</button>
+          <p class="tool-result" id="roiResultText">預估年化投報率：--</p>
+        </article>
+
+        <article class="panel tool-card ai-tool">
+          <h3 data-i18n="tools.aiTitle">AI 估價</h3>
+          <p data-i18n="tools.aiDesc">輸入地址與坪數，取得 AI 估算價格區間。</p>
+          <div class="tool-grid">
+            <label>地址<input id="aiAddress" value="123 Ocean Ave, Santa Monica, CA"></label>
+            <label>建坪 / sqft<input id="aiSqft" type="number" value="2450"></label>
+            <label>屋齡(年)<input id="aiAge" type="number" value="8"></label>
+            <label>ZIP CODE<input id="aiZip" value="90401"></label>
+          </div>
+          <button class="btn-primary btn-secondary" id="aiEstimateBtn" type="button" data-i18n="tools.aiBtn">產生 AI 估價</button>
+          <p class="tool-result" id="aiResultText">AI 估價：--</p>
+        </article>
+      </section>
+
+      <section class="cards-grid" data-animate>
+        <a class="panel card property-card property-link" href="./property.html?title=The%20Juniper%20Estate&price=3450000&zip=90001&beds=4&baths=3.5&sqft=4200&type=new&location=Highland%20Valley%2C%20CA&gallery=juniper&image=https%3A%2F%2Fimages.unsplash.com%2Fphoto-1600210492486-724fe5c67fb0%3Fauto%3Dformat%26fit%3Dcrop%26crop%3Dentropy%26w%3D2000%26h%3D1280%26q%3D95">
+          <div class="property-image" style="background-image:url('https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&crop=entropy&w=1200&h=780&q=90');">
+            <span class="property-tag">New Construction</span>
+          </div>
+          <div class="property-body">
+            <h3>The Juniper Estate</h3>
+            <p class="property-location">Highland Valley, CA</p>
+            <div class="property-meta"><span>4 Beds</span><span>3.5 Baths</span><span>4,200 sqft</span></div>
+            <strong class="price">$3,450,000</strong>
+          </div>
+        </a>
+        <a class="panel card property-card property-link" href="./property.html?title=Mesa%20Vista%20Villa&price=2100000&zip=92037&beds=3&baths=3&sqft=2850&type=featured&location=Sedona%20Plateau%2C%20AZ&gallery=mesa&image=https%3A%2F%2Fimages.unsplash.com%2Fphoto-1600607687939-ce8a6c25118c%3Fauto%3Dformat%26fit%3Dcrop%26crop%3Dentropy%26w%3D2000%26h%3D1280%26q%3D95">
+          <div class="property-image" style="background-image:url('https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&crop=entropy&w=1200&h=780&q=90');">
+            <span class="property-tag featured">Featured</span>
+          </div>
+          <div class="property-body">
+            <h3>Mesa Vista Villa</h3>
+            <p class="property-location">Sedona Plateau, AZ</p>
+            <div class="property-meta"><span>3 Beds</span><span>3 Baths</span><span>2,850 sqft</span></div>
+            <strong class="price">$2,100,000</strong>
+          </div>
+        </a>
+        <a class="panel card property-card property-link" href="./property.html?title=Azure%20Shoreline&price=4800000&zip=94107&beds=5&baths=5&sqft=5120&type=new&location=Tahoe%20Haven%2C%20NV&gallery=azure&image=https%3A%2F%2Fimages.unsplash.com%2Fphoto-1510798831971-661eb04b3739%3Fauto%3Dformat%26fit%3Dcrop%26crop%3Dentropy%26w%3D2000%26h%3D1280%26q%3D95">
+          <div class="property-image" style="background-image:url('https://images.unsplash.com/photo-1510798831971-661eb04b3739?auto=format&fit=crop&crop=entropy&w=1200&h=780&q=90');">
+            <span class="property-tag">New Construction</span>
+          </div>
+          <div class="property-body">
+            <h3>Azure Shoreline</h3>
+            <p class="property-location">Tahoe Haven, NV</p>
+            <div class="property-meta"><span>5 Beds</span><span>5 Baths</span><span>5,120 sqft</span></div>
+            <strong class="price">$4,800,000</strong>
+          </div>
+        </a>
+        <a class="panel card property-card property-link" href="./property.html?title=The%20Lavender%20Cottage&price=1250000&zip=90210&beds=3&baths=2&sqft=1900&type=resale&location=Napa%20Hills%2C%20CA&gallery=lavender&image=https%3A%2F%2Fimages.unsplash.com%2Fphoto-1572120360610-d971b9d7767c%3Fauto%3Dformat%26fit%3Dcrop%26crop%3Dentropy%26w%3D2000%26h%3D1280%26q%3D95">
+          <div class="property-image" style="background-image:url('https://images.unsplash.com/photo-1572120360610-d971b9d7767c?auto=format&fit=crop&crop=entropy&w=1200&h=780&q=90');">
+            <span class="property-tag resale">Resale</span>
+          </div>
+          <div class="property-body">
+            <h3>The Lavender Cottage</h3>
+            <p class="property-location">Napa Hills, CA</p>
+            <div class="property-meta"><span>3 Beds</span><span>2 Baths</span><span>1,900 sqft</span></div>
+            <strong class="price">$1,250,000</strong>
+          </div>
+        </a>
+        <a class="panel card property-card property-link" href="./property.html?title=Heritage%20Oak%20Manor&price=6200000&zip=90210&beds=6&baths=7&sqft=8400&type=new&location=Greenwich%20Woods%2C%20CT&gallery=heritage&image=https%3A%2F%2Fimages.unsplash.com%2Fphoto-1600566753086-00f18fb6b3ea%3Fauto%3Dformat%26fit%3Dcrop%26crop%3Dentropy%26w%3D2000%26h%3D1280%26q%3D95">
+          <div class="property-image" style="background-image:url('https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&crop=entropy&w=1200&h=780&q=90');">
+            <span class="property-tag">New Construction</span>
+          </div>
+          <div class="property-body">
+            <h3>Heritage Oak Manor</h3>
+            <p class="property-location">Greenwich Woods, CT</p>
+            <div class="property-meta"><span>6 Beds</span><span>7 Baths</span><span>8,400 sqft</span></div>
+            <strong class="price">$6,200,000</strong>
+          </div>
+        </a>
+        <a class="panel card property-card property-link" href="./property.html?title=Cedar%20Ridge%20Lodge&price=890000&zip=92648&beds=2&baths=2&sqft=1550&type=resale&location=Blue%20Ridge%2C%20NC&gallery=cedar&image=https%3A%2F%2Fimages.unsplash.com%2Fphoto-1615874694520-474822394e73%3Fauto%3Dformat%26fit%3Dcrop%26crop%3Dentropy%26w%3D2000%26h%3D1280%26q%3D95">
+          <div class="property-image" style="background-image:url('https://images.unsplash.com/photo-1615874694520-474822394e73?auto=format&fit=crop&crop=entropy&w=1200&h=780&q=90');">
+            <span class="property-tag resale">Resale</span>
+          </div>
+          <div class="property-body">
+            <h3>Cedar Ridge Lodge</h3>
+            <p class="property-location">Blue Ridge, NC</p>
+            <div class="property-meta"><span>2 Beds</span><span>2 Baths</span><span>1,550 sqft</span></div>
+            <strong class="price">$890,000</strong>
+          </div>
+        </a>
+        <a class="panel card property-card property-link" href="./property.html?title=Midtown%20Commerce%20Hub&price=9800000&zip=90001&beds=12&baths=12&sqft=18900&type=commercial&location=Los%20Angeles%2C%20CA&gallery=midtown&image=https%3A%2F%2Fimages.unsplash.com%2Fphoto-1486406146926-c627a92ad1ab%3Fauto%3Dformat%26fit%3Dcrop%26crop%3Dentropy%26w%3D2000%26h%3D1280%26q%3D95">
+          <div class="property-image" style="background-image:url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&crop=entropy&w=1200&h=780&q=90');">
+            <span class="property-tag featured">Featured</span>
+          </div>
+          <div class="property-body">
+            <h3>Midtown Commerce Hub</h3>
+            <p class="property-location">Los Angeles, CA</p>
+            <div class="property-meta"><span>Office</span><span>12 Suites</span><span>18,900 sqft</span></div>
+            <strong class="price">$9,800,000</strong>
+          </div>
+        </a>
+        <a class="panel card property-card property-link" href="./property.html?title=Harbor%20Retail%20Pavilion&price=5360000&zip=92037&beds=8&baths=8&sqft=11400&type=commercial&location=Long%20Beach%2C%20CA&gallery=harbor&image=https%3A%2F%2Fimages.unsplash.com%2Fphoto-1441986300917-64674bd600d8%3Fauto%3Dformat%26fit%3Dcrop%26crop%3Dentropy%26w%3D2000%26h%3D1280%26q%3D95">
+          <div class="property-image" style="background-image:url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&crop=entropy&w=1200&h=780&q=90');">
+            <span class="property-tag featured">Commercial</span>
+          </div>
+          <div class="property-body">
+            <h3>Harbor Retail Pavilion</h3>
+            <p class="property-location">Long Beach, CA</p>
+            <div class="property-meta"><span>Retail</span><span>8 Units</span><span>11,400 sqft</span></div>
+            <strong class="price">$5,360,000</strong>
+          </div>
+        </a>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="./i18n.js"></script>
+  <script>
+    const i18nConfig = {
+      langToggleId: "langToggle",
+      translations: {
+        zh: {
+          "topbar.login": "客戶 / 投資人登入",
+          "newsletter.title": "市場快訊電子報",
+          "newsletter.desc": "掌握專屬市場洞察與投資機會。",
+          "newsletter.email": "請輸入電子郵件",
+          "newsletter.subscribe": "訂閱",
+          "hero.kicker": "線上熱銷",
+          "hero.explore": "探索物件",
+          "hero.story": "觀看品牌故事",
+          "tabs.buy": "買屋",
+          "tabs.rent": "租屋",
+          "tabs.invest": "投資",
+          "search.location": "城市、社區、地址或 ZIP",
+          "search.button": "搜尋",
+          "services.listings": "房源平台",
+          "services.map": "地圖畫區搜尋",
+          "services.booking": "預約帶看",
+          "services.portal": "客戶入口",
+          "integration.mlsTitle": "1) MLS 即時串接",
+          "integration.mlsSub": "CRMLS / MLS Grid",
+          "integration.zip": "ZIP CODE",
+          "integration.limit": "筆數上限",
+          "integration.fetch": "查詢 MLS",
+          "integration.payTitle": "2) 收款系統",
+          "integration.paySub": "佣金、管理費、投資款",
+          "integration.payType": "付款類型",
+          "integration.amount": "金額 (USD)",
+          "integration.desc": "說明",
+          "integration.create": "建立付款連結",
+          "ops.lead": "已移至後台管理。整合網站表單、LINE/Email、廣告名單，自動分派與追蹤進度。",
+          "ops.rental": "已移至後台管理。涵蓋招租、合約、收租、維修工單與房東報表。",
+          "ops.investor": "已移至後台管理。投資人檔案、投資組合、回報率、配息與溝通紀錄。",
+          "ops.recruit": "提供品牌優勢、獎酬制度、加入流程與線上履歷投遞入口。",
+          "ops.openAdmin": "開啟後台 →",
+          "tools.zipTitle": "ZIP CODE 地圖搜房",
+          "tools.zipDesc": "輸入美國 ZIP CODE，快速定位區域物件與均價帶。",
+          "tools.zipBtn": "搜尋 ZIP",
+          "tools.roiTitle": "投報率估算",
+          "tools.roiDesc": "以租金、總價、持有成本估算年化投報率。",
+          "tools.roiBtn": "計算投報率",
+          "tools.aiTitle": "AI 估價",
+          "tools.aiDesc": "輸入地址與坪數，取得 AI 估算價格區間。",
+          "tools.aiBtn": "產生 AI 估價"
+        },
+        en: {
+          "topbar.login": "Client / Investor Login",
+          "newsletter.title": "Get Market Updates",
+          "newsletter.desc": "Stay ahead with exclusive market insights and investment opportunities.",
+          "newsletter.email": "Enter your email",
+          "newsletter.subscribe": "Subscribe",
+          "hero.kicker": "Trending Now",
+          "hero.explore": "Explore Properties",
+          "hero.story": "Watch Our Story",
+          "tabs.buy": "Buy",
+          "tabs.rent": "Rent",
+          "tabs.invest": "Investments",
+          "search.location": "City, Neighborhood, Address or ZIP",
+          "search.button": "Search",
+          "services.listings": "Listing Platform",
+          "services.map": "Map Draw Search",
+          "services.booking": "Book Showing",
+          "services.portal": "Client Portal",
+          "integration.mlsTitle": "1) Real MLS Integration",
+          "integration.mlsSub": "CRMLS / MLS Grid",
+          "integration.zip": "ZIP CODE",
+          "integration.limit": "Limit",
+          "integration.fetch": "Fetch Live MLS",
+          "integration.payTitle": "2) Payment System",
+          "integration.paySub": "Commission, Management Fee, Investment Fund",
+          "integration.payType": "Payment Type",
+          "integration.amount": "Amount (USD)",
+          "integration.desc": "Description",
+          "integration.create": "Create Payment Link",
+          "ops.lead": "Moved to admin backend. Integrates web forms, LINE/Email, ad leads, and auto-routing.",
+          "ops.rental": "Moved to admin backend. Covers leasing, contracts, rent collection, work orders, and owner reports.",
+          "ops.investor": "Moved to admin backend. Investor profiles, portfolios, returns, payouts, and communication history.",
+          "ops.recruit": "Showcases brand strengths, commission plans, onboarding flow, and resume submission.",
+          "ops.openAdmin": "Open Admin →",
+          "tools.zipTitle": "ZIP Code Map Search",
+          "tools.zipDesc": "Enter a US ZIP code to quickly locate listings and average price ranges.",
+          "tools.zipBtn": "Search ZIP",
+          "tools.roiTitle": "ROI Estimator",
+          "tools.roiDesc": "Estimate annualized ROI from rent, purchase price, and carrying costs.",
+          "tools.roiBtn": "Calculate ROI",
+          "tools.aiTitle": "AI Valuation",
+          "tools.aiDesc": "Enter address and size to generate an AI price estimate range.",
+          "tools.aiBtn": "Generate Estimate"
+        }
+      }
+    };
+    initI18n(i18nConfig);
+
+    const heroSlides = document.querySelectorAll(".hero-slide");
+    const heroDots = document.querySelectorAll("#heroDots .dot");
+    let currentHeroSlide = 0;
+    const zipSearchInput = document.getElementById("zipSearchInput");
+    const zipSearchBtn = document.getElementById("zipSearchBtn");
+    const zipResultText = document.getElementById("zipResultText");
+    const zipNodes = document.querySelectorAll(".zip-node");
+    const roiPrice = document.getElementById("roiPrice");
+    const roiRent = document.getElementById("roiRent");
+    const roiCost = document.getElementById("roiCost");
+    const roiVacancy = document.getElementById("roiVacancy");
+    const roiCalcBtn = document.getElementById("roiCalcBtn");
+    const roiResultText = document.getElementById("roiResultText");
+    const aiAddress = document.getElementById("aiAddress");
+    const aiSqft = document.getElementById("aiSqft");
+    const aiAge = document.getElementById("aiAge");
+    const aiZip = document.getElementById("aiZip");
+    const aiEstimateBtn = document.getElementById("aiEstimateBtn");
+    const aiResultText = document.getElementById("aiResultText");
+    const mlsZipInput = document.getElementById("mlsZipInput");
+    const mlsLimitInput = document.getElementById("mlsLimitInput");
+    const mlsFetchBtn = document.getElementById("mlsFetchBtn");
+    const mlsResultText = document.getElementById("mlsResultText");
+    const mlsListings = document.getElementById("mlsListings");
+    const paymentType = document.getElementById("paymentType");
+    const paymentAmount = document.getElementById("paymentAmount");
+    const paymentDesc = document.getElementById("paymentDesc");
+    const paymentCreateBtn = document.getElementById("paymentCreateBtn");
+    const paymentResultText = document.getElementById("paymentResultText");
+
+    function setHeroSlide(index) {
+      currentHeroSlide = ((index % heroSlides.length) + heroSlides.length) % heroSlides.length;
+      heroSlides.forEach((slide, slideIndex) => {
+        slide.classList.toggle("active", slideIndex === currentHeroSlide);
+      });
+      heroDots.forEach((dot, dotIndex) => {
+        dot.classList.toggle("active", dotIndex === currentHeroSlide);
+      });
+    }
+
+    heroDots.forEach((dot) => {
+      dot.addEventListener("click", () => {
+        const slideIndex = Number(dot.dataset.slide);
+        setHeroSlide(slideIndex);
+      });
+    });
+
+    function showZipResult(zip) {
+      const zipStats = {
+        "90001": "$1.18M｜34 Listings",
+        "90210": "$3.42M｜22 Listings",
+        "92648": "$1.97M｜27 Listings",
+        "92037": "$2.21M｜19 Listings",
+        "94107": "$1.36M｜31 Listings"
+      };
+      const stats = zipStats[zip] || "尚無該 ZIP 樣本資料";
+      zipResultText.textContent = "ZIP " + zip + " 物件概況：" + stats;
+      zipNodes.forEach((node) => node.classList.toggle("active", node.dataset.zip === zip));
+    }
+
+    zipSearchBtn.addEventListener("click", () => {
+      const zip = zipSearchInput.value.trim();
+      if (!zip) return;
+      showZipResult(zip);
+    });
+    zipNodes.forEach((node) => {
+      node.addEventListener("click", () => showZipResult(node.dataset.zip || ""));
+    });
+
+    roiCalcBtn.addEventListener("click", () => {
+      const price = Number(roiPrice.value) || 0;
+      const rent = Number(roiRent.value) || 0;
+      const cost = Number(roiCost.value) || 0;
+      const vacancy = (Number(roiVacancy.value) || 0) / 100;
+      if (!price || !rent) {
+        roiResultText.textContent = "請輸入有效總價與租金。";
+        return;
+      }
+      const annualNet = (rent * 12 * (1 - vacancy)) - (cost * 12);
+      const roi = (annualNet / price) * 100;
+      roiResultText.textContent = "預估年化投報率：" + roi.toFixed(2) + "%（年淨收益 $" + Math.round(annualNet).toLocaleString("en-US") + "）";
+    });
+
+    aiEstimateBtn.addEventListener("click", () => {
+      const sqft = Number(aiSqft.value) || 0;
+      const age = Number(aiAge.value) || 0;
+      const zip = aiZip.value.trim();
+      if (!sqft || !zip) {
+        aiResultText.textContent = "請輸入完整地址/坪數/ZIP。";
+        return;
+      }
+      const base = 620 * sqft;
+      const ageAdjust = Math.max(0.78, 1 - age * 0.01);
+      const zipBoost = zip.startsWith("90") ? 1.16 : zip.startsWith("94") ? 1.08 : 1.0;
+      const est = base * ageAdjust * zipBoost;
+      const low = Math.round(est * 0.92);
+      const high = Math.round(est * 1.08);
+      aiResultText.textContent = "AI 估價：" + aiAddress.value.trim() + " 約 $" + low.toLocaleString("en-US") + " - $" + high.toLocaleString("en-US");
+    });
+
+    async function fetchMlsListings() {
+      const zip = mlsZipInput.value.trim();
+      const limit = Number(mlsLimitInput.value) || 6;
+      if (!zip) {
+        mlsResultText.textContent = "請輸入 ZIP CODE。";
+        return;
+      }
+      mlsResultText.textContent = "查詢中...";
+      mlsListings.innerHTML = "";
+      try {
+        const response = await fetch("/api/mls/listings?zip=" + encodeURIComponent(zip) + "&limit=" + encodeURIComponent(limit));
+        if (!response.ok) {
+          throw new Error("MLS API error " + response.status);
+        }
+        const payload = await response.json();
+        const listings = payload.listings || [];
+        mlsResultText.textContent = "來源：" + payload.provider + "｜共 " + listings.length + " 筆";
+        if (!listings.length) {
+          mlsListings.innerHTML = "<p class='integration-empty'>查無資料。</p>";
+          return;
+        }
+        mlsListings.innerHTML = listings.map((listing) => (
+          "<article class='integration-listing'>" +
+          "<h4>" + listing.address + "</h4>" +
+          "<p>" + listing.city + " ・ " + listing.zip + " ・ " + listing.beds + " Beds / " + listing.baths + " Baths</p>" +
+          "<strong>$" + Number(listing.price || 0).toLocaleString("en-US") + "</strong>" +
+          "</article>"
+        )).join("");
+      } catch (error) {
+        mlsResultText.textContent = "MLS 查詢失敗：" + error.message;
+      }
+    }
+
+    async function createPaymentLink() {
+      const amount = Number(paymentAmount.value) || 0;
+      if (!amount) {
+        paymentResultText.textContent = "請輸入有效金額。";
+        return;
+      }
+      paymentResultText.textContent = "建立付款連結中...";
+      try {
+        const response = await fetch("/api/payments/create-link", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            paymentType: paymentType.value,
+            amount: amount,
+            description: paymentDesc.value.trim()
+          })
+        });
+        const payload = await response.json();
+        if (!response.ok) {
+          throw new Error(payload.error || "Payment API error");
+        }
+        const payUrl = payload.checkoutUrl || payload.url || "";
+        paymentResultText.innerHTML = "已建立 " + (payload.paymentType || payload.type || "") + " 付款連結：<a href='" + payUrl + "' target='_blank' rel='noreferrer'>Open Link</a>";
+      } catch (error) {
+        paymentResultText.textContent = "建立失敗：" + error.message;
+      }
+    }
+
+    mlsFetchBtn.addEventListener("click", fetchMlsListings);
+    paymentCreateBtn.addEventListener("click", createPaymentLink);
+
+    setInterval(() => {
+      setHeroSlide((currentHeroSlide + 1) % heroSlides.length);
+    }, 5200);
+
+    const animatedBlocks = document.querySelectorAll("[data-animate]");
+    const animateObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("in-view");
+          animateObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.2 });
+    animatedBlocks.forEach((block) => animateObserver.observe(block));
+
+  </script>
+</body>
+</html>

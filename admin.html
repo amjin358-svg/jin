@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>後台管理 — BlueRock</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body class="admin-app">
+  <div class="page-shell admin-page">
+    <header class="topbar admin-topbar glass" data-animate>
+      <div class="brand">
+        <img class="brand-mark" src="./assets/bluerock-logo-mark-dark-en.svg" alt="BlueRock mark">
+        <div class="brand-copy">
+          <p class="brand-name">BlueRock Property Soultion</p>
+          <p class="brand-tagline">後台管理系統</p>
+        </div>
+      </div>
+      <nav class="menu admin-top-nav">
+        <a href="./index.html" data-i18n-key="admin.backHome">返回首頁</a>
+      </nav>
+      <div class="lang-switch" data-lang-switch></div>
+    </header>
+
+    <div class="admin-layout">
+      <aside class="admin-sidebar glass" data-animate>
+        <p class="admin-sidebar-title" data-i18n-key="admin.sidebarModules">模組</p>
+        <a class="admin-nav-link active" href="#lead-automation" data-i18n-key="admin.leadTitle">客戶自動開發系統</a>
+        <a class="admin-nav-link" href="#property-management" data-i18n-key="admin.rentalTitle">租賃代管系統</a>
+        <a class="admin-nav-link" href="#investor-crm" data-i18n-key="admin.investorTitle">投資人 CRM 後台</a>
+        <a class="admin-nav-link" href="./index.html#ops-suite" data-i18n-key="admin.otherModules">其他營運模組（首頁）</a>
+      </aside>
+
+      <main class="admin-main">
+        <section class="admin-dashboard glass" data-animate aria-label="Operations dashboard">
+          <div class="admin-dashboard-head">
+            <div>
+              <h2 class="admin-dashboard-title" data-i18n-key="admin.dashboardTitle">營運總覽</h2>
+              <p class="admin-dashboard-sub" data-i18n-key="admin.dashboardSub">關鍵指標一覽 · 示範數據</p>
+            </div>
+            <span class="admin-dashboard-badge" data-i18n-key="admin.dashboardLive">即時</span>
+          </div>
+          <div class="admin-stat-grid">
+            <article class="admin-stat-card">
+              <p class="admin-stat-label" data-i18n-key="admin.statLeads">本週新線索</p>
+              <p class="admin-stat-value">128</p>
+              <p class="admin-stat-trend up">+12% <span data-i18n-key="admin.vsLastWeek">較上週</span></p>
+            </article>
+            <article class="admin-stat-card">
+              <p class="admin-stat-label" data-i18n-key="admin.statClosings">成交（月）</p>
+              <p class="admin-stat-value">21</p>
+              <p class="admin-stat-trend up">+3 <span data-i18n-key="admin.vsLastMonth">較上月</span></p>
+            </article>
+            <article class="admin-stat-card">
+              <p class="admin-stat-label" data-i18n-key="admin.statLeases">活躍租約</p>
+              <p class="admin-stat-value">24</p>
+              <p class="admin-stat-trend neutral" data-i18n-key="admin.stable">穩定</p>
+            </article>
+            <article class="admin-stat-card">
+              <p class="admin-stat-label" data-i18n-key="admin.statAum">託管 AUM</p>
+              <p class="admin-stat-value">$42.6M</p>
+              <p class="admin-stat-trend up">+2.1%</p>
+            </article>
+          </div>
+          <div class="admin-dashboard-charts">
+            <div class="admin-chart-card">
+              <h3 class="admin-chart-title" data-i18n-key="admin.chartFunnel">線索轉化漏斗</h3>
+              <div class="admin-funnel" role="img" aria-label="Funnel visualization">
+                <div class="admin-funnel-bar b1" style="width: 100%;"><span>100%</span></div>
+                <div class="admin-funnel-bar b2" style="width: 72%;"><span>72%</span></div>
+                <div class="admin-funnel-bar b3" style="width: 48%;"><span>48%</span></div>
+                <div class="admin-funnel-bar b4" style="width: 26%;"><span>26%</span></div>
+              </div>
+            </div>
+            <div class="admin-chart-card">
+              <h3 class="admin-chart-title" data-i18n-key="admin.chartTrend">本週趨勢</h3>
+              <div class="admin-spark" role="img" aria-label="Weekly trend chart">
+                <div class="admin-spark-bars">
+                  <span style="height: 42%;"></span>
+                  <span style="height: 55%;"></span>
+                  <span style="height: 38%;"></span>
+                  <span style="height: 68%;"></span>
+                  <span style="height: 52%;"></span>
+                  <span style="height: 80%;"></span>
+                  <span style="height: 72%;"></span>
+                </div>
+                <p class="admin-spark-caption" data-i18n-key="admin.last7">最近 7 天</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="glass admin-section" id="lead-automation" data-animate>
+          <h1 class="admin-section-title" data-i18n-key="admin.leadTitle">客戶自動開發系統</h1>
+          <p class="admin-section-lead" data-i18n-key="admin.leadLead">整合網站表單、LINE、Email、廣告名單，自動分派與追蹤進度。以下為後台預覽介面。</p>
+
+          <div class="admin-subgrid">
+            <article class="panel admin-tile">
+              <h2>線索來源</h2>
+              <ul class="admin-checklist">
+                <li><label><input type="checkbox" checked disabled> 官網表單</label></li>
+                <li><label><input type="checkbox" checked disabled> LINE 官方帳號</label></li>
+                <li><label><input type="checkbox" disabled> Email 行銷</label></li>
+                <li><label><input type="checkbox" checked disabled> 廣告落地頁</label></li>
+              </ul>
+            </article>
+            <article class="panel admin-tile">
+              <h2>派單規則</h2>
+              <label class="admin-field">預設負責人
+                <select>
+                  <option>依 ZIP 輪值</option>
+                  <option>依件數負載</option>
+                  <option>手動指定</option>
+                </select>
+              </label>
+              <label class="admin-field">新線索 SLA
+                <select>
+                  <option>15 分鐘內回覆</option>
+                  <option>1 小時內回覆</option>
+                  <option>當日下班前</option>
+                </select>
+              </label>
+            </article>
+          </div>
+
+          <article class="panel admin-tile admin-tile-wide">
+            <h2>待處理線索</h2>
+            <div class="admin-table-wrap">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>時間</th>
+                    <th>姓名</th>
+                    <th>來源</th>
+                    <th>需求</th>
+                    <th>階段</th>
+                    <th>負責人</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>今天 10:20</td>
+                    <td>陳**</td>
+                    <td>官網</td>
+                    <td>90210 買屋</td>
+                    <td><span class="admin-pill">已派單</span></td>
+                    <td>Agent A</td>
+                  </tr>
+                  <tr>
+                    <td>今天 09:05</td>
+                    <td>林**</td>
+                    <td>LINE</td>
+                    <td>租屋諮詢</td>
+                    <td><span class="admin-pill warn">待回覆</span></td>
+                    <td>—</td>
+                  </tr>
+                  <tr>
+                    <td>昨天 16:40</td>
+                    <td>W. **</td>
+                    <td>廣告</td>
+                    <td>投資物件</td>
+                    <td><span class="admin-pill ok">已聯繫</span></td>
+                    <td>Agent B</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="admin-hint">實際上線時可串接您指定的 CRM 或儲存 API。</p>
+          </article>
+        </section>
+
+        <section class="glass admin-section" id="property-management" data-animate>
+          <h1 class="admin-section-title" data-i18n-key="admin.rentalTitle">租賃代管系統</h1>
+          <p class="admin-section-lead" data-i18n-key="admin.rentalLead">招租、租約、收帳、維修工單與房東報表集中管理。以下為後台預覽介面。</p>
+
+          <div class="admin-subgrid">
+            <article class="panel admin-tile">
+              <h2>管轄物件</h2>
+              <p class="admin-metric">活躍租約 <strong>24</strong> 戶</p>
+              <p class="admin-metric">待招租 <strong>3</strong> 戶</p>
+              <p class="admin-metric">本月到期 <strong>2</strong> 戶</p>
+            </article>
+            <article class="panel admin-tile">
+              <h2>流程捷徑</h2>
+              <ul class="admin-checklist">
+                <li><span>新刊登招租</span></li>
+                <li><span>產生租賃合約範本</span></li>
+                <li><span>建維修工單</span></li>
+                <li><span>匯出月報表（房東）</span></li>
+              </ul>
+            </article>
+          </div>
+
+          <article class="panel admin-tile admin-tile-wide">
+            <h2>代管物件與帳務概況</h2>
+            <div class="admin-table-wrap">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>物件 / 單位</th>
+                    <th>房客</th>
+                    <th>月租</th>
+                    <th>下期收租</th>
+                    <th>工單</th>
+                    <th>狀態</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Ocean Ave #4B</td>
+                    <td>K. **</td>
+                    <td>$3,200</td>
+                    <td>5/1</td>
+                    <td>0</td>
+                    <td><span class="admin-pill ok">在租</span></td>
+                  </tr>
+                  <tr>
+                    <td>Maple St Duplex A</td>
+                    <td>—</td>
+                    <td>—</td>
+                    <td>—</td>
+                    <td>1</td>
+                    <td><span class="admin-pill warn">待租</span></td>
+                  </tr>
+                  <tr>
+                    <td>Pine Ln #12</td>
+                    <td>L. **</td>
+                    <td>$2,450</td>
+                    <td>5/1</td>
+                    <td>1</td>
+                    <td><span class="admin-pill">在租</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="admin-hint">上線時可與帳務與工單 API 或第三方物業系統整合。</p>
+          </article>
+        </section>
+
+        <section class="glass admin-section" id="investor-crm" data-animate>
+          <h1 class="admin-section-title" data-i18n-key="admin.investorTitle">投資人 CRM 後台</h1>
+          <p class="admin-section-lead" data-i18n-key="admin.investorLead">集中管理投資人檔案、投資標的、回報與配息、以及溝通紀錄。以下為後台預覽介面。</p>
+
+          <div class="admin-subgrid">
+            <article class="panel admin-tile">
+              <h2>投資人概況</h2>
+              <p class="admin-metric">活躍投資人 <strong>86</strong> 位</p>
+              <p class="admin-metric">本月待配息 <strong>12</strong> 筆</p>
+              <p class="admin-metric">平均持有標的 <strong>2.4</strong> 件</p>
+            </article>
+            <article class="panel admin-tile">
+              <h2>常用操作</h2>
+              <ul class="admin-checklist">
+                <li><span>新增 / 編輯投資人檔案</span></li>
+                <li><span>登錄投資標的與出資比例</span></li>
+                <li><span>排程配息與對帳</span></li>
+                <li><span>匯出投資人報表</span></li>
+              </ul>
+            </article>
+          </div>
+
+          <article class="panel admin-tile admin-tile-wide">
+            <h2>投資人與標的一覽</h2>
+            <div class="admin-table-wrap">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>投資人</th>
+                    <th>標的 / 專案</th>
+                    <th>投入金額</th>
+                    <th>預估年化</th>
+                    <th>上次聯繫</th>
+                    <th>狀態</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>H. **</td>
+                    <td>LA Multifamily A</td>
+                    <td>$500,000</td>
+                    <td>8.2%</td>
+                    <td>4/20</td>
+                    <td><span class="admin-pill ok">持續</span></td>
+                  </tr>
+                  <tr>
+                    <td>M. **</td>
+                    <td>Retail Fund Q1</td>
+                    <td>$120,000</td>
+                    <td>7.5%</td>
+                    <td>4/15</td>
+                    <td><span class="admin-pill">持續</span></td>
+                  </tr>
+                  <tr>
+                    <td>R. **</td>
+                    <td>—</td>
+                    <td>—</td>
+                    <td>—</td>
+                    <td>4/25</td>
+                    <td><span class="admin-pill warn">洽談中</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="admin-hint">上線時可與帳務、法遵與既有 CRM 或試算表匯出整合。</p>
+          </article>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script src="./i18n.js"></script>
+  <script>
+    initI18n({
+      translations: {
+        zh: {
+          "admin.backHome": "返回首頁",
+          "admin.sidebarModules": "模組",
+          "admin.leadTitle": "客戶自動開發系統",
+          "admin.rentalTitle": "租賃代管系統",
+          "admin.investorTitle": "投資人 CRM 後台",
+          "admin.otherModules": "其他營運模組（首頁）",
+          "admin.leadLead": "整合網站表單、LINE、Email、廣告名單，自動分派與追蹤進度。以下為後台預覽介面。",
+          "admin.rentalLead": "招租、租約、收帳、維修工單與房東報表集中管理。以下為後台預覽介面。",
+          "admin.investorLead": "集中管理投資人檔案、投資標的、回報與配息、以及溝通紀錄。以下為後台預覽介面。",
+          "admin.dashboardTitle": "營運總覽",
+          "admin.dashboardSub": "關鍵指標一覽 · 示範數據",
+          "admin.dashboardLive": "即時",
+          "admin.statLeads": "本週新線索",
+          "admin.statClosings": "成交（月）",
+          "admin.statLeases": "活躍租約",
+          "admin.statAum": "託管 AUM",
+          "admin.vsLastWeek": "較上週",
+          "admin.vsLastMonth": "較上月",
+          "admin.stable": "穩定",
+          "admin.chartFunnel": "線索轉化漏斗",
+          "admin.chartTrend": "本週趨勢",
+          "admin.last7": "最近 7 天"
+        },
+        en: {
+          "admin.backHome": "Back to Home",
+          "admin.sidebarModules": "Modules",
+          "admin.leadTitle": "Lead Automation System",
+          "admin.rentalTitle": "Rental Management System",
+          "admin.investorTitle": "Investor CRM Dashboard",
+          "admin.otherModules": "Other Ops Modules (Homepage)",
+          "admin.leadLead": "Integrates web forms, LINE, email, and ad leads with automated routing and tracking.",
+          "admin.rentalLead": "Manage leasing, contracts, rent collection, work orders, and owner reporting in one place.",
+          "admin.investorLead": "Centralized management of investor profiles, investments, returns, payouts, and communications.",
+          "admin.dashboardTitle": "Operations Dashboard",
+          "admin.dashboardSub": "Key metrics overview · sample data",
+          "admin.dashboardLive": "Live",
+          "admin.statLeads": "New leads (week)",
+          "admin.statClosings": "Closings (mo.)",
+          "admin.statLeases": "Active leases",
+          "admin.statAum": "AUM (managed)",
+          "admin.vsLastWeek": "vs last week",
+          "admin.vsLastMonth": "vs last month",
+          "admin.stable": "Stable",
+          "admin.chartFunnel": "Lead funnel",
+          "admin.chartTrend": "This week",
+          "admin.last7": "Last 7 days"
+        }
+      }
+    });
+
+    const adminNav = document.querySelectorAll(".admin-nav-link");
+    const hashTargets = {
+      "#lead-automation": "lead-automation",
+      "#property-management": "property-management",
+      "#investor-crm": "investor-crm"
+    };
+
+    function setActiveByHash() {
+      const h = location.hash;
+      if (!h || !hashTargets[h]) return;
+      adminNav.forEach((l) => {
+        if (l.getAttribute("href") === h) l.classList.add("active");
+        else if (l.getAttribute("href")?.startsWith("#")) l.classList.remove("active");
+      });
+    }
+
+    adminNav.forEach((link) => {
+      link.addEventListener("click", () => {
+        if (link.getAttribute("href")?.startsWith("#")) {
+          adminNav.forEach((l) => l.classList.remove("active"));
+          link.classList.add("active");
+        }
+      });
+    });
+    if (hashTargets[location.hash]) {
+      document.getElementById(hashTargets[location.hash])?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+    setActiveByHash();
+    window.addEventListener("hashchange", () => {
+      if (hashTargets[location.hash]) {
+        document.getElementById(hashTargets[location.hash])?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+      setActiveByHash();
+    });
+  </script>
+</body>
+</html>
