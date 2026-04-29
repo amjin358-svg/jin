@@ -9,9 +9,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css">
 </head>
-<body class="theme-shinruenn">
+<body class="admin-app">
   <div class="page-shell admin-page">
-    <header class="topbar glass" data-animate>
+    <header class="topbar admin-topbar glass" data-animate>
       <div class="brand">
         <img class="brand-mark" src="./assets/bluerock-logo-mark-dark-en.svg" alt="BlueRock mark">
         <div class="brand-copy">
@@ -35,6 +35,64 @@
       </aside>
 
       <main class="admin-main">
+        <section class="admin-dashboard glass" data-animate aria-label="Operations dashboard">
+          <div class="admin-dashboard-head">
+            <div>
+              <h2 class="admin-dashboard-title" data-i18n-key="admin.dashboardTitle">營運總覽</h2>
+              <p class="admin-dashboard-sub" data-i18n-key="admin.dashboardSub">關鍵指標一覽 · 示範數據</p>
+            </div>
+            <span class="admin-dashboard-badge" data-i18n-key="admin.dashboardLive">即時</span>
+          </div>
+          <div class="admin-stat-grid">
+            <article class="admin-stat-card">
+              <p class="admin-stat-label" data-i18n-key="admin.statLeads">本週新線索</p>
+              <p class="admin-stat-value">128</p>
+              <p class="admin-stat-trend up">+12% <span data-i18n-key="admin.vsLastWeek">較上週</span></p>
+            </article>
+            <article class="admin-stat-card">
+              <p class="admin-stat-label" data-i18n-key="admin.statClosings">成交（月）</p>
+              <p class="admin-stat-value">21</p>
+              <p class="admin-stat-trend up">+3 <span data-i18n-key="admin.vsLastMonth">較上月</span></p>
+            </article>
+            <article class="admin-stat-card">
+              <p class="admin-stat-label" data-i18n-key="admin.statLeases">活躍租約</p>
+              <p class="admin-stat-value">24</p>
+              <p class="admin-stat-trend neutral" data-i18n-key="admin.stable">穩定</p>
+            </article>
+            <article class="admin-stat-card">
+              <p class="admin-stat-label" data-i18n-key="admin.statAum">託管 AUM</p>
+              <p class="admin-stat-value">$42.6M</p>
+              <p class="admin-stat-trend up">+2.1%</p>
+            </article>
+          </div>
+          <div class="admin-dashboard-charts">
+            <div class="admin-chart-card">
+              <h3 class="admin-chart-title" data-i18n-key="admin.chartFunnel">線索轉化漏斗</h3>
+              <div class="admin-funnel" role="img" aria-label="Funnel visualization">
+                <div class="admin-funnel-bar b1" style="width: 100%;"><span>100%</span></div>
+                <div class="admin-funnel-bar b2" style="width: 72%;"><span>72%</span></div>
+                <div class="admin-funnel-bar b3" style="width: 48%;"><span>48%</span></div>
+                <div class="admin-funnel-bar b4" style="width: 26%;"><span>26%</span></div>
+              </div>
+            </div>
+            <div class="admin-chart-card">
+              <h3 class="admin-chart-title" data-i18n-key="admin.chartTrend">本週趨勢</h3>
+              <div class="admin-spark" role="img" aria-label="Weekly trend chart">
+                <div class="admin-spark-bars">
+                  <span style="height: 42%;"></span>
+                  <span style="height: 55%;"></span>
+                  <span style="height: 38%;"></span>
+                  <span style="height: 68%;"></span>
+                  <span style="height: 52%;"></span>
+                  <span style="height: 80%;"></span>
+                  <span style="height: 72%;"></span>
+                </div>
+                <p class="admin-spark-caption" data-i18n-key="admin.last7">最近 7 天</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <section class="glass admin-section" id="lead-automation" data-animate>
           <h1 class="admin-section-title" data-i18n-key="admin.leadTitle">客戶自動開發系統</h1>
           <p class="admin-section-lead" data-i18n-key="admin.leadLead">整合網站表單、LINE、Email、廣告名單，自動分派與追蹤進度。以下為後台預覽介面。</p>
@@ -266,7 +324,20 @@
           "admin.otherModules": "其他營運模組（首頁）",
           "admin.leadLead": "整合網站表單、LINE、Email、廣告名單，自動分派與追蹤進度。以下為後台預覽介面。",
           "admin.rentalLead": "招租、租約、收帳、維修工單與房東報表集中管理。以下為後台預覽介面。",
-          "admin.investorLead": "集中管理投資人檔案、投資標的、回報與配息、以及溝通紀錄。以下為後台預覽介面。"
+          "admin.investorLead": "集中管理投資人檔案、投資標的、回報與配息、以及溝通紀錄。以下為後台預覽介面。",
+          "admin.dashboardTitle": "營運總覽",
+          "admin.dashboardSub": "關鍵指標一覽 · 示範數據",
+          "admin.dashboardLive": "即時",
+          "admin.statLeads": "本週新線索",
+          "admin.statClosings": "成交（月）",
+          "admin.statLeases": "活躍租約",
+          "admin.statAum": "託管 AUM",
+          "admin.vsLastWeek": "較上週",
+          "admin.vsLastMonth": "較上月",
+          "admin.stable": "穩定",
+          "admin.chartFunnel": "線索轉化漏斗",
+          "admin.chartTrend": "本週趨勢",
+          "admin.last7": "最近 7 天"
         },
         en: {
           "admin.backHome": "Back to Home",
@@ -277,7 +348,20 @@
           "admin.otherModules": "Other Ops Modules (Homepage)",
           "admin.leadLead": "Integrates web forms, LINE, email, and ad leads with automated routing and tracking.",
           "admin.rentalLead": "Manage leasing, contracts, rent collection, work orders, and owner reporting in one place.",
-          "admin.investorLead": "Centralized management of investor profiles, investments, returns, payouts, and communications."
+          "admin.investorLead": "Centralized management of investor profiles, investments, returns, payouts, and communications.",
+          "admin.dashboardTitle": "Operations Dashboard",
+          "admin.dashboardSub": "Key metrics overview · sample data",
+          "admin.dashboardLive": "Live",
+          "admin.statLeads": "New leads (week)",
+          "admin.statClosings": "Closings (mo.)",
+          "admin.statLeases": "Active leases",
+          "admin.statAum": "AUM (managed)",
+          "admin.vsLastWeek": "vs last week",
+          "admin.vsLastMonth": "vs last month",
+          "admin.stable": "Stable",
+          "admin.chartFunnel": "Lead funnel",
+          "admin.chartTrend": "This week",
+          "admin.last7": "Last 7 days"
         }
       }
     });
