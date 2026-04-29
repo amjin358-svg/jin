@@ -74,12 +74,22 @@ const UI_I18N = {
   statusLabel: { en: "Status", zh: "銷售狀態" },
   statusActive: { en: "Active", zh: "銷售中" },
   estMortgageLabel: { en: "Est. Mortgage", zh: "估算月付" },
+  pricePerSqft: { en: "Price / Sqft", zh: "每呎單價" },
   agentLabel: { en: "Listing Agent", zh: "專屬經紀人" },
-  contactAgent: { en: "Contact Agent", zh: "聯絡經紀人" }
+  contactAgent: { en: "Contact Agent", zh: "聯絡經紀人" },
+  askTour: { en: "Request Tour", zh: "預約看房" }
 };
 
 const originalTextMap = new WeakMap();
-const getLang = () => localStorage.getItem(I18N_STORAGE_KEY) || "en";
+const getLang = () => {
+  const params = new URLSearchParams(window.location.search);
+  const urlLang = params.get("lang");
+  if (urlLang === "en" || urlLang === "zh") {
+    localStorage.setItem(I18N_STORAGE_KEY, urlLang);
+    return urlLang;
+  }
+  return localStorage.getItem(I18N_STORAGE_KEY) || "en";
+};
 
 const translateTextNode = (node, lang) => {
   if (!originalTextMap.has(node)) {

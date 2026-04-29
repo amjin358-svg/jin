@@ -146,7 +146,17 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
 const markers = [];
 const listingGrid = document.getElementById("listingGrid");
 const searchInput = document.getElementById("listingSearch");
-const listingDetail = document.getElementById("listingDetail");
+const listingDetailModal = document.getElementById("listingDetailModal");
+const detailImage = document.getElementById("detailImage");
+const detailPrice = document.getElementById("detailPrice");
+const detailTitle = document.getElementById("detailTitle");
+const detailAddress = document.getElementById("detailAddress");
+const detailHighlights = document.getElementById("detailHighlights");
+const detailGrid = document.getElementById("detailGrid");
+const detailDescription = document.getElementById("detailDescription");
+const detailMapBtn = document.getElementById("detailMapBtn");
+const detailContactBtn = document.getElementById("detailContactBtn");
+let activeDetailId = null;
 let filteredListings = listings;
 
 const formatPopup = (listing) =>
@@ -211,31 +221,46 @@ const renderCards = () => {
   });
 };
 
+const formatCurrencyValue = (priceText) => Number(priceText.replace(/[$,]/g, ""));
+
 const renderDetail = (listing) => {
-  if (!listingDetail) return;
-  listingDetail.innerHTML = `
-    <button type="button" class="detail-close" aria-label="${t("close", "Close")}">×</button>
-    <img class="detail-image" src="${listing.image}" alt="${listing.title}">
-    <div class="detail-content">
-      <p class="detail-price">${listing.price}</p>
-      <h3 class="detail-title">${listing.title}</h3>
-      <p class="detail-address">${listing.district}</p>
-      <div class="detail-grid">
-        <p><strong>${t("layoutLabel", "Layout")}:</strong> ${listing.beds} ${t("beds", "Beds")} / ${listing.baths} ${t("baths", "Baths")}</p>
-        <p><strong>${t("areaLabel", "Area")}:</strong> ${listing.area}</p>
-        <p><strong>${t("yearLabel", "Year")}:</strong> ${listing.yearBuilt}</p>
-        <p><strong>${t("parkingLabel", "Parking")}:</strong> ${listing.parking}</p>
-        <p><strong>${t("communityLabel", "Community")}:</strong> ${listing.community}</p>
-        <p><strong>${t("agentLabel", "Listing Agent")}:</strong> Olivia Chen, Globe Vista Realty</p>
-      </div>
-      <p class="detail-note">${t("detailNote", "Inspired by modern MLS card interactions for fast property comparison.")}</p>
-    </div>
-  `;
-  listingDetail.classList.add("is-open");
-  const closeBtn = listingDetail.querySelector(".detail-close");
-  if (closeBtn) {
-    closeBtn.addEventListener("click", closeDetail);
+  if (!listingDetailModal) return;
+  activeDetailId = listing.id;
+  if (detailImage) {
+    detailImage.src = listing.image;
+    detailImage.alt = listing.title;
   }
+  if (detailPrice) detailPrice.textContent = listing.price;
+  if (detailTitle) detailTitle.textContent = listing.title;
+  if (detailAddress) detailAddress.textContent = listing.district;
+  if (detailHighlights) {
+    detailHighlights.textContent = `${listing.beds} ${t("beds", "Beds")} · ${listing.baths} ${t("baths", "Baths")} · ${listing.area}`;
+  }
+  if (detailGrid) {
+    const pricePerSqft = Math.round(formatCurrencyValue(listing.price) / Number(listing.area.replace(/[^\d]/g, "")));
+    detailGrid.innerHTML = `
+      <p><strong>${t("layoutLabel", "Layout")}:</strong> ${listing.beds} ${t("beds", "Beds")} / ${listing.baths} ${t("baths", "Baths")}</p>
+      <p><strong>${t("areaLabel", "Area")}:</strong> ${listing.area}</p>
+      <p><strong>${t("yearLabel", "Year")}:</strong> ${listing.yearBuilt}</p>
+      <p><strong>${t("parkingLabel", "Parking")}:</strong> ${listing.parking}</p>
+      <p><strong>${t("communityLabel", "Community")}:</strong> ${listing.community}</p>
+      <p><strong>${t("propertyIdLabel", "Property ID")}:</strong> ${listing.id.toUpperCase()}</p>
+      <p><strong>${t("statusLabel", "Status")}:</strong> ${t("statusActive", "Active")}</p>
+      <p><strong>${t("pricePerSqft", "Price / sqft")}:</strong> $${pricePerSqft.toLocaleString()}</p>
+      <p><strong>${t("estMortgageLabel", "Est. Mortgage")}:</strong> $${Math.round(formatCurrencyValue(listing.price) * 0.0049).toLocaleString()}/mo</p>
+      <p><strong>${t("agentLabel", "Listing Agent")}:</strong> Olivia Chen</p>
+    `;
+  }
+  if (detailDescription) {
+    detailDescription.textContent = t(
+      "detailNote",
+      "Elegant turnkey residence with premium finishes, curated interiors, and strong long-term value potential."
+    );
+  }
+  if (detailMapBtn) detailMapBtn.textContent = t("viewOnMap", "View on Map");
+  if (detailContactBtn) detailContactBtn.textContent = t("contactAgent", "Contact Agent");
+  listingDetailModal.classList.add("is-open");
+  listingDetailModal.setAttribute("aria-hidden", "false");
 };
 
 const openDetail = (listingId) => {
@@ -245,8 +270,9 @@ const openDetail = (listingId) => {
 };
 
 const closeDetail = () => {
-  if (!listingDetail) return;
-  listingDetail.classList.remove("is-open");
+  if (!listingDetailModal) return;
+  listingDetailModal.classList.remove("is-open");
+  listingDetailModal.setAttribute("aria-hidden", "true");
 };
 
 const applyFilter = (keyword) => {
@@ -283,9 +309,26 @@ window.addEventListener("site-language-changed", () => {
     }
   });
   renderCards();
-  if (listingDetail && listingDetail.classList.contains("is-open")) {
-    const openTitle = listingDetail.querySelector(".detail-title")?.textContent;
-    const openListing = listings.find((item) => item.title === openTitle);
+  if (listingDetailModal && listingDetailModal.classList.contains("is-open")) {
+    const openListing = listings.find((item) => item.id === activeDetailId);
     if (openListing) renderDetail(openListing);
   }
 });
+
+if (listingDetailModal) {
+  listingDetailModal.addEventListener("click", (event) => {
+    if (event.target instanceof HTMLElement && event.target.dataset.closeDetail === "1") {
+      closeDetail();
+    }
+  });
+}
+
+if (detailMapBtn) {
+  detailMapBtn.addEventListener("click", () => {
+    const listing = listings.find((item) => item.id === activeDetailId);
+    if (!listing) return;
+    map.setView([listing.lat, listing.lng], 13);
+    const target = markers.find((item) => item.id === listing.id);
+    if (target) target.marker.openPopup();
+  });
+}

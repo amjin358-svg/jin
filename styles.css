@@ -657,12 +657,126 @@ body {
   cursor: pointer;
 }
 
-.listing-modal {
+.listing-detail-modal {
   position: fixed;
   inset: 0;
+  display: none;
+  z-index: 90;
+}
+
+.listing-detail-modal.is-open {
+  display: block;
+}
+
+.listing-detail-backdrop {
+  position: absolute;
+  inset: 0;
   background: rgba(8, 16, 33, 0.52);
+}
+
+.listing-detail-panel {
+  position: relative;
+  width: min(980px, 92vw);
+  margin: min(6vh, 52px) auto;
+  max-height: 88vh;
+  overflow: auto;
+  background: #fff;
+  border-radius: 0.9rem;
+  box-shadow: 0 24px 70px rgba(13, 33, 68, 0.35);
+  z-index: 1;
+}
+
+.detail-close {
+  position: absolute;
+  top: 0.65rem;
+  right: 0.65rem;
+  border: 1px solid #b7c9ec;
+  background: #fff;
+  color: #1b4e9d;
+  border-radius: 0.35rem;
+  width: 2rem;
+  height: 2rem;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.detail-hero img {
+  width: 100%;
+  aspect-ratio: 16 / 7;
+  object-fit: cover;
+  display: block;
+}
+
+.detail-body {
+  padding: 1rem 1.1rem 1.15rem;
+}
+
+.detail-price {
+  margin: 0.35rem 0 0.2rem;
+  color: #173c82;
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 1.5rem;
+}
+
+.detail-body h3 {
+  margin: 0.2rem 0;
+  color: #143770;
+  font-size: 1.3rem;
+}
+
+.detail-address {
+  margin: 0 0 0.75rem;
+  color: #50617e;
+}
+
+.detail-highlights {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+.detail-chip {
+  padding: 0.3rem 0.55rem;
+  border-radius: 0.35rem;
+  background: #f2f6ff;
+  color: #1d407a;
+  font-weight: 600;
+  font-size: 0.83rem;
+}
+
+.detail-grid {
   display: grid;
-  place-items: center;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem 0.7rem;
+}
+
+.detail-grid p {
+  margin: 0;
+  border: 1px solid #e2eaf8;
+  background: #f9fbff;
+  border-radius: 0.45rem;
+  padding: 0.52rem 0.58rem;
+  color: #1f3761;
+  font-size: 0.9rem;
+}
+
+.detail-description {
+  margin: 0.82rem 0;
+  color: #4e607e;
+  font-size: 0.9rem;
+  line-height: 1.62;
+}
+
+.detail-actions {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.listing-modal {
+  display: none;
   padding: 1.2rem;
   z-index: 80;
 }
@@ -839,7 +953,7 @@ body {
     height: 420px;
   }
 
-  .listing-modal-body {
+  .detail-grid {
     grid-template-columns: 1fr;
   }
 }
