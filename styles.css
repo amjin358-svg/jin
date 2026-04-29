@@ -209,6 +209,24 @@ main > .cards-grid {
   box-shadow: 0 8px 18px rgba(5, 18, 38, 0.36), inset 0 1px 0 rgba(188, 214, 255, 0.1);
 }
 
+/* Button hierarchy for consistent homepage visual language */
+.cta-small {
+  background: linear-gradient(135deg, #f4f8ff 0%, #dce9ff 100%);
+  color: #1e3a8a;
+  border-color: rgba(152, 177, 224, 0.62);
+  box-shadow: 0 8px 18px rgba(10, 24, 50, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.cta-small:hover {
+  color: #173171;
+  border-color: rgba(133, 164, 220, 0.78);
+}
+
+.btn-ghost {
+  border-color: rgba(143, 186, 255, 0.46);
+  background: linear-gradient(135deg, rgba(34, 79, 136, 0.86), rgba(24, 58, 102, 0.84));
+}
+
 .cta-small:hover,
 .btn-primary:hover,
 .btn-ghost:hover {
