@@ -568,16 +568,20 @@ body {
 .listing-card {
   padding: 0;
   overflow: hidden;
-  border: 1px solid #d7e5ff;
-  transition: transform 0.24s ease, box-shadow 0.24s ease;
+  border: 1px solid #dce5f6;
+  border-radius: 0.7rem;
+  background: #fff;
+  transition: transform 0.24s ease, box-shadow 0.24s ease, border-color 0.24s ease;
   display: flex;
   flex-direction: column;
   min-height: 100%;
+  cursor: pointer;
 }
 
 .listing-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 12px 28px rgba(15, 56, 120, 0.16);
+  transform: translateY(-4px);
+  border-color: #89a8de;
+  box-shadow: 0 16px 38px rgba(23, 49, 91, 0.18);
 }
 
 .listing-thumb {
@@ -588,31 +592,176 @@ body {
 }
 
 .listing-body {
-  padding: 0.8rem 0.9rem 0.95rem;
+  padding: 0.85rem 0.95rem 1rem;
   display: flex;
   flex-direction: column;
-  gap: 0.38rem;
+  gap: 0.42rem;
   flex: 1;
 }
 
 .listing-price {
   margin: 0;
-  color: var(--blue-700);
+  color: #173c82;
+  font-family: "Playfair Display", Georgia, serif;
   font-weight: 700;
-  font-size: 0.95rem;
+  font-size: 1.02rem;
+  letter-spacing: 0.01em;
 }
 
 .listing-title {
-  margin: 0.35rem 0 0.45rem;
-  color: var(--blue-900);
+  margin: 0.25rem 0 0.35rem;
+  color: #1c2f55;
   font-size: 0.98rem;
+  font-weight: 700;
+  line-height: 1.35;
 }
 
 .listing-meta {
   margin: 0.05rem 0;
-  color: var(--slate-600);
-  font-size: 0.83rem;
-  line-height: 1.45;
+  color: #4d5e7f;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.listing-meta p {
+  margin: 0.12rem 0;
+}
+
+.listing-divider {
+  margin: 0.42rem 0 0.25rem;
+  border: 0;
+  border-top: 1px solid #e6edfb;
+}
+
+.listing-actions {
+  margin-top: auto;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.45rem;
+  align-items: center;
+}
+
+.card-btn {
+  font-size: 0.77rem;
+  padding: 0.5rem 0.62rem;
+}
+
+.detail-btn {
+  border: 1px solid #96b2e5;
+  background: #fff;
+  color: #1d4e9d;
+  border-radius: 0.34rem;
+  padding: 0.5rem 0.58rem;
+  font-size: 0.74rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.listing-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 16, 33, 0.52);
+  display: grid;
+  place-items: center;
+  padding: 1.2rem;
+  z-index: 80;
+}
+
+.listing-modal[hidden] {
+  display: none;
+}
+
+.listing-modal-panel {
+  width: min(960px, 100%);
+  max-height: 90vh;
+  overflow: auto;
+  background: #fff;
+  border-radius: 0.9rem;
+  box-shadow: 0 24px 70px rgba(13, 33, 68, 0.35);
+}
+
+.listing-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.9rem 1.1rem;
+  border-bottom: 1px solid #e3ebf8;
+}
+
+.listing-modal-title {
+  margin: 0;
+  color: #143770;
+  font-size: 1.05rem;
+}
+
+.listing-modal-close {
+  border: 1px solid #b7c9ec;
+  background: #fff;
+  color: #1b4e9d;
+  border-radius: 0.35rem;
+  padding: 0.34rem 0.62rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.listing-modal-body {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 1rem;
+  padding: 1rem 1.1rem 1.15rem;
+}
+
+.listing-modal-image {
+  width: 100%;
+  border-radius: 0.6rem;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+}
+
+.listing-modal-price {
+  margin: 0.8rem 0 0.2rem;
+  color: #173c82;
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 1.35rem;
+}
+
+.listing-modal-district {
+  margin: 0 0 0.7rem;
+  color: #50617e;
+}
+
+.listing-modal-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem 0.7rem;
+}
+
+.listing-modal-grid div {
+  border: 1px solid #e2eaf8;
+  background: #f9fbff;
+  border-radius: 0.45rem;
+  padding: 0.52rem 0.58rem;
+}
+
+.listing-modal-grid span {
+  display: block;
+  font-size: 0.73rem;
+  color: #5d7191;
+}
+
+.listing-modal-grid strong {
+  display: block;
+  margin-top: 0.18rem;
+  color: #1f3761;
+  font-size: 0.9rem;
+}
+
+.listing-modal-contact {
+  margin-top: 0.82rem;
+  border-top: 1px solid #e1e8f6;
+  padding-top: 0.75rem;
+  color: #4e607e;
+  font-size: 0.87rem;
 }
 
 .listing-tag {
@@ -688,6 +837,10 @@ body {
 
   .map {
     height: 420px;
+  }
+
+  .listing-modal-body {
+    grid-template-columns: 1fr;
   }
 }
 

@@ -66,7 +66,16 @@ const UI_I18N = {
   yearLabel: { en: "Year", zh: "年份" },
   parkingLabel: { en: "Parking", zh: "車位" },
   communityLabel: { en: "Community", zh: "社區" },
-  viewOnMap: { en: "View on Map", zh: "在地圖查看" }
+  viewOnMap: { en: "View on Map", zh: "在地圖查看" },
+  viewDetails: { en: "View Details", zh: "查看詳情" },
+  detailsTitle: { en: "Property Details", zh: "物件詳情" },
+  closeDetails: { en: "Close", zh: "關閉" },
+  propertyIdLabel: { en: "Property ID", zh: "物件編號" },
+  statusLabel: { en: "Status", zh: "銷售狀態" },
+  statusActive: { en: "Active", zh: "銷售中" },
+  estMortgageLabel: { en: "Est. Mortgage", zh: "估算月付" },
+  agentLabel: { en: "Listing Agent", zh: "專屬經紀人" },
+  contactAgent: { en: "Contact Agent", zh: "聯絡經紀人" }
 };
 
 const originalTextMap = new WeakMap();

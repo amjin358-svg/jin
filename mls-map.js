@@ -146,6 +146,7 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
 const markers = [];
 const listingGrid = document.getElementById("listingGrid");
 const searchInput = document.getElementById("listingSearch");
+const listingDetail = document.getElementById("listingDetail");
 let filteredListings = listings;
 
 const formatPopup = (listing) =>
@@ -168,15 +169,23 @@ const createCard = (listing) => {
         <p>${t("parkingLabel", "Parking")}: ${listing.parking}</p>
         <p>${t("communityLabel", "Community")}: ${listing.community}</p>
       </div>
-      <button type="button" class="btn btn-solid card-btn">${t("viewOnMap", "View on Map")}</button>
+      <div class="listing-actions">
+        <button type="button" class="btn btn-solid card-btn map-btn">${t("viewOnMap", "View on Map")}</button>
+        <button type="button" class="btn btn-outline card-btn detail-btn">${t("viewDetails", "View Details")}</button>
+      </div>
     </div>
   `;
-  card.querySelector("button").addEventListener("click", () => {
+  card.querySelector(".map-btn").addEventListener("click", () => {
     map.setView([listing.lat, listing.lng], 13);
     const target = markers.find((item) => item.id === listing.id);
     if (target) {
       target.marker.openPopup();
     }
+  });
+  card.querySelector(".detail-btn").addEventListener("click", () => openDetail(listing.id));
+  card.addEventListener("click", (event) => {
+    if (event.target.closest("button")) return;
+    openDetail(listing.id);
   });
   return card;
 };
@@ -200,6 +209,44 @@ const renderCards = () => {
   filteredListings.forEach((listing) => {
     listingGrid.appendChild(createCard(listing));
   });
+};
+
+const renderDetail = (listing) => {
+  if (!listingDetail) return;
+  listingDetail.innerHTML = `
+    <button type="button" class="detail-close" aria-label="${t("close", "Close")}">×</button>
+    <img class="detail-image" src="${listing.image}" alt="${listing.title}">
+    <div class="detail-content">
+      <p class="detail-price">${listing.price}</p>
+      <h3 class="detail-title">${listing.title}</h3>
+      <p class="detail-address">${listing.district}</p>
+      <div class="detail-grid">
+        <p><strong>${t("layoutLabel", "Layout")}:</strong> ${listing.beds} ${t("beds", "Beds")} / ${listing.baths} ${t("baths", "Baths")}</p>
+        <p><strong>${t("areaLabel", "Area")}:</strong> ${listing.area}</p>
+        <p><strong>${t("yearLabel", "Year")}:</strong> ${listing.yearBuilt}</p>
+        <p><strong>${t("parkingLabel", "Parking")}:</strong> ${listing.parking}</p>
+        <p><strong>${t("communityLabel", "Community")}:</strong> ${listing.community}</p>
+        <p><strong>${t("agentLabel", "Listing Agent")}:</strong> Olivia Chen, Globe Vista Realty</p>
+      </div>
+      <p class="detail-note">${t("detailNote", "Inspired by modern MLS card interactions for fast property comparison.")}</p>
+    </div>
+  `;
+  listingDetail.classList.add("is-open");
+  const closeBtn = listingDetail.querySelector(".detail-close");
+  if (closeBtn) {
+    closeBtn.addEventListener("click", closeDetail);
+  }
+};
+
+const openDetail = (listingId) => {
+  const listing = listings.find((item) => item.id === listingId);
+  if (!listing) return;
+  renderDetail(listing);
+};
+
+const closeDetail = () => {
+  if (!listingDetail) return;
+  listingDetail.classList.remove("is-open");
 };
 
 const applyFilter = (keyword) => {
@@ -236,4 +283,9 @@ window.addEventListener("site-language-changed", () => {
     }
   });
   renderCards();
+  if (listingDetail && listingDetail.classList.contains("is-open")) {
+    const openTitle = listingDetail.querySelector(".detail-title")?.textContent;
+    const openListing = listings.find((item) => item.title === openTitle);
+    if (openListing) renderDetail(openListing);
+  }
 });

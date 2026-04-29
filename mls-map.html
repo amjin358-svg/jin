@@ -78,6 +78,27 @@
     </article>
     <section id="listingGrid" class="listing-grid"></section>
   </main>
+  <section id="listingDetailModal" class="listing-detail-modal" aria-hidden="true">
+    <div class="listing-detail-backdrop" data-close-detail="1"></div>
+    <article class="listing-detail-panel" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
+      <button type="button" class="detail-close" id="detailCloseBtn" data-close-detail="1" aria-label="Close">×</button>
+      <div class="detail-hero">
+        <img id="detailImage" src="" alt="">
+      </div>
+      <div class="detail-body">
+        <p class="detail-price" id="detailPrice"></p>
+        <h3 id="detailTitle"></h3>
+        <p class="detail-address" id="detailAddress"></p>
+        <div class="detail-highlights" id="detailHighlights"></div>
+        <div class="detail-grid" id="detailGrid"></div>
+        <p class="detail-description" id="detailDescription"></p>
+        <div class="detail-actions">
+          <button type="button" class="btn btn-solid" id="detailMapBtn">View on Map</button>
+          <a href="contact.html" class="btn btn-outline" id="detailContactBtn">Request Tour</a>
+        </div>
+      </div>
+    </article>
+  </section>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="mls-map.js"></script>
 
