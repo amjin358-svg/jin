@@ -129,6 +129,13 @@ const listings = [
   }
 ];
 
+const t = (key, fallback) => {
+  if (window.SiteI18n && typeof window.SiteI18n.t === "function") {
+    return window.SiteI18n.t(key, fallback);
+  }
+  return fallback;
+};
+
 const map = L.map("map").setView([34.0522, -118.2437], 10);
 
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -139,9 +146,10 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
 const markers = [];
 const listingGrid = document.getElementById("listingGrid");
 const searchInput = document.getElementById("listingSearch");
+let filteredListings = listings;
 
 const formatPopup = (listing) =>
-  `<strong>${listing.title}</strong><br>${listing.district}<br><b>Total Price: ${listing.price}</b><br>${listing.beds} Beds · ${listing.baths} Baths · ${listing.area}`;
+  `<strong>${listing.title}</strong><br>${listing.district}<br><b>${t("totalPrice", "Total Price")}: ${listing.price}</b><br>${listing.beds} ${t("beds", "Beds")} · ${listing.baths} ${t("baths", "Baths")} · ${listing.area}`;
 
 const createCard = (listing) => {
   const card = document.createElement("article");
@@ -153,14 +161,14 @@ const createCard = (listing) => {
       <p class="listing-price">${listing.price}</p>
       <h3 class="listing-title">${listing.title}</h3>
       <div class="listing-meta">
-        <p>地區：${listing.district}</p>
-        <p>格局：${listing.beds} Beds / ${listing.baths} Baths</p>
-        <p>面積：${listing.area}</p>
-        <p>屋齡：Built ${listing.yearBuilt}</p>
-        <p>車位：${listing.parking}</p>
-        <p>社區：${listing.community}</p>
+        <p>${t("districtLabel", "District")}: ${listing.district}</p>
+        <p>${t("layoutLabel", "Layout")}: ${listing.beds} ${t("beds", "Beds")} / ${listing.baths} ${t("baths", "Baths")}</p>
+        <p>${t("areaLabel", "Area")}: ${listing.area}</p>
+        <p>${t("yearLabel", "Year")}: ${listing.yearBuilt}</p>
+        <p>${t("parkingLabel", "Parking")}: ${listing.parking}</p>
+        <p>${t("communityLabel", "Community")}: ${listing.community}</p>
       </div>
-      <button type="button" class="btn btn-solid card-btn">View on Map</button>
+      <button type="button" class="btn btn-solid card-btn">${t("viewOnMap", "View on Map")}</button>
     </div>
   `;
   card.querySelector("button").addEventListener("click", () => {
@@ -173,6 +181,36 @@ const createCard = (listing) => {
   return card;
 };
 
+const syncMarkers = (visibleListings) => {
+  markers.forEach((item) => {
+    const isMatch = visibleListings.some((listing) => listing.id === item.id);
+    if (isMatch) {
+      if (!map.hasLayer(item.marker)) {
+        item.marker.addTo(map);
+      }
+    } else if (map.hasLayer(item.marker)) {
+      map.removeLayer(item.marker);
+    }
+  });
+};
+
+const renderCards = () => {
+  if (!listingGrid) return;
+  listingGrid.innerHTML = "";
+  filteredListings.forEach((listing) => {
+    listingGrid.appendChild(createCard(listing));
+  });
+};
+
+const applyFilter = (keyword) => {
+  const normalizedKeyword = keyword.trim().toLowerCase();
+  filteredListings = listings.filter((listing) =>
+    `${listing.title} ${listing.district}`.toLowerCase().includes(normalizedKeyword)
+  );
+  renderCards();
+  syncMarkers(filteredListings);
+};
+
 listings.forEach((listing) => {
   const marker = L.marker([listing.lat, listing.lng]).addTo(map);
   marker.bindPopup(
@@ -180,30 +218,22 @@ listings.forEach((listing) => {
   );
   markers.push({ id: listing.id, marker, searchKey: `${listing.title} ${listing.district}`.toLowerCase() });
 
-  if (listingGrid) {
-    listingGrid.appendChild(createCard(listing));
-  }
 });
+
+renderCards();
 
 if (searchInput && listingGrid) {
   searchInput.addEventListener("input", (event) => {
-    const keyword = event.target.value.trim().toLowerCase();
-    const cards = listingGrid.querySelectorAll(".listing-card");
-
-    cards.forEach((card) => {
-      const isMatch = card.dataset.key.includes(keyword);
-      card.style.display = isMatch ? "block" : "none";
-    });
-
-    markers.forEach((item) => {
-      const isMatch = item.searchKey.includes(keyword);
-      if (isMatch) {
-        if (!map.hasLayer(item.marker)) {
-          item.marker.addTo(map);
-        }
-      } else if (map.hasLayer(item.marker)) {
-        map.removeLayer(item.marker);
-      }
-    });
+    applyFilter(event.target.value);
   });
 }
+
+window.addEventListener("site-language-changed", () => {
+  markers.forEach((item) => {
+    const listing = listings.find((entry) => entry.id === item.id);
+    if (listing) {
+      item.marker.setPopupContent(formatPopup(listing));
+    }
+  });
+  renderCards();
+});

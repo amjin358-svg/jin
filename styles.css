@@ -51,6 +51,56 @@ body {
   gap: 1.2rem;
 }
 
+.lang-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem;
+  border: 1px solid rgba(200, 220, 255, 0.5);
+  border-radius: 999px;
+  background: rgba(9, 40, 93, 0.45);
+}
+
+.lang-btn {
+  border: 0;
+  background: transparent;
+  color: #dfe9ff;
+  font-size: 0.74rem;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 0.2rem 0.55rem;
+  cursor: pointer;
+}
+
+.lang-btn.is-active {
+  background: #2f74de;
+  color: #fff;
+}
+
+.lang-switch {
+  display: inline-flex;
+  gap: 0.3rem;
+  align-items: center;
+}
+
+.lang-btn {
+  border: 1px solid #9bbcf3;
+  background: rgba(255, 255, 255, 0.08);
+  color: #ecf3ff;
+  border-radius: 0.25rem;
+  padding: 0.25rem 0.45rem;
+  font-size: 0.74rem;
+  font-weight: 700;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.lang-btn.is-active {
+  background: #2a67c7;
+  border-color: #2a67c7;
+  color: #fff;
+}
+
 .top-nav a {
   text-decoration: none;
   color: #e8eefb;
