@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>10列條包自動化設備作業流程表 V2.3</title>
+<style>
+  @page {
+    size: A4 portrait;
+    margin: 8mm 8mm 8mm 8mm;
+  }
+
+  * {
+    box-sizing: border-box;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    font-family: "Microsoft JhengHei", "PingFang TC", "Noto Sans TC", "Heiti TC", "Arial", sans-serif;
+    color: #1f2937;
+    background: #ffffff;
+    font-size: 10pt;
+    line-height: 1.35;
+  }
+
+  .page {
+    width: 194mm;
+    margin: 0 auto;
+  }
+
+  /* ===== Header ===== */
+  header {
+    display: flex;
+    align-items: stretch;
+    border: 2px solid #0f3a5a;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 6px;
+  }
+  header .badge {
+    background: #0f3a5a;
+    color: #fff;
+    padding: 8px 14px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-width: 90px;
+  }
+  header .badge .ver {
+    font-size: 9pt;
+    letter-spacing: 1px;
+    opacity: 0.9;
+  }
+  header .badge .num {
+    font-size: 22pt;
+    font-weight: 800;
+    line-height: 1;
+  }
+  header .title {
+    padding: 8px 14px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  header .title h1 {
+    margin: 0;
+    font-size: 17pt;
+    font-weight: 800;
+    color: #0f3a5a;
+    letter-spacing: 1px;
+  }
+  header .title .sub {
+    font-size: 9.5pt;
+    color: #475569;
+    margin-top: 2px;
+  }
+  header .meta {
+    border-left: 1px dashed #94a3b8;
+    padding: 8px 12px;
+    font-size: 9pt;
+    color: #334155;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 110px;
+  }
+  header .meta b { color: #0f3a5a; }
+
+  /* ===== Section title ===== */
+  .section-title {
+    margin: 8px 0 4px;
+    padding: 4px 10px;
+    font-size: 11pt;
+    font-weight: 800;
+    color: #fff;
+    background: linear-gradient(90deg, #0f3a5a 0%, #2563eb 100%);
+    border-radius: 4px;
+    letter-spacing: 1px;
+  }
+
+  /* ===== Workflow table ===== */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+  table.flow th, table.flow td {
+    border: 1px solid #cbd5e1;
+    padding: 4px 6px;
+    vertical-align: middle;
+    font-size: 9.5pt;
+  }
+  table.flow thead th {
+    background: #0f3a5a;
+    color: #fff;
+    font-weight: 700;
+    text-align: center;
+    padding: 6px 4px;
+  }
+  table.flow td.step {
+    width: 38px;
+    text-align: center;
+    font-weight: 800;
+    color: #fff;
+    font-size: 11pt;
+  }
+  table.flow td.stage {
+    width: 86px;
+    font-weight: 700;
+    text-align: center;
+  }
+
+  /* Stage color bands (left edge) */
+  .c1 { background: #1e88e5; }   /* 巡檢-藍 */
+  .c2 { background: #00897b; }   /* 啟動-青綠 */
+  .c3 { background: #6d4c41; }   /* 工具-棕 */
+  .c4 { background: #8e24aa; }   /* 打碼-紫 */
+  .c5 { background: #5e35b1; }   /* 打碼確認-深紫 */
+  .c6 { background: #d81b60; }   /* 供膜-桃紅 */
+  .c7 { background: #f4511e; }   /* 參數-橘紅 */
+  .c8 { background: #ef6c00; }   /* 加熱-橘 */
+  .c9 { background: #43a047; }   /* 試運轉-綠 */
+  .c10 { background: #2e7d32; }  /* 投料-深綠 */
+  .c11 { background: #00838f; }  /* 巡檢-青 */
+  .c12 { background: #455a64; }  /* 收機-石板灰 */
+
+  .stage-c1 { background: #e3f2fd; color: #0d47a1; }
+  .stage-c2 { background: #e0f2f1; color: #004d40; }
+  .stage-c3 { background: #efebe9; color: #4e342e; }
+  .stage-c4 { background: #f3e5f5; color: #4a148c; }
+  .stage-c5 { background: #ede7f6; color: #311b92; }
+  .stage-c6 { background: #fce4ec; color: #880e4f; }
+  .stage-c7 { background: #fbe9e7; color: #bf360c; }
+  .stage-c8 { background: #fff3e0; color: #e65100; }
+  .stage-c9 { background: #e8f5e9; color: #1b5e20; }
+  .stage-c10 { background: #dcedc8; color: #1b5e20; }
+  .stage-c11 { background: #e0f7fa; color: #006064; }
+  .stage-c12 { background: #eceff1; color: #263238; }
+
+  table.flow td.detail b { color: #0f3a5a; }
+  table.flow td.detail .hl {
+    background: #fff59d;
+    padding: 0 3px;
+    border-radius: 2px;
+    font-weight: 700;
+  }
+  table.flow td.detail .danger {
+    background: #ffcdd2;
+    color: #b71c1c;
+    padding: 0 3px;
+    border-radius: 2px;
+    font-weight: 700;
+  }
+
+  /* ===== Two columns ===== */
+  .two-col {
+    display: flex;
+    gap: 8px;
+    margin-top: 6px;
+  }
+  .two-col > div { flex: 1; }
+
+  /* ===== Trouble table ===== */
+  table.trouble th, table.trouble td {
+    border: 1px solid #cbd5e1;
+    padding: 4px 6px;
+    font-size: 9.5pt;
+    vertical-align: top;
+  }
+  table.trouble thead th {
+    background: #b71c1c;
+    color: #fff;
+    text-align: center;
+    font-weight: 700;
+  }
+  table.trouble td.symptom {
+    background: #ffebee;
+    color: #b71c1c;
+    font-weight: 700;
+    width: 38%;
+  }
+  table.trouble td.fix b { color: #1b5e20; }
+
+  /* ===== Checklist ===== */
+  ul.checklist {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  ul.checklist li {
+    padding: 4px 8px 4px 28px;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    margin-bottom: 4px;
+    position: relative;
+    background: #f8fafc;
+    font-size: 9.5pt;
+  }
+  ul.checklist li::before {
+    content: "";
+    position: absolute;
+    left: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 12px;
+    height: 12px;
+    border: 1.5px solid #0f3a5a;
+    border-radius: 2px;
+    background: #fff;
+  }
+
+  /* ===== Safety / warning box ===== */
+  .warn-box {
+    margin-top: 6px;
+    border: 2px solid #d32f2f;
+    border-radius: 6px;
+    padding: 6px 10px 6px 38px;
+    background: #fff5f5;
+    color: #b71c1c;
+    font-weight: 700;
+    font-size: 10pt;
+    position: relative;
+  }
+  .warn-box::before {
+    content: "!";
+    position: absolute;
+    left: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 22px;
+    height: 22px;
+    background: #d32f2f;
+    color: #fff;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 22px;
+    font-size: 14pt;
+    font-weight: 900;
+  }
+
+  /* ===== Tools row ===== */
+  .tools {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 6px;
+    margin: 4px 0 0;
+  }
+  .tools .chip {
+    border: 1px solid #94a3b8;
+    background: #f1f5f9;
+    color: #1e293b;
+    border-radius: 999px;
+    padding: 2px 8px;
+    font-size: 9pt;
+  }
+
+  /* ===== Footer ===== */
+  footer {
+    margin-top: 8px;
+    border-top: 1px dashed #94a3b8;
+    padding-top: 4px;
+    font-size: 8.5pt;
+    color: #64748b;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  /* Print fine-tuning */
+  @media print {
+    body { font-size: 9.5pt; }
+    .no-print { display: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div class="badge">
+      <div class="ver">VERSION</div>
+      <div class="num">2.3</div>
+    </div>
+    <div class="title">
+      <h1>10 列條包自動化設備作業流程表</h1>
+      <div class="sub">適用機型：10 列條包包裝機 ＆ SMART LASER 打碼系統｜現場張貼版</div>
+    </div>
+    <div class="meta">
+      <div><b>機台編號：</b>＿＿＿＿</div>
+      <div><b>核發單位：</b>生產部</div>
+      <div><b>生效日：</b>＿＿/＿＿/＿＿</div>
+    </div>
+  </header>
+
+  <div class="section-title">標準作業流程（依序執行）</div>
+  <table class="flow">
+    <colgroup>
+      <col style="width:38px"><col style="width:86px"><col><col>
+    </colgroup>
+    <thead>
+      <tr><th>序</th><th>階段</th><th style="width:30%">作業項目</th><th>重點確認</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="step c1">1</td>
+        <td class="stage stage-c1">環境巡檢</td>
+        <td class="detail"><b>開機前巡檢</b></td>
+        <td class="detail">目視檢查傳動組件、鋁膜卷定位；開啟空壓機；確認原料桶定位、抽料管正確插入袋中；機台內外清潔完成。</td>
+      </tr>
+      <tr>
+        <td class="step c2">2</td>
+        <td class="stage stage-c2">電力啟動</td>
+        <td class="detail"><b>啟動電源 / 系統登入</b></td>
+        <td class="detail">①開啟牆面 SIEMENS 總電源（ON）→ ②機台正面紅色旋鈕向右開啟 → ③登入系統：<span class="hl">Admin / 666888</span>。</td>
+      </tr>
+      <tr>
+        <td class="step c3">3</td>
+        <td class="stage stage-c3">工具準備</td>
+        <td class="detail"><b>清潔／量測工具備齊</b></td>
+        <td class="detail">
+          <div class="tools">
+            <span class="chip">短硬鋼刷</span><span class="chip">短軟鋼刷</span><span class="chip">小夾子</span>
+            <span class="chip">氣槍</span><span class="chip">剪刀</span><span class="chip">美工刀</span>
+            <span class="chip">寬紙板</span><span class="chip">無洞不鏽鋼盛盤</span>
+            <span class="chip">電子磅秤</span><span class="chip">計重歸零空袋</span>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td class="step c4">4</td>
+        <td class="stage stage-c4">打碼設定</td>
+        <td class="detail"><b>SMART LASER 文檔建立</b></td>
+        <td class="detail">點擊「<b>另存為</b>」並重新命名文檔 → 框選物件 → 右側「編輯」調整 <b>批號 LOT</b> 與 <b>效期 EXP</b> → 微調 <b>X／Y 座標</b>。</td>
+      </tr>
+      <tr>
+        <td class="step c5">5</td>
+        <td class="stage stage-c5">打碼確認</td>
+        <td class="detail"><b>啟用打碼</b></td>
+        <td class="detail">畫面左上方顯示「<span class="hl">打碼系統已準備</span>」才能編輯；完成後切換為「<b>開始打碼</b>」綠色狀態。</td>
+      </tr>
+      <tr>
+        <td class="step c6">6</td>
+        <td class="stage stage-c6">供膜安裝</td>
+        <td class="detail"><b>鋁膜銜接</b></td>
+        <td class="detail">確認鋁膜<b>印刷面朝外</b>；新舊膜銜接處以膠帶黏牢，並以手掌「<b>平壓銜接處</b>」確保平順。</td>
+      </tr>
+      <tr>
+        <td class="step c7">7</td>
+        <td class="stage stage-c7">參數校對</td>
+        <td class="detail"><b>供膜角度監測（預警）</b></td>
+        <td class="detail">供膜編碼器值需 <span class="hl">低於仰角 3 度</span>；供膜下放最大角度 <span class="danger">必須小於 40 度</span>，否則持續出卷膜且無法停止。</td>
+      </tr>
+      <tr>
+        <td class="step c8">8</td>
+        <td class="stage stage-c8">加熱預熱</td>
+        <td class="detail"><b>溫度達標</b></td>
+        <td class="detail">開啟加熱功能，等待實際溫度達 <span class="hl">130°C 以上</span> 方可試機。</td>
+      </tr>
+      <tr>
+        <td class="step c9">9</td>
+        <td class="stage stage-c9">空機試運轉</td>
+        <td class="detail"><b>製袋 / 封口 / 切割 / 打碼測試</b></td>
+        <td class="detail">執行空機運行：確認製袋封口完美、切割位置正確；打碼資訊清晰且落於預定位置。</td>
+      </tr>
+      <tr>
+        <td class="step c10">10</td>
+        <td class="stage stage-c10">投料生產</td>
+        <td class="detail"><b>正式生產</b></td>
+        <td class="detail">物料倒入料斗（Hopper）→ 按下 <b>綠色啟動鈕</b> 開始生產。</td>
+      </tr>
+      <tr>
+        <td class="step c11">11</td>
+        <td class="stage stage-c11">生產巡檢</td>
+        <td class="detail"><b>盤滿前抽檢</b></td>
+        <td class="detail">每盤屆滿前抽檢 <b>2～3 次</b>：計重、條包袋是否漏粉、漏氣、封口與打碼狀態。</td>
+      </tr>
+      <tr>
+        <td class="step c12">12</td>
+        <td class="stage stage-c12">收機作業</td>
+        <td class="detail"><b>關機 / 清潔</b></td>
+        <td class="detail">關閉加熱、電源與打碼功能 → 清潔白色橡膠墊片、加熱器與機台。</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="warn-box">
+    安全提醒：供膜最大角度 ≥ <u>40°</u> 將造成持續出膜無法停止，操作期間須持續監測；溫度過高會造成壓痕模糊，請<u>降溫 3°C 以上</u>後再確認。
+  </div>
+
+  <div class="two-col">
+    <div>
+      <div class="section-title" style="background:linear-gradient(90deg,#b71c1c,#ef5350);">異常排除對策</div>
+      <table class="trouble">
+        <thead>
+          <tr><th>故障現象</th><th>排除方法</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="symptom">條包位移 / 漏粉</td>
+            <td class="fix">停機，使用 <b>短硬鋼刷</b> 垂直刷除橫壓 <b>白色橡膠墊片</b> 殘膠。</td>
+          </tr>
+          <tr>
+            <td class="symptom">持續跑卷不停</td>
+            <td class="fix">檢查供膜角度是否 <b>&lt; 40°</b>，並重新執行 <b>電眼學習</b>（長按 M 鍵 3 秒）。</td>
+          </tr>
+          <tr>
+            <td class="symptom">封口沾黏</td>
+            <td class="fix">使用 <b>短軟鋼刷</b> 清理加熱塊及耐熱墊片表面。</td>
+          </tr>
+          <tr>
+            <td class="symptom">壓痕模糊 / 溫度過高</td>
+            <td class="fix">產生橫向、縱向壓橫模糊，<b>降低溫度 3°C 以上</b> 再試。</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div>
+      <div class="section-title" style="background:linear-gradient(90deg,#1b5e20,#43a047);">每日作業檢核清單</div>
+      <ul class="checklist">
+        <li>原料桶定位且抽料管路順暢</li>
+        <li>打碼機批號 / 效期已更新且狀態顯示綠色</li>
+        <li>白色橡膠墊片已清理完畢</li>
+        <li>縱壓加熱器已清理完畢</li>
+        <li>封口溫度穩定達 <b>130°C 以上</b></li>
+        <li>供膜編碼器值 &lt; 3°、最大角度 &lt; 40°</li>
+        <li>生產完畢已關閉加熱、電源、打碼並完成清潔</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    <div>文件編號：SOP-PKG-10S-V2.3｜核准：______　審核：______　製表：______</div>
+    <div>頁碼 1／1</div>
+  </footer>
+
+</div>
+</body>
+</html>
