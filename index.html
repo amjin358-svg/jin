@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>台灣即時氣象與停班停課資訊平台</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">Taiwan Weather + Closure Notice</p>
+          <h1>台灣即時預報與停班停課通知平台</h1>
+          <p class="subtitle">
+            整合即時天氣、短時預報與官方停班停課資訊，颱風天可快速掌握最新動態。
+          </p>
+        </div>
+        <button id="refreshBtn" type="button" class="refresh-btn">立即更新資料</button>
+      </header>
+
+      <section class="controls card">
+        <label for="citySelect">選擇縣市</label>
+        <select id="citySelect" aria-label="選擇縣市"></select>
+        <p id="lastUpdated" class="timestamp">尚未更新資料</p>
+      </section>
+
+      <section class="grid">
+        <article class="card weather-card">
+          <h2>即時天氣</h2>
+          <p id="weatherSummary" class="big-text">資料讀取中...</p>
+          <dl class="metrics">
+            <div>
+              <dt>溫度</dt>
+              <dd id="tempValue">--</dd>
+            </div>
+            <div>
+              <dt>濕度</dt>
+              <dd id="humidityValue">--</dd>
+            </div>
+            <div>
+              <dt>風速</dt>
+              <dd id="windValue">--</dd>
+            </div>
+            <div>
+              <dt>降雨量</dt>
+              <dd id="rainValue">--</dd>
+            </div>
+          </dl>
+        </article>
+
+        <article class="card forecast-card">
+          <h2>未來 12 小時降雨機率</h2>
+          <div id="rainTimeline" class="rain-timeline" aria-live="polite"></div>
+        </article>
+      </section>
+
+      <section class="card closure-card">
+        <div class="section-head">
+          <h2>停班停課通知（官方來源）</h2>
+          <a
+            href="https://www.dgpa.gov.tw/typh/daily/nds.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            >開啟行政院人事行政總處原始頁面</a
+          >
+        </div>
+        <p id="closureMeta" class="timestamp">讀取中...</p>
+        <div id="closureList" class="closure-list"></div>
+      </section>
+
+      <section class="card notice-card">
+        <h2>資料說明</h2>
+        <ul>
+          <li>天氣資料：Open-Meteo（即時與短時預報）。</li>
+          <li>停班停課資料：行政院人事行政總處公告頁面（經公開鏡像讀取）。</li>
+          <li>若公告暫無資料或來源暫時無法連線，頁面會顯示提示並保留上一筆成功結果。</li>
+        </ul>
+      </section>
+    </main>
+
+    <script src="./app.js" defer></script>
+  </body>
+</html>
