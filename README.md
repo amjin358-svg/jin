@@ -15,3 +15,11 @@ python3 -m http.server 4173
 ```
 
 啟動後開啟：`http://localhost:4173`
+
+## GitHub 部署（GitHub Pages）
+
+已配置 GitHub Actions：`.github/workflows/deploy-pages.yml`
+
+- 觸發條件：推送到 `main`
+- 部署目標：GitHub Pages
+- 預期網址：`https://amjin358-svg.github.io/jin/`
