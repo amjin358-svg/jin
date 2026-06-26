@@ -71,6 +71,7 @@ const cameraList = document.querySelector("#cameraList");
 const cameraKeyword = document.querySelector("#cameraKeyword");
 
 let cameraDataset = null;
+const DISABLED_CAMERA_HOSTS = new Set(["cctvs.freeway.gov.tw"]);
 
 function initCitySelect() {
   CITY_LOCATIONS.forEach((city) => {
@@ -296,6 +297,14 @@ function renderCameraList() {
 
   const rows = cameraDataset.cameras
     .filter((camera) => {
+      try {
+        const host = new URL(camera.html).hostname;
+        return !DISABLED_CAMERA_HOSTS.has(host);
+      } catch {
+        return false;
+      }
+    })
+    .filter((camera) => {
       if (!keyword) {
         return true;
       }
@@ -348,7 +357,16 @@ async function fetchRoadCameras() {
     }
     cameraDataset = await response.json();
     const fetchedAtText = cameraDataset.fetchedAt ? formatDateTime(cameraDataset.fetchedAt) : "未提供";
-    cameraMeta.textContent = `資料來源：交通部公路局（國道 CCTV）｜鏡頭數：${cameraDataset.count ?? 0}｜快照時間：${fetchedAtText}`;
+    const availableCount = Array.isArray(cameraDataset.cameras)
+      ? cameraDataset.cameras.filter((camera) => {
+          try {
+            return !DISABLED_CAMERA_HOSTS.has(new URL(camera.html).hostname);
+          } catch {
+            return false;
+          }
+        }).length
+      : 0;
+    cameraMeta.textContent = `資料來源：交通部公路局（國道 CCTV）｜鏡頭數：${cameraDataset.count ?? 0}（可預覽 ${availableCount}）｜快照時間：${fetchedAtText}`;
     renderCameraList();
   } catch (error) {
     cameraMeta.textContent = `監控資料暫時無法更新：${error.message}`;
