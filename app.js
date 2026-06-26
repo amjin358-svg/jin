@@ -69,9 +69,25 @@ const closureList = document.querySelector("#closureList");
 const cameraMeta = document.querySelector("#cameraMeta");
 const cameraList = document.querySelector("#cameraList");
 const cameraKeyword = document.querySelector("#cameraKeyword");
+const mapLayerList = document.querySelector("#mapLayerList");
 
 let cameraDataset = null;
 const DISABLED_CAMERA_HOSTS = new Set(["cctvs.freeway.gov.tw"]);
+let warningMap = null;
+let mapFloodLayer = null;
+let mapCameraLayer = null;
+let mapCityFocusLayer = null;
+const mapLayerOrder = ["flood-warning", "cctv-points", "city-focus"];
+const mapLayerVisibility = {
+  "flood-warning": true,
+  "cctv-points": true,
+  "city-focus": true
+};
+const mapLayerConfig = {
+  "flood-warning": { label: "積淹水警示區塊", pane: "floodPane" },
+  "cctv-points": { label: "CCTV 監控點", pane: "cameraPane" },
+  "city-focus": { label: "縣市焦點圈", pane: "focusPane" }
+};
 
 function initCitySelect() {
   CITY_LOCATIONS.forEach((city) => {
@@ -108,6 +124,37 @@ function getDistanceKm(lat1, lon1, lat2, lon2) {
     Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return earthRadiusKm * c;
+}
+
+function getFilteredSortedCameras() {
+  if (!cameraDataset || !Array.isArray(cameraDataset.cameras)) {
+    return [];
+  }
+  const city = CITY_LOCATIONS.find((item) => item.name === citySelect.value);
+  const keyword = cameraKeyword.value.trim().toLowerCase();
+  const normalize = (text) => text.toLowerCase().replaceAll("臺", "台");
+
+  return cameraDataset.cameras
+    .filter((camera) => {
+      try {
+        const host = new URL(camera.html).hostname;
+        return !DISABLED_CAMERA_HOSTS.has(host);
+      } catch {
+        return false;
+      }
+    })
+    .filter((camera) => {
+      if (!keyword) {
+        return true;
+      }
+      const haystack = normalize(`${camera.id ?? ""} ${camera.stakenumber ?? ""}`);
+      return haystack.includes(normalize(keyword));
+    })
+    .map((camera) => ({
+      ...camera,
+      distanceKm: city ? getDistanceKm(city.lat, city.lon, Number(camera.gisy), Number(camera.gisx)) : Infinity
+    }))
+    .sort((a, b) => a.distanceKm - b.distanceKm);
 }
 
 function renderRainTimeline(hours) {
@@ -291,32 +338,7 @@ function renderCameraList() {
     return;
   }
 
-  const city = CITY_LOCATIONS.find((item) => item.name === citySelect.value);
-  const keyword = cameraKeyword.value.trim().toLowerCase();
-  const normalize = (text) => text.toLowerCase().replaceAll("臺", "台");
-
-  const rows = cameraDataset.cameras
-    .filter((camera) => {
-      try {
-        const host = new URL(camera.html).hostname;
-        return !DISABLED_CAMERA_HOSTS.has(host);
-      } catch {
-        return false;
-      }
-    })
-    .filter((camera) => {
-      if (!keyword) {
-        return true;
-      }
-      const haystack = normalize(`${camera.id ?? ""} ${camera.stakenumber ?? ""}`);
-      return haystack.includes(normalize(keyword));
-    })
-    .map((camera) => ({
-      ...camera,
-      distanceKm: city ? getDistanceKm(city.lat, city.lon, Number(camera.gisy), Number(camera.gisx)) : Infinity
-    }))
-    .sort((a, b) => a.distanceKm - b.distanceKm)
-    .slice(0, 12);
+  const rows = getFilteredSortedCameras().slice(0, 12);
 
   if (!rows.length) {
     cameraList.innerHTML = `<p class="status-warn">查無符合條件的監控點位，請更換關鍵字。</p>`;
@@ -349,6 +371,275 @@ function renderCameraList() {
   });
 }
 
+function getMapLayerInstance(layerKey) {
+  if (layerKey === "flood-warning") {
+    return mapFloodLayer;
+  }
+  if (layerKey === "cctv-points") {
+    return mapCameraLayer;
+  }
+  if (layerKey === "city-focus") {
+    return mapCityFocusLayer;
+  }
+  return null;
+}
+
+function applyMapLayerOrder() {
+  if (!warningMap) {
+    return;
+  }
+  let zIndex = 660;
+  mapLayerOrder.forEach((layerKey) => {
+    const paneName = mapLayerConfig[layerKey]?.pane;
+    if (!paneName) {
+      return;
+    }
+    const pane = warningMap.getPane(paneName);
+    if (pane) {
+      pane.style.zIndex = String(zIndex);
+      zIndex -= 20;
+    }
+  });
+}
+
+function syncMapLayerVisibility(layerKey) {
+  if (!warningMap) {
+    return;
+  }
+  const layer = getMapLayerInstance(layerKey);
+  if (!layer) {
+    return;
+  }
+  const shouldShow = Boolean(mapLayerVisibility[layerKey]);
+  const hasLayer = warningMap.hasLayer(layer);
+  if (shouldShow && !hasLayer) {
+    layer.addTo(warningMap);
+  }
+  if (!shouldShow && hasLayer) {
+    warningMap.removeLayer(layer);
+  }
+}
+
+function updateMapLayerOrderFromDom() {
+  if (!mapLayerList) {
+    return;
+  }
+  const orderedKeys = [...mapLayerList.querySelectorAll(".layer-item")].map((item) => item.dataset.layerKey);
+  mapLayerOrder.splice(0, mapLayerOrder.length, ...orderedKeys);
+  applyMapLayerOrder();
+}
+
+function getDragAfterElement(container, y) {
+  const draggableElements = [...container.querySelectorAll(".layer-item:not(.dragging)")];
+  return draggableElements.reduce(
+    (closest, child) => {
+      const box = child.getBoundingClientRect();
+      const offset = y - box.top - box.height / 2;
+      if (offset < 0 && offset > closest.offset) {
+        return { offset, element: child };
+      }
+      return closest;
+    },
+    { offset: Number.NEGATIVE_INFINITY, element: null }
+  ).element;
+}
+
+function renderLayerControl() {
+  if (!mapLayerList) {
+    return;
+  }
+  mapLayerList.innerHTML = "";
+  mapLayerOrder.forEach((layerKey) => {
+    const item = document.createElement("li");
+    item.className = "layer-item";
+    item.dataset.layerKey = layerKey;
+    item.draggable = true;
+    item.innerHTML = `
+      <span class="layer-handle">☰</span>
+      <label>${mapLayerConfig[layerKey].label}</label>
+      <input type="checkbox" ${mapLayerVisibility[layerKey] ? "checked" : ""} aria-label="${mapLayerConfig[layerKey].label}" />
+    `;
+
+    item.addEventListener("dragstart", () => {
+      item.classList.add("dragging");
+    });
+    item.addEventListener("dragend", () => {
+      item.classList.remove("dragging");
+      updateMapLayerOrderFromDom();
+    });
+
+    const checkbox = item.querySelector("input");
+    checkbox?.addEventListener("change", (event) => {
+      mapLayerVisibility[layerKey] = Boolean(event.target.checked);
+      syncMapLayerVisibility(layerKey);
+    });
+    mapLayerList.append(item);
+  });
+
+  mapLayerList.addEventListener("dragover", (event) => {
+    event.preventDefault();
+    const dragging = mapLayerList.querySelector(".dragging");
+    if (!dragging) {
+      return;
+    }
+    const afterElement = getDragAfterElement(mapLayerList, event.clientY);
+    if (afterElement == null) {
+      mapLayerList.appendChild(dragging);
+      return;
+    }
+    mapLayerList.insertBefore(dragging, afterElement);
+  });
+}
+
+function buildFloodStyle(feature) {
+  const level = Number(feature.properties?.level ?? 1);
+  if (level >= 4) {
+    return { color: "#790000", fillColor: "#d00000", fillOpacity: 0.62, weight: 2 };
+  }
+  if (level === 3) {
+    return { color: "#8a1c00", fillColor: "#e85d04", fillOpacity: 0.58, weight: 2 };
+  }
+  if (level === 2) {
+    return { color: "#9c5800", fillColor: "#ffba08", fillOpacity: 0.54, weight: 2 };
+  }
+  return { color: "#616161", fillColor: "#ffd166", fillOpacity: 0.48, weight: 2 };
+}
+
+async function loadFloodWarningLayer() {
+  if (!warningMap) {
+    return;
+  }
+  try {
+    const response = await fetch("./data/flood_warning_areas.geojson");
+    if (!response.ok) {
+      throw new Error(`積淹水圖層讀取失敗：${response.status}`);
+    }
+    const geojson = await response.json();
+    mapFloodLayer = L.geoJSON(geojson, {
+      pane: "floodPane",
+      style: buildFloodStyle,
+      onEachFeature: (feature, layer) => {
+        const { areaName, level, waterDepthCm, updatedAt, note } = feature.properties ?? {};
+        layer.bindPopup(
+          `
+            <strong>${areaName ?? "未命名警示區"}</strong><br/>
+            警示等級：${level ?? "-"}<br/>
+            估計積水深度：${waterDepthCm ?? "-"} cm<br/>
+            更新時間：${updatedAt ?? "-"}<br/>
+            備註：${note ?? "無"}
+          `
+        );
+      }
+    });
+    syncMapLayerVisibility("flood-warning");
+  } catch (error) {
+    if (mapLayerList) {
+      const warn = document.createElement("p");
+      warn.className = "status-warn";
+      warn.textContent = `積淹水圖層載入失敗：${error.message}`;
+      mapLayerList.append(warn);
+    }
+  }
+}
+
+function updateCityFocusLayer() {
+  if (!warningMap) {
+    return;
+  }
+  const city = CITY_LOCATIONS.find((item) => item.name === citySelect.value);
+  if (mapCityFocusLayer && warningMap.hasLayer(mapCityFocusLayer)) {
+    warningMap.removeLayer(mapCityFocusLayer);
+  }
+  if (!city) {
+    return;
+  }
+  mapCityFocusLayer = L.circle([city.lat, city.lon], {
+    pane: "focusPane",
+    radius: 15000,
+    color: "#00b4d8",
+    weight: 2,
+    fillColor: "#00b4d8",
+    fillOpacity: 0.09
+  }).bindTooltip(`${city.name} 焦點區`);
+  syncMapLayerVisibility("city-focus");
+}
+
+function updateCameraMapLayer() {
+  if (!warningMap) {
+    return;
+  }
+  if (!mapCameraLayer) {
+    mapCameraLayer = L.layerGroup();
+  }
+  mapCameraLayer.clearLayers();
+  getFilteredSortedCameras()
+    .slice(0, 220)
+    .forEach((camera) => {
+      if (!Number.isFinite(Number(camera.gisy)) || !Number.isFinite(Number(camera.gisx))) {
+        return;
+      }
+      const marker = L.circleMarker([Number(camera.gisy), Number(camera.gisx)], {
+        pane: "cameraPane",
+        radius: 4,
+        color: "#66d9ff",
+        fillColor: "#0096c7",
+        fillOpacity: 0.7,
+        weight: 1
+      });
+      marker.bindPopup(
+        `
+          <strong>${camera.id}</strong><br/>
+          ${camera.stakenumber ?? "未提供里程資訊"}<br/>
+          距離所選縣市：約 ${camera.distanceKm.toFixed(1)} km<br/>
+          <a href="${camera.html}" target="_blank" rel="noopener noreferrer">開啟官方即時影像</a>
+        `
+      );
+      mapCameraLayer.addLayer(marker);
+    });
+  syncMapLayerVisibility("cctv-points");
+}
+
+function updateMapForCityChange() {
+  if (!warningMap) {
+    return;
+  }
+  const city = CITY_LOCATIONS.find((item) => item.name === citySelect.value);
+  if (city) {
+    warningMap.setView([city.lat, city.lon], 9, { animate: true });
+  }
+  updateCityFocusLayer();
+  updateCameraMapLayer();
+}
+
+function initWarningMap() {
+  if (typeof L === "undefined") {
+    if (mapLayerList) {
+      mapLayerList.innerHTML = `<li class="status-warn">地圖套件載入失敗，請檢查網路連線後重試。</li>`;
+    }
+    return;
+  }
+  warningMap = L.map("warningMap", {
+    zoomControl: true,
+    attributionControl: true
+  }).setView([23.7, 120.96], 7);
+
+  warningMap.createPane("floodPane");
+  warningMap.createPane("cameraPane");
+  warningMap.createPane("focusPane");
+
+  L.tileLayer("https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png", {
+    className: "high-contrast-tiles",
+    maxZoom: 18,
+    attribution: "&copy; OpenStreetMap &copy; CARTO"
+  }).addTo(warningMap);
+
+  renderLayerControl();
+  applyMapLayerOrder();
+  loadFloodWarningLayer();
+  updateCityFocusLayer();
+  updateCameraMapLayer();
+}
+
 async function fetchRoadCameras() {
   try {
     const response = await fetch("./data/freeway_cctv.json");
@@ -368,6 +659,7 @@ async function fetchRoadCameras() {
       : 0;
     cameraMeta.textContent = `資料來源：交通部公路局（國道 CCTV）｜鏡頭數：${cameraDataset.count ?? 0}（可預覽 ${availableCount}）｜快照時間：${fetchedAtText}`;
     renderCameraList();
+    updateCameraMapLayer();
   } catch (error) {
     cameraMeta.textContent = `監控資料暫時無法更新：${error.message}`;
     cameraList.innerHTML = `<p class="status-warn">請稍後重試或改用來源網址查詢。</p>`;
@@ -394,6 +686,7 @@ citySelect.addEventListener("change", () => {
     weatherSummary.textContent = `氣象資料更新失敗：${error.message}`;
   });
   renderCameraList();
+  updateMapForCityChange();
 });
 
 refreshBtn.addEventListener("click", () => {
@@ -402,8 +695,10 @@ refreshBtn.addEventListener("click", () => {
 
 cameraKeyword.addEventListener("input", () => {
   renderCameraList();
+  updateCameraMapLayer();
 });
 
 initCitySelect();
 refreshAll();
 fetchRoadCameras();
+initWarningMap();

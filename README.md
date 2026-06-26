@@ -6,6 +6,7 @@
 - 未來 12 小時降雨機率
 - 停班停課通知整合顯示（連結官方公告來源）
 - 全台政府國道 CCTV 路口監控清單（近距排序、關鍵字篩選）
+- 高對比精簡地圖（可拖曳圖層順序、積淹水警示區塊）
 
 ## 本地啟動
 
@@ -30,3 +31,7 @@ python3 -m http.server 4173
 目前網站使用部署時快照資料：`data/freeway_cctv.json`，來源為：
 
 - `https://thbapp.thb.gov.tw/services/cctv/freeway`
+
+積淹水警示圖層資料：
+
+- `data/flood_warning_areas.geojson`

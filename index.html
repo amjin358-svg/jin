@@ -4,6 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>台灣即時氣象與停班停課資訊平台</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
@@ -92,17 +98,40 @@
         <div id="cameraList" class="camera-list"></div>
       </section>
 
+      <section class="card map-card">
+        <div class="section-head">
+          <h2>高對比精簡地圖（可拖曳圖層）</h2>
+          <span class="timestamp">拖曳圖層順序可調整顯示優先權</span>
+        </div>
+        <div class="map-layout">
+          <aside class="layer-panel">
+            <h3>圖層控制</h3>
+            <ul id="mapLayerList" class="layer-list"></ul>
+            <p class="timestamp">
+              已積淹水警示區塊以紅色顯示，顏色越深代表警示等級越高。
+            </p>
+          </aside>
+          <div id="warningMap" class="warning-map" aria-label="積淹水警示地圖"></div>
+        </div>
+      </section>
+
       <section class="card notice-card">
         <h2>資料說明</h2>
         <ul>
           <li>天氣資料：Open-Meteo（即時與短時預報）。</li>
           <li>停班停課資料：行政院人事行政總處公告頁面（經公開鏡像讀取）。</li>
           <li>路口監控資料：交通部公路局即時 CCTV 公開資料（部署時快照）。</li>
+          <li>積淹水警示區塊：政府公開資訊整理為 GeoJSON 圖層（示警視覺化）。</li>
           <li>若公告暫無資料或來源暫時無法連線，頁面會顯示提示並保留上一筆成功結果。</li>
         </ul>
       </section>
     </main>
 
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
     <script src="./app.js" defer></script>
   </body>
 </html>
