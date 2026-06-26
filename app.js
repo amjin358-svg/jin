@@ -66,6 +66,11 @@ const rainValue = document.querySelector("#rainValue");
 const rainTimeline = document.querySelector("#rainTimeline");
 const closureMeta = document.querySelector("#closureMeta");
 const closureList = document.querySelector("#closureList");
+const cameraMeta = document.querySelector("#cameraMeta");
+const cameraList = document.querySelector("#cameraList");
+const cameraKeyword = document.querySelector("#cameraKeyword");
+
+let cameraDataset = null;
 
 function initCitySelect() {
   CITY_LOCATIONS.forEach((city) => {
@@ -87,6 +92,21 @@ function formatDateTime(value) {
     minute: "2-digit",
     second: "2-digit"
   });
+}
+
+function toRadians(value) {
+  return (value * Math.PI) / 180;
+}
+
+function getDistanceKm(lat1, lon1, lat2, lon2) {
+  const earthRadiusKm = 6371;
+  const dLat = toRadians(lat2 - lat1);
+  const dLon = toRadians(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return earthRadiusKm * c;
 }
 
 function renderRainTimeline(hours) {
@@ -262,6 +282,80 @@ async function fetchClosureNotices() {
   }
 }
 
+function renderCameraList() {
+  cameraList.innerHTML = "";
+
+  if (!cameraDataset || !Array.isArray(cameraDataset.cameras)) {
+    cameraList.innerHTML = `<p class="status-warn">目前無法載入政府路口監控資料。</p>`;
+    return;
+  }
+
+  const city = CITY_LOCATIONS.find((item) => item.name === citySelect.value);
+  const keyword = cameraKeyword.value.trim().toLowerCase();
+  const normalize = (text) => text.toLowerCase().replaceAll("臺", "台");
+
+  const rows = cameraDataset.cameras
+    .filter((camera) => {
+      if (!keyword) {
+        return true;
+      }
+      const haystack = normalize(`${camera.id ?? ""} ${camera.stakenumber ?? ""}`);
+      return haystack.includes(normalize(keyword));
+    })
+    .map((camera) => ({
+      ...camera,
+      distanceKm: city ? getDistanceKm(city.lat, city.lon, Number(camera.gisy), Number(camera.gisx)) : Infinity
+    }))
+    .sort((a, b) => a.distanceKm - b.distanceKm)
+    .slice(0, 12);
+
+  if (!rows.length) {
+    cameraList.innerHTML = `<p class="status-warn">查無符合條件的監控點位，請更換關鍵字。</p>`;
+    return;
+  }
+
+  rows.forEach((camera) => {
+    const card = document.createElement("article");
+    card.className = "camera-item";
+    const streamUrl = camera.html;
+    const safeStake = camera.stakenumber || "未提供里程資訊";
+    const distance = Number.isFinite(camera.distanceKm) ? `${camera.distanceKm.toFixed(1)} km` : "--";
+
+    card.innerHTML = `
+      <img src="${streamUrl}" alt="${camera.id} 即時影像" loading="lazy" />
+      <div class="camera-body">
+        <h3>${camera.id}</h3>
+        <p>${safeStake}</p>
+        <p>距離所選縣市中心：約 ${distance}</p>
+        <a href="${streamUrl}" target="_blank" rel="noopener noreferrer">開啟官方即時影像</a>
+      </div>
+    `;
+    const img = card.querySelector("img");
+    img?.addEventListener("error", () => {
+      img.alt = `${camera.id} 影像暫時無法顯示`;
+      img.src =
+        "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='640' height='360'%3E%3Crect width='100%25' height='100%25' fill='%23e7ecf7'/%3E%3Ctext x='50%25' y='50%25' font-size='20' fill='%235a6787' text-anchor='middle' dominant-baseline='middle'%3E%E5%BD%B1%E5%83%8F%E6%9A%AB%E6%99%82%E7%84%A1%E6%B3%95%E8%BC%89%E5%85%A5%3C/text%3E%3C/svg%3E";
+    });
+    cameraList.append(card);
+  });
+}
+
+async function fetchRoadCameras() {
+  try {
+    const response = await fetch("./data/freeway_cctv.json");
+    if (!response.ok) {
+      throw new Error(`監控資料讀取失敗：${response.status}`);
+    }
+    cameraDataset = await response.json();
+    const fetchedAtText = cameraDataset.fetchedAt ? formatDateTime(cameraDataset.fetchedAt) : "未提供";
+    cameraMeta.textContent = `資料來源：交通部公路局（國道 CCTV）｜鏡頭數：${cameraDataset.count ?? 0}｜快照時間：${fetchedAtText}`;
+    renderCameraList();
+  } catch (error) {
+    cameraMeta.textContent = `監控資料暫時無法更新：${error.message}`;
+    cameraList.innerHTML = `<p class="status-warn">請稍後重試或改用來源網址查詢。</p>`;
+  }
+}
+
 async function refreshAll() {
   refreshBtn.disabled = true;
   refreshBtn.textContent = "更新中...";
@@ -281,11 +375,17 @@ citySelect.addEventListener("change", () => {
   fetchWeather(citySelect.value).catch((error) => {
     weatherSummary.textContent = `氣象資料更新失敗：${error.message}`;
   });
+  renderCameraList();
 });
 
 refreshBtn.addEventListener("click", () => {
   refreshAll();
 });
 
+cameraKeyword.addEventListener("input", () => {
+  renderCameraList();
+});
+
 initCitySelect();
 refreshAll();
+fetchRoadCameras();

@@ -69,11 +69,35 @@
         <div id="closureList" class="closure-list"></div>
       </section>
 
+      <section class="card camera-card">
+        <div class="section-head">
+          <h2>全台政府路口監控（國道 CCTV）</h2>
+          <a
+            href="https://thbapp.thb.gov.tw/services/cctv/freeway"
+            target="_blank"
+            rel="noopener noreferrer"
+            >開啟交通部公路局資料來源</a
+          >
+        </div>
+        <p id="cameraMeta" class="timestamp">讀取中...</p>
+        <div class="camera-controls">
+          <label for="cameraKeyword">關鍵字篩選（路線/里程/代碼）</label>
+          <input
+            id="cameraKeyword"
+            type="text"
+            placeholder="例如：國3、南港、100K"
+            autocomplete="off"
+          />
+        </div>
+        <div id="cameraList" class="camera-list"></div>
+      </section>
+
       <section class="card notice-card">
         <h2>資料說明</h2>
         <ul>
           <li>天氣資料：Open-Meteo（即時與短時預報）。</li>
           <li>停班停課資料：行政院人事行政總處公告頁面（經公開鏡像讀取）。</li>
+          <li>路口監控資料：交通部公路局即時 CCTV 公開資料（部署時快照）。</li>
           <li>若公告暫無資料或來源暫時無法連線，頁面會顯示提示並保留上一筆成功結果。</li>
         </ul>
       </section>
