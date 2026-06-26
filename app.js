@@ -23,6 +23,31 @@ const CITY_LOCATIONS = [
   { name: "連江縣", lat: 26.1543, lon: 119.9517 }
 ];
 
+const TOWNSHIP_LOCATIONS = [
+  { city: "臺北市", town: "信義區", lat: 25.0335, lon: 121.5627 },
+  { city: "臺北市", town: "北投區", lat: 25.1323, lon: 121.5015 },
+  { city: "新北市", town: "板橋區", lat: 25.0119, lon: 121.4628 },
+  { city: "新北市", town: "淡水區", lat: 25.1695, lon: 121.4441 },
+  { city: "桃園市", town: "中壢區", lat: 24.9536, lon: 121.2258 },
+  { city: "新竹市", town: "東區", lat: 24.8018, lon: 120.9716 },
+  { city: "臺中市", town: "西屯區", lat: 24.1769, lon: 120.6399 },
+  { city: "臺中市", town: "北屯區", lat: 24.1892, lon: 120.6863 },
+  { city: "彰化縣", town: "彰化市", lat: 24.0685, lon: 120.5575 },
+  { city: "南投縣", town: "南投市", lat: 23.908, lon: 120.6853 },
+  { city: "雲林縣", town: "斗六市", lat: 23.7119, lon: 120.5442 },
+  { city: "嘉義市", town: "東區", lat: 23.4786, lon: 120.4586 },
+  { city: "臺南市", town: "安平區", lat: 22.9997, lon: 120.1615 },
+  { city: "臺南市", town: "永康區", lat: 23.0265, lon: 120.2531 },
+  { city: "高雄市", town: "前鎮區", lat: 22.5908, lon: 120.3076 },
+  { city: "高雄市", town: "左營區", lat: 22.6876, lon: 120.2944 },
+  { city: "屏東縣", town: "東港鎮", lat: 22.4653, lon: 120.4493 },
+  { city: "宜蘭縣", town: "羅東鎮", lat: 24.6786, lon: 121.7669 },
+  { city: "花蓮縣", town: "花蓮市", lat: 23.9877, lon: 121.6014 },
+  { city: "臺東縣", town: "臺東市", lat: 22.7553, lon: 121.15 },
+  { city: "澎湖縣", town: "馬公市", lat: 23.5662, lon: 119.5666 },
+  { city: "金門縣", town: "金城鎮", lat: 24.4321, lon: 118.3186 }
+];
+
 const KNOWN_CITIES = new Set(CITY_LOCATIONS.map((city) => city.name));
 const WEATHER_CODE_LABEL = {
   0: "晴朗",
@@ -70,6 +95,26 @@ const cameraMeta = document.querySelector("#cameraMeta");
 const cameraList = document.querySelector("#cameraList");
 const cameraKeyword = document.querySelector("#cameraKeyword");
 const mapLayerList = document.querySelector("#mapLayerList");
+const townshipSelect = document.querySelector("#townshipSelect");
+const townshipSummary = document.querySelector("#townshipSummary");
+const townshipFeelValue = document.querySelector("#townshipFeelValue");
+const townshipRainProbValue = document.querySelector("#townshipRainProbValue");
+const townshipCloudValue = document.querySelector("#townshipCloudValue");
+const townshipPressureValue = document.querySelector("#townshipPressureValue");
+const airSummary = document.querySelector("#airSummary");
+const aqiValue = document.querySelector("#aqiValue");
+const pm25Value = document.querySelector("#pm25Value");
+const pm10Value = document.querySelector("#pm10Value");
+const ozoneValue = document.querySelector("#ozoneValue");
+const typhoonRiskBadge = document.querySelector("#typhoonRiskBadge");
+const typhoonAnalysisList = document.querySelector("#typhoonAnalysisList");
+const aiAlertList = document.querySelector("#aiAlertList");
+const rainProjection = document.querySelector("#rainProjection");
+const subscriptionForm = document.querySelector("#subscriptionForm");
+const subscriberEmail = document.querySelector("#subscriberEmail");
+const subscriptionStatus = document.querySelector("#subscriptionStatus");
+const autoRefreshMeta = document.querySelector("#autoRefreshMeta");
+const autoRefreshToggle = document.querySelector("#autoRefreshToggle");
 
 let cameraDataset = null;
 const DISABLED_CAMERA_HOSTS = new Set(["cctvs.freeway.gov.tw"]);
@@ -88,6 +133,22 @@ const mapLayerConfig = {
   "cctv-points": { label: "CCTV 監控點", pane: "cameraPane" },
   "city-focus": { label: "縣市焦點圈", pane: "focusPane" }
 };
+const AUTO_REFRESH_MS = 15 * 60 * 1000;
+const SUBSCRIPTION_STORAGE_KEY = "weatherMemberSubscriptionV1";
+const appState = {
+  weather: null,
+  airQuality: null,
+  closureRows: [],
+  floodFeatures: [],
+  typhoon: null,
+  aiAlerts: [],
+  autoRefreshEnabled: true,
+  nextAutoRefreshAt: Date.now() + AUTO_REFRESH_MS,
+  subscription: null,
+  lastNotifiedAt: 0
+};
+let autoRefreshTimer = null;
+let countdownTimer = null;
 
 function initCitySelect() {
   CITY_LOCATIONS.forEach((city) => {
@@ -97,6 +158,24 @@ function initCitySelect() {
     citySelect.append(option);
   });
   citySelect.value = "臺北市";
+}
+
+function initTownshipSelect() {
+  townshipSelect.innerHTML = "";
+  TOWNSHIP_LOCATIONS.forEach((item, index) => {
+    const option = document.createElement("option");
+    option.value = String(index);
+    option.textContent = `${item.city}・${item.town}`;
+    townshipSelect.append(option);
+  });
+  setTownshipByCity(citySelect.value);
+}
+
+function setTownshipByCity(cityName) {
+  const matchIndex = TOWNSHIP_LOCATIONS.findIndex((item) => item.city === cityName);
+  if (matchIndex >= 0) {
+    townshipSelect.value = String(matchIndex);
+  }
 }
 
 function formatDateTime(value) {
@@ -124,6 +203,19 @@ function getDistanceKm(lat1, lon1, lat2, lon2) {
     Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return earthRadiusKm * c;
+}
+
+function findNearestTimeIndex(times, nowIso) {
+  const index = times.findIndex((time) => time >= nowIso);
+  return index === -1 ? Math.max(times.length - 1, 0) : index;
+}
+
+function getAqiLabel(aqi) {
+  if (aqi <= 50) return "良好";
+  if (aqi <= 100) return "普通";
+  if (aqi <= 150) return "對敏感族群不健康";
+  if (aqi <= 200) return "不健康";
+  return "非常不健康";
 }
 
 function getFilteredSortedCameras() {
@@ -189,9 +281,9 @@ async function fetchWeather(cityName) {
   endpoint.searchParams.set("longitude", city.lon.toString());
   endpoint.searchParams.set(
     "current",
-    "temperature_2m,relative_humidity_2m,precipitation,weather_code,wind_speed_10m"
+    "temperature_2m,relative_humidity_2m,precipitation,weather_code,wind_speed_10m,wind_gusts_10m,pressure_msl,apparent_temperature,cloud_cover"
   );
-  endpoint.searchParams.set("hourly", "precipitation_probability");
+  endpoint.searchParams.set("hourly", "precipitation_probability,precipitation");
   endpoint.searchParams.set("timezone", "Asia/Taipei");
   endpoint.searchParams.set("forecast_days", "2");
 
@@ -209,18 +301,30 @@ async function fetchWeather(cityName) {
       minute: "2-digit",
       hour12: false
     }),
-    probability: Number(payload.hourly.precipitation_probability[index] ?? 0)
+    probability: Number(payload.hourly.precipitation_probability[index] ?? 0),
+    precipitation: Number(payload.hourly.precipitation[index] ?? 0)
   }));
   const nowIndex = allHours.findIndex((row) => row.isoTime >= current.time);
   const startIndex = nowIndex === -1 ? 0 : nowIndex;
   const next12Hours = allHours.slice(startIndex, startIndex + 12);
+  const next24Hours = allHours.slice(startIndex, startIndex + 24);
+  const rain24 = next24Hours.reduce((sum, item) => sum + item.precipitation, 0);
 
   weatherSummary.textContent = `${cityName}・${WEATHER_CODE_LABEL[current.weather_code] ?? "天氣狀態更新中"}`;
   tempValue.textContent = `${Math.round(current.temperature_2m)}°C`;
   humidityValue.textContent = `${Math.round(current.relative_humidity_2m)}%`;
   windValue.textContent = `${Math.round(current.wind_speed_10m)} km/h`;
   rainValue.textContent = `${current.precipitation.toFixed(1)} mm`;
+  rainProjection.textContent = `未來 24 小時累積降雨預估：${rain24.toFixed(1)} mm`;
   renderRainTimeline(next12Hours);
+
+  appState.weather = {
+    cityName,
+    current,
+    next12Hours,
+    next24Hours,
+    rain24
+  };
 }
 
 function parseClosureMarkdown(markdownText) {
@@ -295,6 +399,7 @@ function renderClosure(data, sourceLabel) {
     closureList.append(entry);
   });
 
+  appState.closureRows = sorted;
   closureMeta.textContent = `公告更新時間：${data.updateAt || "未提供"}（來源：${sourceLabel}）`;
 }
 
@@ -317,9 +422,11 @@ async function fetchClosureNotices() {
     if (cache) {
       renderClosure(cache, "本機快取");
       closureMeta.textContent += "（目前使用快取，請稍後重試）";
+      appState.closureRows = cache.rows;
       return;
     }
     closureMeta.textContent = `停班停課資料暫時無法更新：${error.message}`;
+    appState.closureRows = [];
     closureList.innerHTML = `
       <p class="status-warn">
         系統目前無法讀取公告，請改用
@@ -327,6 +434,252 @@ async function fetchClosureNotices() {
         查詢。
       </p>
     `;
+  }
+}
+
+async function fetchTownshipWeather() {
+  const selectedIndex = Number(townshipSelect.value);
+  const target = TOWNSHIP_LOCATIONS[selectedIndex];
+  if (!target) {
+    townshipSummary.textContent = "找不到鄉鎮資料";
+    return;
+  }
+
+  const endpoint = new URL("https://api.open-meteo.com/v1/forecast");
+  endpoint.searchParams.set("latitude", String(target.lat));
+  endpoint.searchParams.set("longitude", String(target.lon));
+  endpoint.searchParams.set(
+    "current",
+    "temperature_2m,apparent_temperature,pressure_msl,cloud_cover,weather_code"
+  );
+  endpoint.searchParams.set("hourly", "precipitation_probability");
+  endpoint.searchParams.set("timezone", "Asia/Taipei");
+  endpoint.searchParams.set("forecast_days", "2");
+
+  const response = await fetch(endpoint.toString());
+  if (!response.ok) {
+    throw new Error(`鄉鎮資料讀取失敗：${response.status}`);
+  }
+  const payload = await response.json();
+  const index = findNearestTimeIndex(payload.hourly.time, payload.current.time);
+  const rainProb = Number(payload.hourly.precipitation_probability[index] ?? 0);
+
+  townshipSummary.textContent = `${target.city}${target.town}・${WEATHER_CODE_LABEL[payload.current.weather_code] ?? "天氣更新中"}`;
+  townshipFeelValue.textContent = `${Math.round(payload.current.apparent_temperature)}°C`;
+  townshipRainProbValue.textContent = `${Math.round(rainProb)}%`;
+  townshipCloudValue.textContent = `${Math.round(payload.current.cloud_cover)}%`;
+  townshipPressureValue.textContent = `${Math.round(payload.current.pressure_msl)} hPa`;
+}
+
+async function fetchAirQuality(cityName) {
+  const city = CITY_LOCATIONS.find((item) => item.name === cityName);
+  if (!city) {
+    throw new Error("找不到空品縣市座標");
+  }
+  const endpoint = new URL("https://air-quality-api.open-meteo.com/v1/air-quality");
+  endpoint.searchParams.set("latitude", String(city.lat));
+  endpoint.searchParams.set("longitude", String(city.lon));
+  endpoint.searchParams.set("hourly", "us_aqi,pm2_5,pm10,ozone");
+  endpoint.searchParams.set("timezone", "Asia/Taipei");
+  endpoint.searchParams.set("forecast_days", "2");
+
+  const response = await fetch(endpoint.toString());
+  if (!response.ok) {
+    throw new Error(`空氣品質讀取失敗：${response.status}`);
+  }
+  const payload = await response.json();
+  const nowIso = appState.weather?.current?.time ?? payload.hourly.time[0];
+  const index = findNearestTimeIndex(payload.hourly.time, nowIso);
+  const aqi = Number(payload.hourly.us_aqi[index] ?? 0);
+  const pm25 = Number(payload.hourly.pm2_5[index] ?? 0);
+  const pm10 = Number(payload.hourly.pm10[index] ?? 0);
+  const ozone = Number(payload.hourly.ozone[index] ?? 0);
+
+  airSummary.textContent = `${cityName}・${getAqiLabel(aqi)}`;
+  aqiValue.textContent = `${Math.round(aqi)}`;
+  pm25Value.textContent = `${pm25.toFixed(1)} μg/m³`;
+  pm10Value.textContent = `${pm10.toFixed(1)} μg/m³`;
+  ozoneValue.textContent = `${ozone.toFixed(1)} μg/m³`;
+
+  appState.airQuality = {
+    cityName,
+    aqi,
+    pm25,
+    pm10,
+    ozone
+  };
+}
+
+function calculateTyphoonRisk() {
+  const weather = appState.weather;
+  if (!weather) {
+    return null;
+  }
+  const wind = Number(weather.current.wind_speed_10m ?? 0);
+  const gust = Number(weather.current.wind_gusts_10m ?? wind);
+  const pressure = Number(weather.current.pressure_msl ?? 1015);
+  const rainProbAvg =
+    weather.next12Hours.reduce((sum, item) => sum + item.probability, 0) / Math.max(weather.next12Hours.length, 1);
+
+  let score = 0;
+  score += Math.min(wind * 1.6, 45);
+  score += Math.min(gust * 0.9, 35);
+  score += Math.max(0, 1012 - pressure) * 2.2;
+  score += Math.min(rainProbAvg * 0.35, 25);
+  score += Math.min(weather.rain24 * 0.6, 30);
+  score = Math.round(Math.min(score, 100));
+
+  const level = score >= 70 ? "高" : score >= 40 ? "中" : "低";
+  const messages = [
+    `風速 ${wind.toFixed(1)} km/h，陣風 ${gust.toFixed(1)} km/h。`,
+    `海平面氣壓 ${Math.round(pressure)} hPa，若持續下降需提高警戒。`,
+    `未來 12 小時平均降雨機率 ${Math.round(rainProbAvg)}%，24 小時雨量預估 ${weather.rain24.toFixed(1)} mm。`
+  ];
+  return { level, score, messages };
+}
+
+function renderTyphoonAnalysis() {
+  const result = calculateTyphoonRisk();
+  if (!result) {
+    typhoonRiskBadge.textContent = "風險等級：資料不足";
+    typhoonRiskBadge.className = "risk-badge risk-low";
+    typhoonAnalysisList.innerHTML = "<li>等待氣象資料。</li>";
+    return;
+  }
+  appState.typhoon = result;
+  const className = result.level === "高" ? "risk-high" : result.level === "中" ? "risk-medium" : "risk-low";
+  typhoonRiskBadge.className = `risk-badge ${className}`;
+  typhoonRiskBadge.textContent = `風險等級：${result.level}（指數 ${result.score}/100）`;
+  typhoonAnalysisList.innerHTML = "";
+  result.messages.forEach((message) => {
+    const item = document.createElement("li");
+    item.textContent = message;
+    typhoonAnalysisList.append(item);
+  });
+}
+
+function getNearbyFloodWarnings() {
+  const city = CITY_LOCATIONS.find((item) => item.name === citySelect.value);
+  if (!city || !appState.floodFeatures.length) {
+    return [];
+  }
+  return appState.floodFeatures
+    .map((feature) => {
+      const points = feature.geometry?.coordinates?.[0] ?? [];
+      if (!points.length) {
+        return null;
+      }
+      const center = points.reduce(
+        (acc, point) => ({ lon: acc.lon + point[0], lat: acc.lat + point[1] }),
+        { lon: 0, lat: 0 }
+      );
+      const lon = center.lon / points.length;
+      const lat = center.lat / points.length;
+      return {
+        ...feature.properties,
+        distanceKm: getDistanceKm(city.lat, city.lon, lat, lon)
+      };
+    })
+    .filter(Boolean)
+    .filter((row) => row.distanceKm <= 120)
+    .sort((a, b) => a.distanceKm - b.distanceKm);
+}
+
+function renderAiAlerts() {
+  const alerts = [];
+  const typhoon = appState.typhoon;
+  const air = appState.airQuality;
+  const cityClosure = appState.closureRows.find((row) => row.city === citySelect.value);
+  const nearbyFlood = getNearbyFloodWarnings();
+
+  if (typhoon) {
+    if (typhoon.level === "高") {
+      alerts.push(`【高風險】颱風風險指數 ${typhoon.score}，建議預先備妥防災物資並避免非必要外出。`);
+    } else if (typhoon.level === "中") {
+      alerts.push(`【注意】颱風風險指數 ${typhoon.score}，請關注地方政府後續警戒資訊。`);
+    } else {
+      alerts.push("【一般】目前風險偏低，仍建議維持基本防災準備。");
+    }
+  }
+
+  if (air && air.aqi > 100) {
+    alerts.push(`【空品提醒】目前 AQI ${Math.round(air.aqi)}，敏感族群請減少戶外活動。`);
+  }
+
+  if (nearbyFlood.length > 0) {
+    const top = nearbyFlood[0];
+    alerts.push(`【積淹水警示】${top.areaName} 距離約 ${top.distanceKm.toFixed(1)} km，警示等級 ${top.level}。`);
+  }
+
+  if (cityClosure && cityClosure.message.includes("停止上班")) {
+    alerts.push(`【停班停課】${cityClosure.city} 最新公告：${cityClosure.message}`);
+  }
+
+  if (!alerts.length) {
+    alerts.push("目前未觸發重大災害提醒。");
+  }
+  appState.aiAlerts = alerts;
+  aiAlertList.innerHTML = "";
+  alerts.forEach((text) => {
+    const item = document.createElement("li");
+    item.textContent = text;
+    aiAlertList.append(item);
+  });
+}
+
+function loadSubscription() {
+  try {
+    const raw = localStorage.getItem(SUBSCRIPTION_STORAGE_KEY);
+    if (!raw) {
+      return;
+    }
+    appState.subscription = JSON.parse(raw);
+    if (appState.subscription?.email) {
+      subscriberEmail.value = appState.subscription.email;
+    }
+    const topics = new Set(appState.subscription?.topics ?? []);
+    subscriptionForm.querySelectorAll("input[name='topic']").forEach((checkbox) => {
+      checkbox.checked = topics.has(checkbox.value);
+    });
+  } catch {
+    appState.subscription = null;
+  }
+}
+
+function renderSubscriptionStatus(message) {
+  if (message) {
+    subscriptionStatus.textContent = message;
+    return;
+  }
+  if (!appState.subscription?.email) {
+    subscriptionStatus.textContent = "尚未設定訂閱。";
+    return;
+  }
+  subscriptionStatus.textContent = `已訂閱 ${appState.subscription.email}（主題：${appState.subscription.topics.join("、")}）`;
+}
+
+async function maybeNotifySubscribers(triggerSource) {
+  if (triggerSource !== "auto" || !appState.subscription?.email) {
+    return;
+  }
+  const important = appState.aiAlerts.find(
+    (text) => text.includes("高風險") || text.includes("積淹水警示") || text.includes("停班停課")
+  );
+  if (!important) {
+    return;
+  }
+  if (Date.now() - appState.lastNotifiedAt < AUTO_REFRESH_MS - 5000) {
+    return;
+  }
+  if ("Notification" in window) {
+    if (Notification.permission === "default") {
+      await Notification.requestPermission();
+    }
+    if (Notification.permission === "granted") {
+      new Notification("台灣災害提醒", { body: important });
+      appState.lastNotifiedAt = Date.now();
+      renderSubscriptionStatus(`已送出通知：${important}`);
+    }
   }
 }
 
@@ -515,6 +868,7 @@ async function loadFloodWarningLayer() {
       throw new Error(`積淹水圖層讀取失敗：${response.status}`);
     }
     const geojson = await response.json();
+    appState.floodFeatures = geojson.features ?? [];
     mapFloodLayer = L.geoJSON(geojson, {
       pane: "floodPane",
       style: buildFloodStyle,
@@ -532,6 +886,7 @@ async function loadFloodWarningLayer() {
       }
     });
     syncMapLayerVisibility("flood-warning");
+    renderAiAlerts();
   } catch (error) {
     if (mapLayerList) {
       const warn = document.createElement("p");
@@ -666,31 +1021,85 @@ async function fetchRoadCameras() {
   }
 }
 
-async function refreshAll() {
-  refreshBtn.disabled = true;
-  refreshBtn.textContent = "更新中...";
+function setRefreshButtonLoading(isLoading) {
+  refreshBtn.disabled = isLoading;
+  refreshBtn.textContent = isLoading ? "更新中..." : "立即更新資料";
+}
 
+function scheduleNextAutoRefresh() {
+  appState.nextAutoRefreshAt = Date.now() + AUTO_REFRESH_MS;
+}
+
+function updateAutoRefreshMeta() {
+  if (!appState.autoRefreshEnabled) {
+    autoRefreshMeta.textContent = "每 15 分鐘自動更新：已暫停";
+    autoRefreshToggle.textContent = "恢復自動更新";
+    return;
+  }
+  const diff = Math.max(0, appState.nextAutoRefreshAt - Date.now());
+  const minutes = Math.floor(diff / 60000);
+  const seconds = Math.floor((diff % 60000) / 1000);
+  autoRefreshMeta.textContent = `每 15 分鐘自動更新：啟用中（${minutes}:${String(seconds).padStart(2, "0")} 後）`;
+  autoRefreshToggle.textContent = "暫停自動更新";
+}
+
+function startAutoRefreshTimers() {
+  scheduleNextAutoRefresh();
+  if (autoRefreshTimer) {
+    clearInterval(autoRefreshTimer);
+  }
+  if (countdownTimer) {
+    clearInterval(countdownTimer);
+  }
+  autoRefreshTimer = setInterval(() => {
+    if (!appState.autoRefreshEnabled) {
+      return;
+    }
+    performFullRefresh("auto");
+  }, AUTO_REFRESH_MS);
+  countdownTimer = setInterval(() => {
+    updateAutoRefreshMeta();
+  }, 1000);
+  updateAutoRefreshMeta();
+}
+
+async function performFullRefresh(triggerSource) {
+  if (triggerSource === "manual") {
+    setRefreshButtonLoading(true);
+  }
   try {
-    await Promise.all([fetchWeather(citySelect.value), fetchClosureNotices()]);
-    lastUpdated.textContent = `資料更新時間：${formatDateTime(Date.now())}`;
+    await Promise.all([
+      fetchWeather(citySelect.value),
+      fetchClosureNotices(),
+      fetchTownshipWeather(),
+      fetchAirQuality(citySelect.value)
+    ]);
+    renderTyphoonAnalysis();
+    renderAiAlerts();
+    updateMapForCityChange();
+    await maybeNotifySubscribers(triggerSource);
+    lastUpdated.textContent = `資料更新時間：${formatDateTime(Date.now())}${triggerSource === "auto" ? "（自動）" : ""}`;
+    if (appState.autoRefreshEnabled) {
+      scheduleNextAutoRefresh();
+    }
   } catch (error) {
     lastUpdated.textContent = `更新失敗：${error.message}`;
   } finally {
-    refreshBtn.disabled = false;
-    refreshBtn.textContent = "立即更新資料";
+    if (triggerSource === "manual") {
+      setRefreshButtonLoading(false);
+    }
   }
 }
 
 citySelect.addEventListener("change", () => {
-  fetchWeather(citySelect.value).catch((error) => {
-    weatherSummary.textContent = `氣象資料更新失敗：${error.message}`;
-  });
+  setTownshipByCity(citySelect.value);
+  performFullRefresh("manual");
   renderCameraList();
   updateMapForCityChange();
 });
 
 refreshBtn.addEventListener("click", () => {
-  refreshAll();
+  performFullRefresh("manual");
 });
 
 cameraKeyword.addEventListener("input", () => {
@@ -698,7 +1107,39 @@ cameraKeyword.addEventListener("input", () => {
   updateCameraMapLayer();
 });
 
+townshipSelect.addEventListener("change", () => {
+  fetchTownshipWeather().catch((error) => {
+    townshipSummary.textContent = `鄉鎮資料更新失敗：${error.message}`;
+  });
+});
+
+subscriptionForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const topics = [...subscriptionForm.querySelectorAll("input[name='topic']:checked")].map((item) => item.value);
+  appState.subscription = {
+    email: subscriberEmail.value.trim(),
+    topics
+  };
+  localStorage.setItem(SUBSCRIPTION_STORAGE_KEY, JSON.stringify(appState.subscription));
+  if ("Notification" in window && Notification.permission === "default") {
+    await Notification.requestPermission();
+  }
+  renderSubscriptionStatus("訂閱設定已儲存，將於每次自動更新推送警示。");
+});
+
+autoRefreshToggle.addEventListener("click", () => {
+  appState.autoRefreshEnabled = !appState.autoRefreshEnabled;
+  if (appState.autoRefreshEnabled) {
+    scheduleNextAutoRefresh();
+  }
+  updateAutoRefreshMeta();
+});
+
 initCitySelect();
-refreshAll();
+initTownshipSelect();
+loadSubscription();
+renderSubscriptionStatus();
+performFullRefresh("manual");
 fetchRoadCameras();
 initWarningMap();
+startAutoRefreshTimers();

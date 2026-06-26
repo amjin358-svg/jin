@@ -90,6 +90,33 @@ h2 {
   gap: 8px;
 }
 
+label {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.control-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.auto-refresh-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.ghost-btn {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 10px;
+  background: #fff;
+  color: #35538f;
+  cursor: pointer;
+}
+
 select {
   border: 1px solid var(--border);
   border-radius: 10px;
@@ -107,6 +134,10 @@ select {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
+}
+
+.triple-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .big-text {
@@ -310,6 +341,57 @@ select {
   filter: grayscale(1) contrast(1.35) brightness(0.8);
 }
 
+.risk-badge {
+  display: inline-block;
+  margin: 0 0 10px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.risk-low {
+  background: #e7f8ee;
+  color: #0f9d58;
+}
+
+.risk-medium {
+  background: #fff7e8;
+  color: #c46b00;
+}
+
+.risk-high {
+  background: #ffe8e8;
+  color: #c1121f;
+}
+
+.analysis-list {
+  margin: 0;
+  padding-left: 18px;
+  line-height: 1.6;
+  display: grid;
+  gap: 6px;
+}
+
+.subscription-form {
+  display: grid;
+  gap: 8px;
+}
+
+.subscription-form input[type="email"] {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px;
+  font-size: 14px;
+}
+
+.topic-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #2d3856;
+}
+
 .closure-item {
   border: 1px solid var(--border);
   border-radius: 10px;
@@ -348,6 +430,15 @@ select {
 
   .grid {
     grid-template-columns: 1fr;
+  }
+
+  .control-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .auto-refresh-row {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .map-layout {

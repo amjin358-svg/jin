@@ -26,9 +26,21 @@
       </header>
 
       <section class="controls card">
-        <label for="citySelect">選擇縣市</label>
-        <select id="citySelect" aria-label="選擇縣市"></select>
+        <div class="control-grid">
+          <div>
+            <label for="citySelect">選擇縣市</label>
+            <select id="citySelect" aria-label="選擇縣市"></select>
+          </div>
+          <div>
+            <label for="townshipSelect">鄉鎮級天氣資訊</label>
+            <select id="townshipSelect" aria-label="選擇鄉鎮"></select>
+          </div>
+        </div>
         <p id="lastUpdated" class="timestamp">尚未更新資料</p>
+        <div class="auto-refresh-row">
+          <p id="autoRefreshMeta" class="timestamp">每 15 分鐘自動更新：啟用中</p>
+          <button id="autoRefreshToggle" type="button" class="ghost-btn">暫停自動更新</button>
+        </div>
       </section>
 
       <section class="grid">
@@ -56,8 +68,89 @@
         </article>
 
         <article class="card forecast-card">
-          <h2>未來 12 小時降雨機率</h2>
+          <h2>降雨預測</h2>
           <div id="rainTimeline" class="rain-timeline" aria-live="polite"></div>
+          <p id="rainProjection" class="timestamp">未來 24 小時累積降雨預估：-- mm</p>
+        </article>
+      </section>
+
+      <section class="grid triple-grid">
+        <article class="card township-card">
+          <h2>鄉鎮級天氣資訊</h2>
+          <p id="townshipSummary" class="big-text">資料讀取中...</p>
+          <dl class="metrics">
+            <div>
+              <dt>體感溫度</dt>
+              <dd id="townshipFeelValue">--</dd>
+            </div>
+            <div>
+              <dt>降雨機率</dt>
+              <dd id="townshipRainProbValue">--</dd>
+            </div>
+            <div>
+              <dt>雲量</dt>
+              <dd id="townshipCloudValue">--</dd>
+            </div>
+            <div>
+              <dt>氣壓</dt>
+              <dd id="townshipPressureValue">--</dd>
+            </div>
+          </dl>
+        </article>
+
+        <article class="card air-card">
+          <h2>空氣品質</h2>
+          <p id="airSummary" class="big-text">資料讀取中...</p>
+          <dl class="metrics">
+            <div>
+              <dt>AQI (US)</dt>
+              <dd id="aqiValue">--</dd>
+            </div>
+            <div>
+              <dt>PM2.5</dt>
+              <dd id="pm25Value">--</dd>
+            </div>
+            <div>
+              <dt>PM10</dt>
+              <dd id="pm10Value">--</dd>
+            </div>
+            <div>
+              <dt>臭氧</dt>
+              <dd id="ozoneValue">--</dd>
+            </div>
+          </dl>
+        </article>
+
+        <article class="card typhoon-card">
+          <h2>颱風分析</h2>
+          <p id="typhoonRiskBadge" class="risk-badge risk-low">風險等級：資料讀取中</p>
+          <ul id="typhoonAnalysisList" class="analysis-list"></ul>
+        </article>
+      </section>
+
+      <section class="grid">
+        <article class="card ai-alert-card">
+          <h2>AI 災害提醒</h2>
+          <ul id="aiAlertList" class="analysis-list"></ul>
+        </article>
+
+        <article class="card subscription-card">
+          <h2>會員訂閱通知</h2>
+          <form id="subscriptionForm" class="subscription-form">
+            <label for="subscriberEmail">Email</label>
+            <input id="subscriberEmail" type="email" required placeholder="you@example.com" />
+            <label class="topic-option"
+              ><input type="checkbox" name="topic" value="weather" checked /> 即時天氣預報</label
+            >
+            <label class="topic-option"
+              ><input type="checkbox" name="topic" value="flood" checked /> 積淹水警示</label
+            >
+            <label class="topic-option"
+              ><input type="checkbox" name="topic" value="air" checked /> 空氣品質異常</label
+            >
+            <button type="submit" class="refresh-btn">儲存訂閱</button>
+          </form>
+          <p id="subscriptionStatus" class="timestamp">尚未設定訂閱。</p>
         </article>
       </section>
 
@@ -119,6 +212,7 @@
         <h2>資料說明</h2>
         <ul>
           <li>天氣資料：Open-Meteo（即時與短時預報）。</li>
+          <li>空氣品質：Open-Meteo Air Quality（AQI / PM2.5 / PM10 / O₃）。</li>
           <li>停班停課資料：行政院人事行政總處公告頁面（經公開鏡像讀取）。</li>
           <li>路口監控資料：交通部公路局即時 CCTV 公開資料（部署時快照）。</li>
           <li>積淹水警示區塊：政府公開資訊整理為 GeoJSON 圖層（示警視覺化）。</li>
