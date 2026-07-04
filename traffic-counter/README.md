@@ -34,6 +34,21 @@ python -m traffic_counter list-cameras --save cameras.json
 > 注意：白河區在台南市公開 CCTV 開放資料中目前**沒有**攝影機；
 > 若要統計白河區中山路，需自備該路段的影片檔或串流網址。
 
+#### 距白河區中山路最近的攝影機
+
+由於白河區無官方攝影機，`cameras_near_baihe.json` 依座標距離列出**離白河區中山路最近的 10 支**
+市區攝影機（含距離），最近者為柳營區義士路五段口（約 12.4 km，屬不同城鎮，僅供參考）：
+
+```bash
+# 瀏覽這份清單
+python -m traffic_counter list-cameras --source cameras_near_baihe.json
+
+# 直接取用最近的攝影機串流計數（需在可連到台南串流的網路環境執行）
+python -m traffic_counter count-video \
+    --source "https://trafficvideo3.tainan.gov.tw/1cb263d2" \
+    --camera "柳營區義士路五段(距白河最近)" --db data/traffic.db
+```
+
 ### 2. 計數（影片檔或串流）
 
 ```bash

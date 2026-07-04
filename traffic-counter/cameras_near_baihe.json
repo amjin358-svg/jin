@@ -1,0 +1,72 @@
+[
+  {
+    "location": "柳營區 義士路五段與柳營路三段口東桿(向西)",
+    "lon": 120.312838,
+    "lat": 23.292767,
+    "url": "https://trafficvideo3.tainan.gov.tw/1cb263d2",
+    "distance_km_from_baihe_zhongshan": 12.36
+  },
+  {
+    "location": "新營區 復興路與復興路620巷口(向西)",
+    "lon": 120.296468,
+    "lat": 23.305792,
+    "url": "https://trafficvideo3.tainan.gov.tw/578e832e",
+    "distance_km_from_baihe_zhongshan": 13.18
+  },
+  {
+    "location": "新營區 復興路與長榮路二段口南桿(向北)",
+    "lon": 120.293545,
+    "lat": 23.306403,
+    "url": "https://trafficvideo2.tainan.gov.tw/a3f5f3d2",
+    "distance_km_from_baihe_zhongshan": 13.43
+  },
+  {
+    "location": "新營區 復興路與長榮路二段口西桿(向西)",
+    "lon": 120.293405,
+    "lat": 23.306644,
+    "url": "https://trafficvideo2.tainan.gov.tw/9f277849",
+    "distance_km_from_baihe_zhongshan": 13.44
+  },
+  {
+    "location": "麻豆圓環(北桿)麻豆農會旁警局",
+    "lon": 120.241,
+    "lat": 23.1864,
+    "url": "https://trafficvideo.tainan.gov.tw/172023001100",
+    "distance_km_from_baihe_zhongshan": 25.59
+  },
+  {
+    "location": "麻豆圓環(西南桿)",
+    "lon": 120.240706,
+    "lat": 23.184976,
+    "url": "https://trafficvideo.tainan.gov.tw/172023005100",
+    "distance_km_from_baihe_zhongshan": 25.72
+  },
+  {
+    "location": "麻豆圓環(南桿)阿蘭碗粿旁警局",
+    "lon": 120.241087,
+    "lat": 23.184576,
+    "url": "https://trafficvideo.tainan.gov.tw/172023003100",
+    "distance_km_from_baihe_zhongshan": 25.73
+  },
+  {
+    "location": "善化區 大成路與青年路口(向西)",
+    "lon": 120.295307,
+    "lat": 23.129307,
+    "url": "https://trafficvideo3.tainan.gov.tw/121bb20e",
+    "distance_km_from_baihe_zhongshan": 27.58
+  },
+  {
+    "location": "善化區 興農路與烏橋中路口北桿(向南)",
+    "lon": 120.267532,
+    "lat": 23.130254,
+    "url": "https://trafficvideo3.tainan.gov.tw/09077b75",
+    "distance_km_from_baihe_zhongshan": 28.87
+  },
+  {
+    "location": "善化區 興農路與烏橋中路口東桿(向西)",
+    "lon": 120.267934,
+    "lat": 23.130049,
+    "url": "https://trafficvideo3.tainan.gov.tw/efd3e80b",
+    "distance_km_from_baihe_zhongshan": 28.87
+  }
+]
