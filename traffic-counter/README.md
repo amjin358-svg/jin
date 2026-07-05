@@ -96,6 +96,26 @@ python -m traffic_counter report --db data/demo.db \
     --start 2026-07-03 --end 2026-07-03 --out reports
 ```
 
+## 展示網站（儀表板）
+
+`web/` 是一個純前端儀表板（HTML/CSS/JS，無需後端，可部署到 GitHub Pages），
+提供每小時車流量長條圖、明細表、摘要卡片與「距白河最近攝影機」清單，並可切換日期。
+
+```bash
+# 產生網站資料（把某段期間的統計輸出成 web 可讀的 JSON）
+python -m traffic_counter report --db data/traffic.db \
+    --start 2026-07-03 --end 2026-07-04 --out web/data --camera "仁德區中山路"
+mv web/data/hourly_traffic.json web/data/traffic.json
+cp cameras_near_baihe.json web/data/cameras.json
+
+# 本地啟動
+cd web && python3 -m http.server 4174
+# 開啟 http://localhost:4174
+```
+
+網站讀取 `web/data/traffic.json`（每小時統計）與 `web/data/cameras.json`（攝影機清單）；
+儲存庫已附一份示範資料集，可直接檢視。
+
 ## 測試
 
 ```bash

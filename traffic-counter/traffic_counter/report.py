@@ -1,7 +1,8 @@
-"""每小時車流量表單產出：CSV / Excel / HTML。"""
+"""每小時車流量表單產出：CSV / Excel / HTML / JSON。"""
 
 from __future__ import annotations
 
+import json
 from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Iterable
@@ -124,21 +125,67 @@ def export_html(
     Path(path).write_text(html, encoding="utf-8")
 
 
+def build_json_payload(
+    store: EventStore,
+    dates: Iterable[str],
+    camera: str | None = None,
+    camera_label: str = "",
+) -> dict:
+    """組出供網頁儀表板讀取的 JSON 結構。"""
+    date_list = list(dates)
+    counts = store.hourly_counts(camera=camera, dates=date_list)
+
+    hourly: dict[str, list[dict]] = {}
+    daily_totals: dict[str, dict[str, int]] = {}
+    for d in date_list:
+        rows = []
+        day = {"total": 0, "up": 0, "down": 0}
+        for hour in range(24):
+            b = counts.get((d, hour), {"total": 0, "up": 0, "down": 0, "na": 0})
+            rows.append(
+                {"hour": hour, "total": b["total"], "up": b["up"], "down": b["down"]}
+            )
+            day["total"] += b["total"]
+            day["up"] += b["up"]
+            day["down"] += b["down"]
+        hourly[d] = rows
+        daily_totals[d] = day
+
+    return {
+        "camera": camera or "",
+        "camera_label": camera_label,
+        "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "dates": date_list,
+        "hourly": hourly,
+        "daily_totals": daily_totals,
+    }
+
+
+def export_json(payload: dict, path: str | Path) -> None:
+    Path(path).parent.mkdir(parents=True, exist_ok=True)
+    Path(path).write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+
+
 def generate_reports(
     store: EventStore,
     start_date: str,
     end_date: str,
     out_dir: str | Path,
     camera_label: str = "",
+    camera: str | None = None,
     include_direction: bool = True,
     with_daily_totals: bool = True,
 ) -> dict[str, str]:
-    """一次產生 CSV / Excel / HTML 三種表單，回傳各檔案路徑。"""
+    """一次產生 CSV / Excel / HTML / JSON 表單，回傳各檔案路徑。"""
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
     dates = _date_range(start_date, end_date)
 
-    df = build_hourly_table(store, dates, include_direction=include_direction)
+    df = build_hourly_table(
+        store, dates, camera=camera, include_direction=include_direction
+    )
     df_out = add_daily_totals(df) if with_daily_totals else df
 
     subtitle = camera_label or f"統計期間：{dates[0]} ~ {dates[-1]}"
@@ -146,8 +193,13 @@ def generate_reports(
         "csv": str(out / "hourly_traffic.csv"),
         "xlsx": str(out / "hourly_traffic.xlsx"),
         "html": str(out / "hourly_traffic.html"),
+        "json": str(out / "hourly_traffic.json"),
     }
     export_csv(df_out, paths["csv"])
     export_excel(df_out, paths["xlsx"])
     export_html(df_out, paths["html"], subtitle=subtitle)
+    payload = build_json_payload(
+        store, dates, camera=camera, camera_label=camera_label
+    )
+    export_json(payload, paths["json"])
     return paths

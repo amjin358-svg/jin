@@ -113,6 +113,7 @@ def cmd_report(args) -> int:
         args.end,
         args.out,
         camera_label=label,
+        camera=args.camera,
         include_direction=not args.no_direction,
     )
     print("已產生每小時車流量表單：")
