@@ -23,7 +23,7 @@ body {
 }
 
 .app {
-  width: min(1080px, 92vw);
+  width: min(1240px, 94vw);
   margin: 24px auto 48px;
   display: grid;
   gap: 16px;
@@ -116,12 +116,41 @@ label {
   min-height: 42px;
 }
 
-.weather-metrics {
+.weather-metrics,
+.air-metrics {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
+.air-inline {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  display: grid;
+  gap: 8px;
+}
+
+.air-inline-summary {
+  margin: 0;
+  font-size: 18px;
+}
+
+.typhoon-wide {
+  width: 100%;
+}
+
+.typhoon-layout {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.9fr) minmax(0, 1.6fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.typhoon-panel {
+  display: grid;
+  gap: 8px;
+}
+
 .windy-wrap {
-  margin-top: 12px;
   display: grid;
   gap: 8px;
 }
@@ -133,20 +162,38 @@ label {
 
 .windy-embed {
   width: 100%;
-  min-height: 420px;
+  min-height: 520px;
   border: 1px solid var(--border);
   border-radius: 10px;
   background: #0f1622;
 }
 
 .camera-controls-grid {
-  grid-template-columns: minmax(180px, 240px) minmax(0, 1fr);
+  grid-template-columns: minmax(160px, 220px) minmax(160px, 240px) minmax(0, 1fr);
   align-items: end;
 }
 
 .camera-controls-grid select,
 .camera-controls-grid input {
   width: 100%;
+}
+
+.freeway-details {
+  margin-top: 16px;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+
+.freeway-details summary {
+  cursor: pointer;
+  color: #35538f;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.closure-list {
+  max-height: 320px;
+  overflow: auto;
 }
 
 .auto-refresh-row {
@@ -483,7 +530,9 @@ select {
   .control-grid,
   .region-grid,
   .camera-controls-grid,
-  .weather-metrics {
+  .weather-metrics,
+  .air-metrics,
+  .typhoon-layout {
     grid-template-columns: 1fr;
   }
 

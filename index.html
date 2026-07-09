@@ -52,9 +52,23 @@
         </div>
       </section>
 
-      <section class="grid">
-        <article class="card weather-card">
-          <h2>即時天氣（鄉鎮級）</h2>
+      <section class="card closure-card">
+        <div class="section-head">
+          <h2>停班停課通知（官方來源）</h2>
+          <a
+            href="https://www.dgpa.gov.tw/typh/daily/nds.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            >開啟行政院人事行政總處原始頁面</a
+          >
+        </div>
+        <p id="closureMeta" class="timestamp">讀取中...</p>
+        <div id="closureList" class="closure-list"></div>
+      </section>
+
+      <section class="grid weather-air-grid">
+        <article class="card weather-card weather-air-card">
+          <h2>即時天氣與空氣品質（鄉鎮級）</h2>
           <p id="weatherSummary" class="big-text">資料讀取中...</p>
           <dl class="metrics weather-metrics">
             <div>
@@ -90,6 +104,27 @@
               <dd id="pressureValue">--</dd>
             </div>
           </dl>
+          <div class="air-inline">
+            <p id="airSummary" class="big-text air-inline-summary">空氣品質讀取中...</p>
+            <dl class="metrics air-metrics">
+              <div>
+                <dt>AQI (US)</dt>
+                <dd id="aqiValue">--</dd>
+              </div>
+              <div>
+                <dt>PM2.5</dt>
+                <dd id="pm25Value">--</dd>
+              </div>
+              <div>
+                <dt>PM10</dt>
+                <dd id="pm10Value">--</dd>
+              </div>
+              <div>
+                <dt>臭氧</dt>
+                <dd id="ozoneValue">--</dd>
+              </div>
+            </dl>
+          </div>
         </article>
 
         <article class="card forecast-card">
@@ -99,45 +134,24 @@
         </article>
       </section>
 
-      <section class="grid">
-        <article class="card air-card">
-          <h2>空氣品質</h2>
-          <p id="airSummary" class="big-text">資料讀取中...</p>
-          <dl class="metrics">
-            <div>
-              <dt>AQI (US)</dt>
-              <dd id="aqiValue">--</dd>
-            </div>
-            <div>
-              <dt>PM2.5</dt>
-              <dd id="pm25Value">--</dd>
-            </div>
-            <div>
-              <dt>PM10</dt>
-              <dd id="pm10Value">--</dd>
-            </div>
-            <div>
-              <dt>臭氧</dt>
-              <dd id="ozoneValue">--</dd>
-            </div>
-          </dl>
-        </article>
-
-        <article class="card typhoon-card">
-          <h2>颱風分析</h2>
-          <p id="typhoonRiskBadge" class="risk-badge risk-low">風險等級：資料讀取中</p>
-          <ul id="typhoonAnalysisList" class="analysis-list"></ul>
+      <section class="card typhoon-card typhoon-wide">
+        <div class="section-head">
+          <h2>颱風分析與 12 小時動態圖</h2>
+          <a
+            id="windyExternalLink"
+            href="https://www.windy.com/?23.700,121.000,6"
+            target="_blank"
+            rel="noopener noreferrer"
+            >開啟 Windy 完整版</a
+          >
+        </div>
+        <div class="typhoon-layout">
+          <div class="typhoon-panel">
+            <p id="typhoonRiskBadge" class="risk-badge risk-low">風險等級：資料讀取中</p>
+            <ul id="typhoonAnalysisList" class="analysis-list"></ul>
+          </div>
           <div class="windy-wrap">
-            <div class="section-head">
-              <h3>12 小時走勢圖（Windy）</h3>
-              <a
-                id="windyExternalLink"
-                href="https://www.windy.com/?23.700,121.000,6"
-                target="_blank"
-                rel="noopener noreferrer"
-                >開啟 Windy 完整版</a
-              >
-            </div>
+            <h3>12 小時走勢圖（Windy）</h3>
             <iframe
               id="windyEmbed"
               class="windy-embed"
@@ -150,7 +164,7 @@
               嵌入 Windy 公開地圖 API（未來 12 小時預報時間軸），中心會依颱風位置或所選鄉鎮自動調整。
             </p>
           </div>
-        </article>
+        </div>
       </section>
 
       <section class="grid">
@@ -179,47 +193,42 @@
         </article>
       </section>
 
-      <section class="card closure-card">
-        <div class="section-head">
-          <h2>停班停課通知（官方來源）</h2>
-          <a
-            href="https://www.dgpa.gov.tw/typh/daily/nds.html"
-            target="_blank"
-            rel="noopener noreferrer"
-            >開啟行政院人事行政總處原始頁面</a
-          >
-        </div>
-        <p id="closureMeta" class="timestamp">讀取中...</p>
-        <div id="closureList" class="closure-list"></div>
-      </section>
-
       <section class="card camera-card">
         <div class="section-head">
-          <h2>全台政府路口監控（國道 CCTV）</h2>
+          <h2>各縣市市區路口 CCTV 監控系統</h2>
           <a
-            href="https://thbapp.thb.gov.tw/services/cctv/freeway"
+            href="https://traffic.transportdata.tw/"
             target="_blank"
             rel="noopener noreferrer"
-            >開啟交通部公路局資料來源</a
+            >開啟運輸資料流通服務來源</a
           >
         </div>
         <p id="cameraMeta" class="timestamp">讀取中...</p>
-        <div class="camera-controls camera-controls-grid">
+        <div class="camera-controls camera-controls-grid city-camera-controls">
           <div>
-            <label for="cameraRegionSelect">地區範圍</label>
+            <label for="cameraCitySelect">縣市範圍</label>
+            <select id="cameraCitySelect" aria-label="選擇 CCTV 縣市範圍"></select>
+          </div>
+          <div>
+            <label for="cameraRegionSelect">地區／國道範圍（輔助）</label>
             <select id="cameraRegionSelect" aria-label="選擇監控地區範圍"></select>
           </div>
           <div>
-            <label for="cameraKeyword">關鍵字篩選（路線/里程/代碼）</label>
+            <label for="cameraKeyword">關鍵字篩選（路口/路名/代碼）</label>
             <input
               id="cameraKeyword"
               type="text"
-              placeholder="例如：國3、南港、100K"
+              placeholder="例如：中山路、市民大道、安平"
               autocomplete="off"
             />
           </div>
         </div>
         <div id="cameraList" class="camera-list"></div>
+        <details class="freeway-details">
+          <summary>同時顯示國道 CCTV（公路局）</summary>
+          <p id="freewayCameraMeta" class="timestamp">國道資料讀取中...</p>
+          <div id="freewayCameraList" class="camera-list"></div>
+        </details>
       </section>
 
       <section class="card map-card">
@@ -242,11 +251,11 @@
       <section class="card notice-card">
         <h2>資料說明</h2>
         <ul>
-          <li>天氣資料：Open-Meteo（鄉鎮級即時與短時預報）。</li>
+          <li>天氣與空氣品質：Open-Meteo（鄉鎮級即時與短時預報／AQI）。</li>
           <li>區域記憶：瀏覽器 localStorage 保留上次選取的區域／縣市／鄉鎮。</li>
-          <li>空氣品質：Open-Meteo Air Quality（AQI / PM2.5 / PM10 / O₃）。</li>
           <li>停班停課資料：行政院人事行政總處公告頁面（經公開鏡像讀取）。</li>
-          <li>路口監控資料：交通部公路局即時 CCTV 公開資料（部署時快照），可依地區範圍篩選。</li>
+          <li>市區路口監控：交通部運輸資料流通服務（各縣市 CCTV 公開資料快照）。</li>
+          <li>國道監控：交通部公路局即時 CCTV 公開資料（部署時快照）。</li>
           <li>積淹水警示：經濟部水利署 IoW 即時淹水深度感測（公開 API）。</li>
           <li>颱風分析：中央氣象署颱風消息／警報頁面即時解析 + Windy 12 小時走勢圖嵌入。</li>
           <li>若公告暫無資料或來源暫時無法連線，頁面會顯示提示並保留上一筆成功結果。</li>
