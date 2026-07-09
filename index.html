@@ -40,8 +40,11 @@
             <select id="townshipSelect" aria-label="選擇鄉鎮市區"></select>
           </div>
           <div class="locate-wrap">
-            <label for="locateBtn">衛星定位</label>
-            <button id="locateBtn" type="button" class="ghost-btn locate-btn">依設備定位選區</button>
+            <p class="locate-label" aria-hidden="true">
+              <span class="locate-icon" aria-hidden="true">📍</span>
+              定位
+            </p>
+            <button id="locateBtn" type="button" class="locate-btn locate-btn-pulse">依設備定位選區</button>
           </div>
         </div>
         <p id="regionMemoryMeta" class="timestamp">區域偏好：尚未儲存</p>
@@ -174,12 +177,15 @@
         </article>
 
         <article class="card subscription-card">
-          <h2>會員訂閱通知</h2>
+          <h2>預報訂閱通知</h2>
           <form id="subscriptionForm" class="subscription-form">
             <label for="subscriberEmail">Email</label>
             <input id="subscriberEmail" type="email" required placeholder="you@example.com" />
             <label class="topic-option"
               ><input type="checkbox" name="topic" value="weather" checked /> 即時天氣預報</label
+            >
+            <label class="topic-option"
+              ><input type="checkbox" name="topic" value="closure" checked /> 停班停課公告</label
             >
             <label class="topic-option"
               ><input type="checkbox" name="topic" value="flood" checked /> 積淹水警示</label
@@ -198,7 +204,7 @@
 
       <section class="card camera-card">
         <div class="section-head">
-          <h2>路口cctv監控系統</h2>
+          <h2>縣市路口CCTV監控</h2>
           <a
             href="https://traffic.transportdata.tw/"
             target="_blank"
@@ -243,9 +249,34 @@
           <aside class="layer-panel">
             <h3>圖層控制</h3>
             <ul id="mapLayerList" class="layer-list"></ul>
-            <p class="timestamp">
+            <p id="floodLayerMeta" class="timestamp">
               積淹水圖層改接水利署 IoW 即時感測，顏色越深代表水深越高。
             </p>
+            <div class="map-legend" aria-label="地圖圖例對照">
+              <h4>圖例對照</h4>
+              <ul class="legend-list">
+                <li>
+                  <span class="legend-swatch flood-level-4" aria-hidden="true"></span>
+                  <span>積淹水感測：嚴重積水（等級 4）</span>
+                </li>
+                <li>
+                  <span class="legend-swatch flood-level-3" aria-hidden="true"></span>
+                  <span>積淹水感測：明顯積水（等級 3）</span>
+                </li>
+                <li>
+                  <span class="legend-swatch flood-level-2" aria-hidden="true"></span>
+                  <span>積淹水感測：淺層積水（等級 2）</span>
+                </li>
+                <li>
+                  <span class="legend-swatch flood-level-1" aria-hidden="true"></span>
+                  <span>積淹水感測：輕微積水（等級 1）</span>
+                </li>
+                <li>
+                  <span class="legend-swatch cctv-point" aria-hidden="true"></span>
+                  <span>縣市路口 CCTV 監測點（右側地圖可點選）</span>
+                </li>
+              </ul>
+            </div>
           </aside>
           <div id="warningMap" class="warning-map" aria-label="積淹水警示地圖"></div>
         </div>
@@ -257,7 +288,7 @@
           <li>天氣與空氣品質：Open-Meteo（鄉鎮級即時與短時預報／AQI）。</li>
           <li>區域記憶：瀏覽器 localStorage 保留上次選取的區域／縣市／鄉鎮。</li>
           <li>停班停課資料：行政院人事行政總處公告頁面（經公開鏡像讀取）。</li>
-          <li>市區路口監控：交通部運輸資料流通服務（各縣市 CCTV 公開資料快照）。</li>
+          <li>縣市路口監控：交通部運輸資料流通服務（各縣市 CCTV 公開資料快照）。</li>
           <li>國道監控：交通部公路局即時 CCTV 公開資料（部署時快照）。</li>
           <li>積淹水警示：經濟部水利署 IoW 即時淹水深度感測（公開 API）。</li>
           <li>颱風分析：中央氣象署颱風消息／警報頁面即時解析 + Windy 6 小時動態圖自動循環播放。</li>

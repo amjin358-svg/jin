@@ -470,8 +470,8 @@ const mapLayerVisibility = {
 };
 const mapLayerConfig = {
   "flood-warning": { label: "即時積淹水感測", pane: "floodPane" },
-  "cctv-points": { label: "市區路口 CCTV", pane: "cameraPane" },
-  "city-focus": { label: "縣市焦點圈", pane: "focusPane" }
+  "cctv-points": { label: "縣市路口 CCTV", pane: "cameraPane" },
+  "city-focus": { label: "縣市焦點圈", pane: "focusPane", hiddenInControl: true }
 };
 const AUTO_REFRESH_MS = 15 * 60 * 1000;
 const SUBSCRIPTION_STORAGE_KEY = "weatherMemberSubscriptionV1";
@@ -500,7 +500,9 @@ let countdownTimer = null;
 let windyAutoReplayTimer = null;
 let windyAutoReplayEnabled = true;
 const WINDY_AUTO_REPLAY_MS = 28000;
+const WINDY_PLAYBAR_HEIGHT = 580;
 let lastWindyEmbedUrl = "";
+let windyEmbedLoadHandlerBound = false;
 
 function getRegionForCity(cityName) {
   return REGION_GROUPS.find((region) => region.cities.includes(cityName))?.name ?? REGION_GROUPS[0].name;
@@ -1299,13 +1301,13 @@ function buildWindyEmbedUrl(lat, lon, zoom = 6, { bustCache = false } = {}) {
     detailLat: Number(lat).toFixed(3),
     detailLon: Number(lon).toFixed(3),
     width: "900",
-    height: "520",
+    height: String(WINDY_PLAYBAR_HEIGHT),
     zoom: String(zoom),
     level: "surface",
     overlay: "wind",
     product: "ecmwf",
-    menu: "",
-    message: "true",
+    menu: "true",
+    message: "false",
     marker: "true",
     calendar: "6",
     pressure: "true",
@@ -1320,6 +1322,21 @@ function buildWindyEmbedUrl(lat, lon, zoom = 6, { bustCache = false } = {}) {
     params.set("_replay", String(Date.now()));
   }
   return `https://embed.windy.com/embed2.html?${params.toString()}`;
+}
+
+function bindWindyEmbedLoadHandler() {
+  if (!windyEmbed || windyEmbedLoadHandlerBound) {
+    return;
+  }
+  windyEmbedLoadHandlerBound = true;
+  windyEmbed.addEventListener("load", () => {
+    if (!windyAutoReplayEnabled) {
+      return;
+    }
+    updateWindyReplayMeta(
+      `6 小時動態播放中（含播放列）｜上次載入 ${formatDateTime(Date.now())}`
+    );
+  });
 }
 
 function getWindyFocusPoint() {
@@ -1396,6 +1413,7 @@ function replayWindyTrack({ silent = false } = {}) {
   if (!windyEmbed) {
     return;
   }
+  bindWindyEmbedLoadHandler();
   const focus = getWindyFocusPoint();
   const embedUrl = buildWindyEmbedUrl(focus.lat, focus.lon, focus.zoom, { bustCache: true });
   lastWindyEmbedUrl = embedUrl;
@@ -1442,6 +1460,7 @@ function updateWindyTrackEmbed() {
   if (!windyEmbed) {
     return;
   }
+  bindWindyEmbedLoadHandler();
   const focus = getWindyFocusPoint();
   const embedUrl = buildWindyEmbedUrl(focus.lat, focus.lon, focus.zoom);
   const currentBase = (windyEmbed.getAttribute("src") || "").replace(/([&?])_replay=\d+/, "");
@@ -1629,7 +1648,7 @@ function renderSubscriptionStatus(message) {
         : Notification.permission === "denied"
           ? "通知權限已封鎖"
           : "尚未允許瀏覽器通知";
-  subscriptionStatus.textContent = `已訂閱 ${appState.subscription.email}（主題：${appState.subscription.topics.join("、")}｜${permissionLabel}）`;
+  subscriptionStatus.textContent = `已訂閱 ${appState.subscription.email}（地區：${appState.subscription.city || "未指定"}｜主題：${appState.subscription.topics.join("、")}｜${permissionLabel}）`;
 }
 
 async function ensureNotificationPermission() {
@@ -1652,6 +1671,28 @@ async function ensureNotificationPermission() {
   return true;
 }
 
+function getSubscriptionCityName() {
+  return appState.subscription?.city || citySelect.value || "";
+}
+
+function getSubscriptionClosureMessage() {
+  const cityName = getSubscriptionCityName();
+  if (!cityName) {
+    return null;
+  }
+  const closure = appState.closureRows.find((row) => row.city === cityName);
+  if (!closure) {
+    return null;
+  }
+  return `【停班停課】${closure.city}：${closure.message}`;
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
 function buildSubscriptionNotificationMessages() {
   const topics = new Set(appState.subscription?.topics ?? []);
   const messages = [];
@@ -1662,11 +1703,17 @@ function buildSubscriptionNotificationMessages() {
     messages.push(`【空氣品質】AQI ${Math.round(appState.airQuality.aqi)}，${getAqiLabel(appState.airQuality.aqi)}。`);
   }
   if (topics.has("flood")) {
-    const floodAlert = appState.aiAlerts.find((text) => text.includes("積淹水警示") || text.includes("停班停課"));
+    const floodAlert = appState.aiAlerts.find((text) => text.includes("積淹水警示"));
     if (floodAlert) {
       messages.push(floodAlert);
     } else if (appState.floodMetaText) {
       messages.push(`【積淹水監測】${appState.floodMetaText}`);
+    }
+  }
+  if (topics.has("closure")) {
+    const closureMessage = getSubscriptionClosureMessage();
+    if (closureMessage) {
+      messages.push(closureMessage);
     }
   }
   return messages;
@@ -1689,10 +1736,32 @@ async function sendSubscriptionNotification({ force = false } = {}) {
   if (!force && Date.now() - appState.lastNotifiedAt < AUTO_REFRESH_MS - 5000) {
     return false;
   }
-  const body = messages.slice(0, 3).join("\n");
-  new Notification("台灣即時提醒", { body });
+
+  const closureMessages = messages.filter((message) => message.includes("停班停課"));
+  const otherMessages = messages.filter((message) => !message.includes("停班停課"));
+
+  for (const closureMessage of closureMessages) {
+    for (let repeat = 0; repeat < 3; repeat += 1) {
+      new Notification("預報訂閱通知", {
+        body: `${closureMessage}（第 ${repeat + 1}/3 次提醒）`,
+        tag: `closure-alert-${repeat}-${Date.now()}`
+      });
+      if (repeat < 2) {
+        await sleep(1800);
+      }
+    }
+  }
+
+  if (otherMessages.length) {
+    const body = otherMessages.slice(0, 3).join("\n");
+    new Notification("預報訂閱通知", { body });
+  }
+
   appState.lastNotifiedAt = Date.now();
-  renderSubscriptionStatus(`已送出通知：${messages[0]}`);
+  const statusHint = closureMessages.length
+    ? `已送出停班停課通知 3 次：${closureMessages[0]}`
+    : `已送出通知：${messages[0]}`;
+  renderSubscriptionStatus(statusHint);
   return true;
 }
 
@@ -1757,7 +1826,8 @@ function updateMapLayerOrderFromDom() {
     return;
   }
   const orderedKeys = [...mapLayerList.querySelectorAll(".layer-item")].map((item) => item.dataset.layerKey);
-  mapLayerOrder.splice(0, mapLayerOrder.length, ...orderedKeys);
+  const hiddenKeys = mapLayerOrder.filter((layerKey) => mapLayerConfig[layerKey]?.hiddenInControl);
+  mapLayerOrder.splice(0, mapLayerOrder.length, ...orderedKeys, ...hiddenKeys);
   applyMapLayerOrder();
 }
 
@@ -1782,6 +1852,9 @@ function renderLayerControl() {
   }
   mapLayerList.innerHTML = "";
   mapLayerOrder.forEach((layerKey) => {
+    if (mapLayerConfig[layerKey]?.hiddenInControl) {
+      return;
+    }
     const item = document.createElement("li");
     item.className = "layer-item";
     item.dataset.layerKey = layerKey;
@@ -1900,7 +1973,7 @@ function updateFloodLayerMetaText() {
       ? `即時積水感測點 ${floodedCount} 處（測站總數 ${stationCount}）。`
       : `目前全台 IoW 測站未回報積水（測站總數 ${stationCount}）。`;
 
-  const note = document.querySelector(".layer-panel .timestamp");
+  const note = document.querySelector("#floodLayerMeta");
   if (note) {
     note.textContent = `${appState.floodMetaText} 顏色越深代表水深越高。`;
   }
@@ -2267,7 +2340,9 @@ subscriptionForm.addEventListener("submit", async (event) => {
   const topics = [...subscriptionForm.querySelectorAll("input[name='topic']:checked")].map((item) => item.value);
   appState.subscription = {
     email: subscriberEmail.value.trim(),
-    topics
+    topics,
+    city: citySelect.value,
+    township: townshipSelect.value
   };
   localStorage.setItem(SUBSCRIPTION_STORAGE_KEY, JSON.stringify(appState.subscription));
   const permissionGranted = await ensureNotificationPermission();
