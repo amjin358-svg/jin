@@ -1,0 +1,2508 @@
+{
+  "fetchedAt": "2026-07-10T00:51:33.729446+08:00",
+  "dateKey": "2026/07/10",
+  "planned": [
+    {
+      "office": "台電基隆區營業處",
+      "requestId": "L78014",
+      "summary": "改良工程",
+      "firstTime": "2026/07/10 13:00~15:00",
+      "secondTime": "無",
+      "area": "基隆市中山區西定路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電桃園區營業處",
+      "requestId": "H93506",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~12:00",
+      "secondTime": "無",
+      "area": "桃園市大園區園十街",
+      "phone": "1911"
+    },
+    {
+      "office": "台電桃園區營業處",
+      "requestId": "H93506",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~12:00",
+      "secondTime": "無",
+      "area": "桃園市大園區南和路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電桃園區營業處",
+      "requestId": "H93506",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~12:00",
+      "secondTime": "無",
+      "area": "桃園市大園區文興街",
+      "phone": "1911"
+    },
+    {
+      "office": "台電桃園區營業處",
+      "requestId": "H93506",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~12:00",
+      "secondTime": "無",
+      "area": "桃園市大園區大觀路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電桃園區營業處",
+      "requestId": "H93506",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~12:00",
+      "secondTime": "無",
+      "area": "桃園市大園區環區東路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電桃園區營業處",
+      "requestId": "H93510",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 14:00~17:00",
+      "secondTime": "無",
+      "area": "桃園市大園區大觀路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電桃園區營業處",
+      "requestId": "H93510",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 14:00~17:00",
+      "secondTime": "無",
+      "area": "桃園市大園區甘塘路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電桃園區營業處",
+      "requestId": "H93510",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 14:00~17:00",
+      "secondTime": "無",
+      "area": "桃園市大園區南和路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電桃園區營業處",
+      "requestId": "H93510",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 14:00~17:00",
+      "secondTime": "無",
+      "area": "桃園市大園區南港里",
+      "phone": "1911"
+    },
+    {
+      "office": "台電桃園區營業處",
+      "requestId": "H93510",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 14:00~17:00",
+      "secondTime": "無",
+      "area": "桃園市大園區環區南路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電桃園區營業處",
+      "requestId": "H93510",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 14:00~17:00",
+      "secondTime": "無",
+      "area": "桃園市大園區環區東路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電桃園區營業處",
+      "requestId": "H93510",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 14:00~17:00",
+      "secondTime": "無",
+      "area": "桃園市大園區學十街",
+      "phone": "1911"
+    },
+    {
+      "office": "台電桃園區營業處",
+      "requestId": "H93510",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 14:00~17:00",
+      "secondTime": "無",
+      "area": "桃園市大園區客運一段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電桃園區營業處",
+      "requestId": "H93510",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 14:00~17:00",
+      "secondTime": "無",
+      "area": "桃園市大園區園學路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電桃園區營業處",
+      "requestId": "H93510",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 14:00~17:00",
+      "secondTime": "無",
+      "area": "桃園市大園區學十一街",
+      "phone": "1911"
+    },
+    {
+      "office": "台電台中區營業處",
+      "requestId": "L36352",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~14:00",
+      "secondTime": "無",
+      "area": "台中市沙鹿區北勢坑段六路厝小段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電台中區營業處",
+      "requestId": "L36352",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~14:00",
+      "secondTime": "無",
+      "area": "台中市沙鹿區晉江東段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電台中區營業處",
+      "requestId": "H24482",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~16:00",
+      "secondTime": "無",
+      "area": "台中市新社區七分段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電台中區營業處",
+      "requestId": "H24482",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~16:00",
+      "secondTime": "無",
+      "area": "台中市新社區七分段水井子小段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電台中區營業處",
+      "requestId": "H24482",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~16:00",
+      "secondTime": "無",
+      "area": "台中市新社區井南街",
+      "phone": "1911"
+    },
+    {
+      "office": "台電台中區營業處",
+      "requestId": "H24146",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~17:00",
+      "secondTime": "無",
+      "area": "台中市后里區舊社路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電台中區營業處",
+      "requestId": "H24482",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~16:00",
+      "secondTime": "無",
+      "area": "台中市新社區馬力埔段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電台中區營業處",
+      "requestId": "H24146",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~17:00",
+      "secondTime": "無",
+      "area": "台中市后里區三重路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電台中區營業處",
+      "requestId": "H24146",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~17:00",
+      "secondTime": "無",
+      "area": "台中市后里區四塊厝段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電台中區營業處",
+      "requestId": "H24146",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~17:00",
+      "secondTime": "無",
+      "area": "台中市后里區甲后路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電台中區營業處",
+      "requestId": "H24146",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~17:00",
+      "secondTime": "無",
+      "area": "台中市后里區金城段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電台中區營業處",
+      "requestId": "H24482",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~16:00",
+      "secondTime": "無",
+      "area": "台中市新社區井新街",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "L16236",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:00~10:00",
+      "secondTime": "無",
+      "area": "彰化縣北斗鎮中寮里裕後路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "L16236",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:00~10:00",
+      "secondTime": "無",
+      "area": "彰化縣北斗鎮三和段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "L16236",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:00~10:00",
+      "secondTime": "無",
+      "area": "彰化縣北斗鎮中寮里三合路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "L16212",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:00~13:00",
+      "secondTime": "無",
+      "area": "彰化縣大城鄉美豐段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "L16236",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:00~10:00",
+      "secondTime": "無",
+      "area": "彰化縣北斗鎮北勢寮段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "L16221",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~09:30",
+      "secondTime": "無",
+      "area": "彰化縣伸港鄉中興路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "L16221",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~09:30",
+      "secondTime": "無",
+      "area": "彰化縣伸港鄉伸港段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "L16221",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~09:30",
+      "secondTime": "無",
+      "area": "彰化縣伸港鄉中興路一段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "H10747",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~17:00",
+      "secondTime": "無",
+      "area": "彰化縣芳苑鄉漢寶園段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "L16255",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~10:30",
+      "secondTime": "無",
+      "area": "彰化縣二水鄉新十五段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "L16255",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~10:30",
+      "secondTime": "無",
+      "area": "彰化縣二水鄉復興村",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "L16255",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~10:30",
+      "secondTime": "無",
+      "area": "彰化縣二水鄉員集路五段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "L16255",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~10:30",
+      "secondTime": "無",
+      "area": "彰化縣二水鄉十五段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "H20665",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~16:00",
+      "secondTime": "無",
+      "area": "彰化縣埔鹽鄉彰水路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "H20665",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~16:00",
+      "secondTime": "無",
+      "area": "彰化縣埔鹽鄉",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "H20665",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~16:00",
+      "secondTime": "無",
+      "area": "彰化縣埔鹽鄉光明路一段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "H20665",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~16:00",
+      "secondTime": "無",
+      "area": "彰化縣埔鹽鄉光明路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "H20665",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~16:00",
+      "secondTime": "無",
+      "area": "彰化縣埔鹽鄉光明段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "H20665",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~16:00",
+      "secondTime": "無",
+      "area": "彰化縣埔鹽鄉子村",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "H20728",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~14:00",
+      "secondTime": "無",
+      "area": "彰化縣秀水鄉鶴鳴村",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "H20728",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~14:00",
+      "secondTime": "無",
+      "area": "彰化縣秀水鄉彰鹿路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "H20728",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~14:00",
+      "secondTime": "無",
+      "area": "彰化縣秀水鄉馬鳴路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "H20728",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~14:00",
+      "secondTime": "無",
+      "area": "彰化縣秀水鄉馬鳴段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "H20728",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~14:00",
+      "secondTime": "無",
+      "area": "彰化縣秀水鄉馬嗚段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "H20728",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~14:00",
+      "secondTime": "無",
+      "area": "彰化縣秀水鄉西興段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "H20728",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~14:00",
+      "secondTime": "無",
+      "area": "彰化縣秀水鄉安東巷",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "H20728",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~14:00",
+      "secondTime": "無",
+      "area": "彰化縣秀水鄉安東村",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "H20728",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~14:00",
+      "secondTime": "無",
+      "area": "彰化縣秀水鄉瓦瑤街",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "L16222",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:30~10:30",
+      "secondTime": "無",
+      "area": "彰化縣伸港鄉中興路一段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "L16237",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 10:00~12:00",
+      "secondTime": "無",
+      "area": "彰化縣北斗鎮中寮里中寮路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "L16237",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 10:00~12:00",
+      "secondTime": "無",
+      "area": "彰化縣北斗鎮中寮里中寮二路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "L16237",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 10:00~12:00",
+      "secondTime": "無",
+      "area": "彰化縣北斗鎮裕後段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "L16256",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 10:00~11:30",
+      "secondTime": "無",
+      "area": "彰化縣田中鎮山腳路一段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "L16237",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 10:00~12:00",
+      "secondTime": "無",
+      "area": "彰化縣北斗鎮北勢寮段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "L16256",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 10:00~11:30",
+      "secondTime": "無",
+      "area": "彰化縣田中鎮東源段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "L16237",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 10:00~12:00",
+      "secondTime": "無",
+      "area": "彰化縣北斗鎮中寮里",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "L16224",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 13:00~14:00",
+      "secondTime": "無",
+      "area": "彰化縣伸港鄉伸東段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "L16213",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 13:00~17:00",
+      "secondTime": "無",
+      "area": "彰化縣芳苑鄉芳苑段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "L16224",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 13:00~14:00",
+      "secondTime": "無",
+      "area": "彰化縣伸港鄉崙東街",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "L16224",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 13:00~14:00",
+      "secondTime": "無",
+      "area": "彰化縣伸港鄉建興路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "L16213",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 13:00~17:00",
+      "secondTime": "無",
+      "area": "彰化縣芳苑鄉芳仁段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "L16213",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 13:00~17:00",
+      "secondTime": "無",
+      "area": "彰化縣芳苑鄉沙山段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "L16238",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 13:00~15:00",
+      "secondTime": "無",
+      "area": "彰化縣北斗鎮北勢寮段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "L16238",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 13:00~15:00",
+      "secondTime": "無",
+      "area": "彰化縣北斗鎮大道里大道路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "L16258",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 13:30~15:00",
+      "secondTime": "無",
+      "area": "彰化縣田中鎮香山里",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "L16258",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 13:30~15:00",
+      "secondTime": "無",
+      "area": "彰化縣田中鎮山腳路一段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "L16258",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 13:30~15:00",
+      "secondTime": "無",
+      "area": "彰化縣田中鎮香山段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "L16258",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 13:30~15:00",
+      "secondTime": "無",
+      "area": "彰化縣田中鎮山腳路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "L16225",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 14:00~15:00",
+      "secondTime": "無",
+      "area": "彰化縣伸港鄉中華路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "L16225",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 14:00~15:00",
+      "secondTime": "無",
+      "area": "彰化縣伸港鄉伸東段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "L16225",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 14:00~15:00",
+      "secondTime": "無",
+      "area": "彰化縣伸港鄉建興四街",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "L16259",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 14:30~16:30",
+      "secondTime": "無",
+      "area": "彰化縣二水鄉員集路五段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "L16226",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 15:00~16:00",
+      "secondTime": "無",
+      "area": "彰化縣伸港鄉中華路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "L16226",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 15:00~16:00",
+      "secondTime": "無",
+      "area": "彰化縣伸港鄉建興四街",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "L16239",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 15:00~17:00",
+      "secondTime": "無",
+      "area": "彰化縣田尾鄉饒平厝段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "L16239",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 15:00~17:00",
+      "secondTime": "無",
+      "area": "彰化縣北斗鎮大新里斗中路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "L16226",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 15:00~16:00",
+      "secondTime": "無",
+      "area": "彰化縣伸港鄉建興路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "L16226",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 15:00~16:00",
+      "secondTime": "無",
+      "area": "彰化縣伸港鄉",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "L16227",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 16:00~17:00",
+      "secondTime": "無",
+      "area": "彰化縣伸港鄉中華路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電彰化區營業處",
+      "requestId": "L16260",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 16:00~17:30",
+      "secondTime": "無",
+      "area": "彰化縣二水鄉員集路五段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電嘉義區營業處",
+      "requestId": "H38707",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~17:00",
+      "secondTime": "無",
+      "area": "嘉義縣阿里山鄉特富野段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電嘉義區營業處",
+      "requestId": "H38707",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~17:00",
+      "secondTime": "無",
+      "area": "嘉義縣阿里山鄉達邦村",
+      "phone": "1911"
+    },
+    {
+      "office": "台電嘉義區營業處",
+      "requestId": "H38707",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~17:00",
+      "secondTime": "無",
+      "area": "嘉義縣阿里山鄉達邦村達德安",
+      "phone": "1911"
+    },
+    {
+      "office": "台電嘉義區營業處",
+      "requestId": "H38707",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~17:00",
+      "secondTime": "無",
+      "area": "嘉義縣阿里山鄉達邦段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電嘉義區營業處",
+      "requestId": "H38707",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~17:00",
+      "secondTime": "無",
+      "area": "嘉義縣阿里山鄉里佳段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電嘉義區營業處",
+      "requestId": "H38707",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~17:00",
+      "secondTime": "無",
+      "area": "嘉義縣阿里山鄉里佳村",
+      "phone": "1911"
+    },
+    {
+      "office": "台電嘉義區營業處",
+      "requestId": "H38707",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~17:00",
+      "secondTime": "無",
+      "area": "嘉義縣阿里山鄉大埔事業區",
+      "phone": "1911"
+    },
+    {
+      "office": "台電嘉義區營業處",
+      "requestId": "H18728",
+      "summary": "開關更換",
+      "firstTime": "2026/07/10 09:00~12:00",
+      "secondTime": "無",
+      "area": "嘉義縣東石鄉龍港村",
+      "phone": "1911"
+    },
+    {
+      "office": "台電嘉義區營業處",
+      "requestId": "H18728",
+      "summary": "開關更換",
+      "firstTime": "2026/07/10 09:00~12:00",
+      "secondTime": "無",
+      "area": "嘉義縣東石鄉塭港村",
+      "phone": "1911"
+    },
+    {
+      "office": "台電嘉義區營業處",
+      "requestId": "H18728",
+      "summary": "開關更換",
+      "firstTime": "2026/07/10 09:00~12:00",
+      "secondTime": "無",
+      "area": "嘉義縣東石鄉港墘厝段龍港小段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電嘉義區營業處",
+      "requestId": "H18728",
+      "summary": "開關更換",
+      "firstTime": "2026/07/10 09:00~12:00",
+      "secondTime": "無",
+      "area": "嘉義縣東石鄉港墘厝段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電嘉義區營業處",
+      "requestId": "H18728",
+      "summary": "開關更換",
+      "firstTime": "2026/07/10 09:00~12:00",
+      "secondTime": "無",
+      "area": "嘉義縣東石鄉頂厝路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電嘉義區營業處",
+      "requestId": "H18728",
+      "summary": "開關更換",
+      "firstTime": "2026/07/10 09:00~12:00",
+      "secondTime": "無",
+      "area": "嘉義縣東石鄉頂厝子段頂厝小段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電嘉義區營業處",
+      "requestId": "H18728",
+      "summary": "開關更換",
+      "firstTime": "2026/07/10 09:00~12:00",
+      "secondTime": "無",
+      "area": "嘉義縣東石鄉頂厝子段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電嘉義區營業處",
+      "requestId": "H18728",
+      "summary": "開關更換",
+      "firstTime": "2026/07/10 09:00~12:00",
+      "secondTime": "無",
+      "area": "嘉義縣東石鄉永屯村",
+      "phone": "1911"
+    },
+    {
+      "office": "台電嘉義區營業處",
+      "requestId": "H18728",
+      "summary": "開關更換",
+      "firstTime": "2026/07/10 09:00~12:00",
+      "secondTime": "無",
+      "area": "嘉義縣東石鄉屯子頭新段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電嘉義區營業處",
+      "requestId": "H18728",
+      "summary": "開關更換",
+      "firstTime": "2026/07/10 09:00~12:00",
+      "secondTime": "無",
+      "area": "嘉義縣東石鄉三塊厝段三家小段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電嘉義區營業處",
+      "requestId": "H18728",
+      "summary": "開關更換",
+      "firstTime": "2026/07/10 09:00~12:00",
+      "secondTime": "無",
+      "area": "嘉義縣東石鄉三家村",
+      "phone": "1911"
+    },
+    {
+      "office": "台電嘉義區營業處",
+      "requestId": "H18728",
+      "summary": "開關更換",
+      "firstTime": "2026/07/10 09:00~12:00",
+      "secondTime": "無",
+      "area": "嘉義縣東石鄉三塊厝段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電台南區營業處",
+      "requestId": "L35280",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:00~13:00",
+      "secondTime": "無",
+      "area": "台南市佳里區文化路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電台南區營業處",
+      "requestId": "L35280",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:00~13:00",
+      "secondTime": "無",
+      "area": "台南市佳里區安西",
+      "phone": "1911"
+    },
+    {
+      "office": "台電台南區營業處",
+      "requestId": "L35280",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:00~13:00",
+      "secondTime": "無",
+      "area": "台南市佳里區育善段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電台南區營業處",
+      "requestId": "H37339",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~12:30",
+      "secondTime": "無",
+      "area": "台南市安定區中榮段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電台南區營業處",
+      "requestId": "H37339",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~12:30",
+      "secondTime": "無",
+      "area": "台南市安定區中榮里許中營",
+      "phone": "1911"
+    },
+    {
+      "office": "台電台南區營業處",
+      "requestId": "H37339",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~12:30",
+      "secondTime": "無",
+      "area": "台南市安定區中榮村許中營",
+      "phone": "1911"
+    },
+    {
+      "office": "台電台南區營業處",
+      "requestId": "H17360",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~16:30",
+      "secondTime": "無",
+      "area": "台南市南化區玉井事業區",
+      "phone": "1911"
+    },
+    {
+      "office": "台電台南區營業處",
+      "requestId": "L55192",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:30~12:00",
+      "secondTime": "無",
+      "area": "台南市山上區北勢洲段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電台南區營業處",
+      "requestId": "H37383",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 10:00~17:00",
+      "secondTime": "無",
+      "area": "台南市佳里區民安里同安寮",
+      "phone": "1911"
+    },
+    {
+      "office": "台電台南區營業處",
+      "requestId": "H37383",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 10:00~17:00",
+      "secondTime": "無",
+      "area": "台南市佳里區民安段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電台南區營業處",
+      "requestId": "L35239",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 13:00~15:00",
+      "secondTime": "無",
+      "area": "台南市安定區港南里",
+      "phone": "1911"
+    },
+    {
+      "office": "台電台南區營業處",
+      "requestId": "L35239",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 13:00~15:00",
+      "secondTime": "無",
+      "area": "台南市安定區港口段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電台南區營業處",
+      "requestId": "L35239",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 13:00~15:00",
+      "secondTime": "無",
+      "area": "台南市安定區港口里",
+      "phone": "1911"
+    },
+    {
+      "office": "台電台南區營業處",
+      "requestId": "L35239",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 13:00~15:00",
+      "secondTime": "無",
+      "area": "台南市安定區港南里港口",
+      "phone": "1911"
+    },
+    {
+      "office": "台電台南區營業處",
+      "requestId": "L35240",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 15:00~17:00",
+      "secondTime": "無",
+      "area": "台南市安定區嘉同里六塊寮",
+      "phone": "1911"
+    },
+    {
+      "office": "台電高雄區營業處",
+      "requestId": "H27683",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~12:00",
+      "secondTime": "無",
+      "area": "高雄市湖內區信義路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電高雄區營業處",
+      "requestId": "H27683",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~12:00",
+      "secondTime": "無",
+      "area": "高雄市湖內區中正路二段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電高雄區營業處",
+      "requestId": "H27683",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~12:00",
+      "secondTime": "無",
+      "area": "高雄市湖內區中正路一段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電高雄區營業處",
+      "requestId": "H27683",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~12:00",
+      "secondTime": "無",
+      "area": "高雄市湖內區保生路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電高雄區營業處",
+      "requestId": "H27683",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~12:00",
+      "secondTime": "無",
+      "area": "高雄市湖內區葉厝里",
+      "phone": "1911"
+    },
+    {
+      "office": "台電高雄區營業處",
+      "requestId": "H27683",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~12:00",
+      "secondTime": "無",
+      "area": "高雄市湖內區慈濟段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電高雄區營業處",
+      "requestId": "H37488",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~09:30",
+      "secondTime": "2026/07/10 14:30~15:00",
+      "area": "高雄市左營區華夏路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電高雄區營業處",
+      "requestId": "H37488",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~09:30",
+      "secondTime": "2026/07/10 14:30~15:00",
+      "area": "高雄市左營區菜公一路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電高雄區營業處",
+      "requestId": "H37488",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~09:30",
+      "secondTime": "2026/07/10 14:30~15:00",
+      "area": "高雄市左營區新光段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電高雄區營業處",
+      "requestId": "H37488",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~09:30",
+      "secondTime": "2026/07/10 14:30~15:00",
+      "area": "高雄市左營區重治路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電高雄區營業處",
+      "requestId": "H37488",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~09:30",
+      "secondTime": "2026/07/10 14:30~15:00",
+      "area": "高雄市左營區重立路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電高雄區營業處",
+      "requestId": "H37488",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~09:30",
+      "secondTime": "2026/07/10 14:30~15:00",
+      "area": "高雄市左營區重文街",
+      "phone": "1911"
+    },
+    {
+      "office": "台電高雄區營業處",
+      "requestId": "H37488",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~09:30",
+      "secondTime": "2026/07/10 14:30~15:00",
+      "area": "高雄市左營區文水路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電高雄區營業處",
+      "requestId": "H17725",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~11:55",
+      "secondTime": "無",
+      "area": "高雄市新興區自立橫路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電高雄區營業處",
+      "requestId": "H37488",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~09:30",
+      "secondTime": "2026/07/10 14:30~15:00",
+      "area": "高雄市左營區大中二路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電高雄區營業處",
+      "requestId": "H37488",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~09:30",
+      "secondTime": "2026/07/10 14:30~15:00",
+      "area": "高雄市左營區文川路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電高雄區營業處",
+      "requestId": "H17725",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~09:20",
+      "secondTime": "2026/07/10 11:35~11:55",
+      "area": "高雄市前金區自立二路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電高雄區營業處",
+      "requestId": "H17725",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~09:20",
+      "secondTime": "2026/07/10 11:35~11:55",
+      "area": "高雄市前金區自立橫路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電高雄區營業處",
+      "requestId": "H17725",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~09:20",
+      "secondTime": "2026/07/10 11:35~11:55",
+      "area": "高雄市前金區前金段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電高雄區營業處",
+      "requestId": "H17725",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~09:20",
+      "secondTime": "2026/07/10 11:35~11:55",
+      "area": "高雄市前金區新盛二街",
+      "phone": "1911"
+    },
+    {
+      "office": "台電高雄區營業處",
+      "requestId": "H17725",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~09:20",
+      "secondTime": "2026/07/10 11:35~11:55",
+      "area": "高雄市前金區瑞源路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電高雄區營業處",
+      "requestId": "H17725",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~09:20",
+      "secondTime": "2026/07/10 11:35~11:55",
+      "area": "高雄市新興區自立橫路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電高雄區營業處",
+      "requestId": "H17725",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~11:55",
+      "secondTime": "無",
+      "area": "高雄市前金區中正四路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電高雄區營業處",
+      "requestId": "H17725",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~11:55",
+      "secondTime": "無",
+      "area": "高雄市前金區自立橫路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電高雄區營業處",
+      "requestId": "H17725",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~11:55",
+      "secondTime": "無",
+      "area": "高雄市前金區瑞源路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電高雄區營業處",
+      "requestId": "H17725",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~11:55",
+      "secondTime": "無",
+      "area": "高雄市新興區中正三路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電高雄區營業處",
+      "requestId": "H27806",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 13:30~17:00",
+      "secondTime": "無",
+      "area": "高雄市湖內區民權路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電澎湖區營業處",
+      "requestId": "L33609",
+      "summary": "管線遷移",
+      "firstTime": "2026/07/10 08:00~12:00",
+      "secondTime": "無",
+      "area": "澎湖縣西嶼鄉橫礁村",
+      "phone": "1911"
+    },
+    {
+      "office": "台電澎湖區營業處",
+      "requestId": "L13607",
+      "summary": "管線遷移",
+      "firstTime": "2026/07/10 08:30~12:00",
+      "secondTime": "無",
+      "area": "澎湖縣馬公市文光路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電台北南區營業處",
+      "requestId": "H78489",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~12:00",
+      "secondTime": "無",
+      "area": "新北市土城區石門路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電台北北區營業處",
+      "requestId": "H12263",
+      "summary": "管線遷移",
+      "firstTime": "2026/07/10 10:00~12:00",
+      "secondTime": "無",
+      "area": "新北市淡水區沙崙路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電台北北區營業處",
+      "requestId": "H12265",
+      "summary": "管線遷移",
+      "firstTime": "2026/07/10 13:30~15:30",
+      "secondTime": "無",
+      "area": "新北市淡水區沙崙路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電台北北區營業處",
+      "requestId": "H12265",
+      "summary": "管線遷移",
+      "firstTime": "2026/07/10 13:30~15:30",
+      "secondTime": "無",
+      "area": "台北縣淡水鎮沙崙路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電台北西區營業處",
+      "requestId": "L23373",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~10:30",
+      "secondTime": "無",
+      "area": "新北市三峽區嘉添",
+      "phone": "1911"
+    },
+    {
+      "office": "台電台北西區營業處",
+      "requestId": "H27185",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~15:30",
+      "secondTime": "無",
+      "area": "新北市鶯歌區鶯桃路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電台北西區營業處",
+      "requestId": "H27185",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~15:30",
+      "secondTime": "無",
+      "area": "新北市鶯歌區鳳鳴路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電鳳山區營業處",
+      "requestId": "H35217",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~16:30",
+      "secondTime": "無",
+      "area": "高雄市仁武區永仁路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電鳳山區營業處",
+      "requestId": "H35217",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~16:30",
+      "secondTime": "無",
+      "area": "高雄市仁武區永新一街",
+      "phone": "1911"
+    },
+    {
+      "office": "台電鳳山區營業處",
+      "requestId": "H35217",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~16:30",
+      "secondTime": "無",
+      "area": "高雄市仁武區永新二街",
+      "phone": "1911"
+    },
+    {
+      "office": "台電鳳山區營業處",
+      "requestId": "H35217",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~16:30",
+      "secondTime": "無",
+      "area": "高雄市仁武區永新三街",
+      "phone": "1911"
+    },
+    {
+      "office": "台電鳳山區營業處",
+      "requestId": "H35217",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~16:30",
+      "secondTime": "無",
+      "area": "高雄市仁武區永新四街",
+      "phone": "1911"
+    },
+    {
+      "office": "台電鳳山區營業處",
+      "requestId": "H35218",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~14:30",
+      "secondTime": "無",
+      "area": "高雄市鳳山區七老爺段一甲小段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電鳳山區營業處",
+      "requestId": "H35218",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~14:30",
+      "secondTime": "無",
+      "area": "高雄市鳳山區正氣街",
+      "phone": "1911"
+    },
+    {
+      "office": "台電鳳山區營業處",
+      "requestId": "H35218",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~14:30",
+      "secondTime": "無",
+      "area": "高雄市鳳山區正義街",
+      "phone": "1911"
+    },
+    {
+      "office": "台電鳳山區營業處",
+      "requestId": "H35218",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~14:30",
+      "secondTime": "無",
+      "area": "高雄市鳳山區光榮街",
+      "phone": "1911"
+    },
+    {
+      "office": "台電鳳山區營業處",
+      "requestId": "H35218",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~14:30",
+      "secondTime": "無",
+      "area": "高雄市鳳山區兒童公園",
+      "phone": "1911"
+    },
+    {
+      "office": "台電鳳山區營業處",
+      "requestId": "H35218",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~14:30",
+      "secondTime": "無",
+      "area": "高雄市鳳山區南江街",
+      "phone": "1911"
+    },
+    {
+      "office": "台電鳳山區營業處",
+      "requestId": "H35218",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~14:30",
+      "secondTime": "無",
+      "area": "高雄市鳳山區南昌街",
+      "phone": "1911"
+    },
+    {
+      "office": "台電鳳山區營業處",
+      "requestId": "H35218",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~14:30",
+      "secondTime": "無",
+      "area": "高雄市鳳山區南華路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電鳳山區營業處",
+      "requestId": "H35218",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~14:30",
+      "secondTime": "無",
+      "area": "高雄市鳳山區南華橫巷",
+      "phone": "1911"
+    },
+    {
+      "office": "台電鳳山區營業處",
+      "requestId": "H35191",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~17:00",
+      "secondTime": "無",
+      "area": "高雄市林園區中正路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電鳳山區營業處",
+      "requestId": "H35191",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~17:00",
+      "secondTime": "無",
+      "area": "高雄市林園區中汕段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電鳳山區營業處",
+      "requestId": "H35191",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~17:00",
+      "secondTime": "無",
+      "area": "高雄市林園區中芸段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電鳳山區營業處",
+      "requestId": "H35191",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~17:00",
+      "secondTime": "無",
+      "area": "高雄市林園區北汕段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電鳳山區營業處",
+      "requestId": "H35191",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~17:00",
+      "secondTime": "無",
+      "area": "高雄市林園區北尾段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電鳳山區營業處",
+      "requestId": "H35191",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~17:00",
+      "secondTime": "無",
+      "area": "高雄市林園區汕尾段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電鳳山區營業處",
+      "requestId": "H35217",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~16:30",
+      "secondTime": "無",
+      "area": "高雄市仁武區八卦里",
+      "phone": "1911"
+    },
+    {
+      "office": "台電鳳山區營業處",
+      "requestId": "H35217",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~16:30",
+      "secondTime": "無",
+      "area": "高雄市仁武區八卦寮段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電鳳山區營業處",
+      "requestId": "H35217",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~16:30",
+      "secondTime": "無",
+      "area": "高雄市仁武區八德西路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電鳳山區營業處",
+      "requestId": "H35217",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~16:30",
+      "secondTime": "無",
+      "area": "高雄市仁武區北屋段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電鳳山區營業處",
+      "requestId": "H35217",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~16:30",
+      "secondTime": "無",
+      "area": "高雄市仁武區永仁段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電鳳山區營業處",
+      "requestId": "H35217",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~16:30",
+      "secondTime": "無",
+      "area": "高雄市仁武區永仁街",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H39938",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~17:00",
+      "secondTime": "無",
+      "area": "雲林縣虎尾鎮廉使里",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H39938",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~17:00",
+      "secondTime": "無",
+      "area": "雲林縣虎尾鎮安溪里",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H39938",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~17:00",
+      "secondTime": "無",
+      "area": "雲林縣虎尾鎮興中里",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H39938",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~17:00",
+      "secondTime": "無",
+      "area": "雲林縣虎尾鎮廉使段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H39787",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~17:00",
+      "secondTime": "無",
+      "area": "雲林縣四湖鄉建陽段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H39787",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~17:00",
+      "secondTime": "無",
+      "area": "雲林縣四湖鄉？0子村",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H39787",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~17:00",
+      "secondTime": "無",
+      "area": "雲林縣四湖鄉東路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H39787",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~17:00",
+      "secondTime": "無",
+      "area": "雲林縣四湖鄉東村子寮",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H39787",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~17:00",
+      "secondTime": "無",
+      "area": "雲林縣四湖鄉東村",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H39787",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~17:00",
+      "secondTime": "無",
+      "area": "雲林縣四湖鄉子村子寮",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "L34853",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~17:00",
+      "secondTime": "無",
+      "area": "雲林縣水林鄉蘇秦段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "L34853",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~17:00",
+      "secondTime": "無",
+      "area": "雲林縣水林鄉蘇秦路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "L14880",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~10:30",
+      "secondTime": "無",
+      "area": "雲林縣水林鄉蕃薯村",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H39787",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~17:00",
+      "secondTime": "無",
+      "area": "雲林縣四湖鄉",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "L34853",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~17:00",
+      "secondTime": "無",
+      "area": "雲林縣水林鄉蘇秦村",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "L34853",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~17:00",
+      "secondTime": "無",
+      "area": "雲林縣水林鄉蘇秦村蘇秦",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H39842",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~17:00",
+      "secondTime": "無",
+      "area": "雲林縣古坑鄉石橋路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H39842",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~17:00",
+      "secondTime": "無",
+      "area": "雲林縣古坑鄉樟湖村",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H39842",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~17:00",
+      "secondTime": "無",
+      "area": "雲林縣古坑鄉樟湖村石橋",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H39842",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~17:00",
+      "secondTime": "無",
+      "area": "雲林縣古坑鄉樟湖村樟湖",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H39842",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~17:00",
+      "secondTime": "無",
+      "area": "雲林縣古坑鄉樟湖段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H39787",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~17:00",
+      "secondTime": "無",
+      "area": "雲林縣口湖鄉下崙村",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H39787",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~17:00",
+      "secondTime": "無",
+      "area": "雲林縣口湖鄉箔子村",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H39787",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~17:00",
+      "secondTime": "無",
+      "area": "雲林縣四湖鄉子村",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H39787",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~17:00",
+      "secondTime": "無",
+      "area": "雲林縣四湖鄉子村子寮",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H39787",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~17:00",
+      "secondTime": "無",
+      "area": "雲林縣四湖鄉子寮段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H39787",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~17:00",
+      "secondTime": "無",
+      "area": "雲林縣四湖鄉子寮路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H39787",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~17:00",
+      "secondTime": "無",
+      "area": "雲林縣四湖鄉東村",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H39787",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~17:00",
+      "secondTime": "無",
+      "area": "雲林縣四湖鄉東村子寮",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H39787",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~17:00",
+      "secondTime": "無",
+      "area": "雲林縣四湖鄉箔子村",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H39787",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~17:00",
+      "secondTime": "無",
+      "area": "雲林縣四湖鄉箔子村箔子寮",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H39787",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~17:00",
+      "secondTime": "無",
+      "area": "雲林縣四湖鄉子村",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H39787",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~17:00",
+      "secondTime": "無",
+      "area": "雲林縣四湖鄉廣溝村",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H39787",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~17:00",
+      "secondTime": "無",
+      "area": "雲林縣四湖鄉箔東村",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H39831",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:30~15:00",
+      "secondTime": "無",
+      "area": "雲林縣水林鄉後寮村",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H39831",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:30~15:00",
+      "secondTime": "無",
+      "area": "雲林縣水林鄉大山路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H39831",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:30~15:00",
+      "secondTime": "無",
+      "area": "雲林縣水林鄉大山村",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H79925",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:30~17:00",
+      "secondTime": "無",
+      "area": "雲林縣古坑鄉草嶺段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H79925",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:30~17:00",
+      "secondTime": "無",
+      "area": "雲林縣古坑鄉草嶺村草嶺",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H79925",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:30~17:00",
+      "secondTime": "無",
+      "area": "雲林縣古坑鄉草嶺村外湖",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H79925",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:30~17:00",
+      "secondTime": "無",
+      "area": "雲林縣古坑鄉草嶺村內湖",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H79925",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:30~17:00",
+      "secondTime": "無",
+      "area": "雲林縣古坑鄉草嶺村",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H79925",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:30~17:00",
+      "secondTime": "無",
+      "area": "南投縣竹山鎮瑞竹里",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H79925",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:30~17:00",
+      "secondTime": "無",
+      "area": "南投縣竹山鎮桶頭段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H19859",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:30~12:00",
+      "secondTime": "無",
+      "area": "雲林縣四湖鄉崙北村",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H19859",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:30~12:00",
+      "secondTime": "無",
+      "area": "雲林縣台西鄉尚德段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H19859",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:30~12:00",
+      "secondTime": "無",
+      "area": "雲林縣台西鄉泉州村",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H19859",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:30~12:00",
+      "secondTime": "無",
+      "area": "雲林縣台西鄉溪頂村",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H19859",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:30~12:00",
+      "secondTime": "無",
+      "area": "雲林縣台西鄉溪頂村溪頂",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H19859",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:30~12:00",
+      "secondTime": "無",
+      "area": "雲林縣台西鄉溪頂段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H19859",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:30~12:00",
+      "secondTime": "無",
+      "area": "雲林縣四湖鄉中華路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H19859",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:30~12:00",
+      "secondTime": "無",
+      "area": "雲林縣四湖鄉文化路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H19859",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:30~12:00",
+      "secondTime": "無",
+      "area": "雲林縣四湖鄉四湖",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H19859",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:30~12:00",
+      "secondTime": "無",
+      "area": "雲林縣四湖鄉林東村",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H19859",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:30~12:00",
+      "secondTime": "無",
+      "area": "雲林縣四湖鄉林厝村",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H19859",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:30~12:00",
+      "secondTime": "無",
+      "area": "雲林縣四湖鄉林厝段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H19859",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:30~12:00",
+      "secondTime": "無",
+      "area": "雲林縣四湖鄉林厝寮段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H19859",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:30~12:00",
+      "secondTime": "無",
+      "area": "雲林縣四湖鄉桂林路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H19859",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:30~12:00",
+      "secondTime": "無",
+      "area": "雲林縣四湖鄉溪尾村",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "L14881",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 10:30~11:30",
+      "secondTime": "無",
+      "area": "雲林縣水林鄉蕃薯村",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H19962",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 13:00~17:00",
+      "secondTime": "無",
+      "area": "雲林縣水林鄉萬興段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H19962",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 13:00~17:00",
+      "secondTime": "無",
+      "area": "雲林縣水林鄉萬興路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H19962",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 13:00~17:00",
+      "secondTime": "無",
+      "area": "雲林縣水林鄉灣西村",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H19962",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 13:00~17:00",
+      "secondTime": "無",
+      "area": "雲林縣水林鄉灣東村",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H19962",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 13:00~17:00",
+      "secondTime": "無",
+      "area": "雲林縣水林鄉灣東段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H19962",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 13:00~17:00",
+      "secondTime": "無",
+      "area": "雲林縣水林鄉水北村",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H19962",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 13:00~17:00",
+      "secondTime": "無",
+      "area": "雲林縣水林鄉東興段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H19962",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 13:00~17:00",
+      "secondTime": "無",
+      "area": "雲林縣水林鄉萬興",
+      "phone": "1911"
+    },
+    {
+      "office": "台電雲林區營業處",
+      "requestId": "H19962",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 13:00~17:00",
+      "secondTime": "無",
+      "area": "雲林縣水林鄉萬興村",
+      "phone": "1911"
+    },
+    {
+      "office": "台電新營區營業處",
+      "requestId": "H23236",
+      "summary": "管線遷移",
+      "firstTime": "2026/07/10 09:00~17:00",
+      "secondTime": "無",
+      "area": "台南市官田區三塊厝段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電新營區營業處",
+      "requestId": "H23236",
+      "summary": "管線遷移",
+      "firstTime": "2026/07/10 09:00~17:00",
+      "secondTime": "無",
+      "area": "台南市官田區渡拔里",
+      "phone": "1911"
+    },
+    {
+      "office": "台電苗栗區營業處",
+      "requestId": "H34043",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:00~14:00",
+      "secondTime": "無",
+      "area": "苗栗縣南庄鄉田尾段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電苗栗區營業處",
+      "requestId": "L31377",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~17:00",
+      "secondTime": "無",
+      "area": "苗栗縣公館鄉大坑段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電苗栗區營業處",
+      "requestId": "H33995",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~17:00",
+      "secondTime": "無",
+      "area": "苗栗縣頭份市中興路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電苗栗區營業處",
+      "requestId": "H33995",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~17:00",
+      "secondTime": "無",
+      "area": "苗栗縣頭份市永安街",
+      "phone": "1911"
+    },
+    {
+      "office": "台電苗栗區營業處",
+      "requestId": "H33995",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~17:00",
+      "secondTime": "無",
+      "area": "苗栗縣頭份市成功里",
+      "phone": "1911"
+    },
+    {
+      "office": "台電苗栗區營業處",
+      "requestId": "H33995",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~17:00",
+      "secondTime": "無",
+      "area": "苗栗縣頭份市成功里永安街",
+      "phone": "1911"
+    },
+    {
+      "office": "台電苗栗區營業處",
+      "requestId": "H33995",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~17:00",
+      "secondTime": "無",
+      "area": "苗栗縣頭份市成功里寶樹別莊",
+      "phone": "1911"
+    },
+    {
+      "office": "台電苗栗區營業處",
+      "requestId": "H33995",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~17:00",
+      "secondTime": "無",
+      "area": "苗栗縣頭份市成功段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電苗栗區營業處",
+      "requestId": "H33995",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~17:00",
+      "secondTime": "無",
+      "area": "苗栗縣頭份市建國里",
+      "phone": "1911"
+    },
+    {
+      "office": "台電苗栗區營業處",
+      "requestId": "H33995",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~17:00",
+      "secondTime": "無",
+      "area": "苗栗縣頭份市建國里永安街",
+      "phone": "1911"
+    },
+    {
+      "office": "台電苗栗區營業處",
+      "requestId": "H33995",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~17:00",
+      "secondTime": "無",
+      "area": "苗栗縣頭份市蟠桃里",
+      "phone": "1911"
+    },
+    {
+      "office": "台電苗栗區營業處",
+      "requestId": "H34042",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~17:00",
+      "secondTime": "無",
+      "area": "苗栗縣竹南鎮仁德段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電苗栗區營業處",
+      "requestId": "H34042",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~17:00",
+      "secondTime": "無",
+      "area": "苗栗縣竹南鎮光德路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電苗栗區營業處",
+      "requestId": "H34042",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~17:00",
+      "secondTime": "無",
+      "area": "苗栗縣竹南鎮海口里",
+      "phone": "1911"
+    },
+    {
+      "office": "台電苗栗區營業處",
+      "requestId": "H34042",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~17:00",
+      "secondTime": "無",
+      "area": "苗栗縣竹南鎮海口里光德路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電苗栗區營業處",
+      "requestId": "H34042",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~17:00",
+      "secondTime": "無",
+      "area": "苗栗縣竹南鎮港墘里",
+      "phone": "1911"
+    },
+    {
+      "office": "台電苗栗區營業處",
+      "requestId": "H34042",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~17:00",
+      "secondTime": "無",
+      "area": "苗栗縣竹南鎮港墘里光德路",
+      "phone": "1911"
+    },
+    {
+      "office": "台電苗栗區營業處",
+      "requestId": "H34042",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~17:00",
+      "secondTime": "無",
+      "area": "苗栗縣竹南鎮港墘里港仔墘",
+      "phone": "1911"
+    },
+    {
+      "office": "台電苗栗區營業處",
+      "requestId": "L31377",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~17:00",
+      "secondTime": "無",
+      "area": "苗栗縣公館鄉大坑村",
+      "phone": "1911"
+    },
+    {
+      "office": "台電苗栗區營業處",
+      "requestId": "L31377",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 08:30~17:00",
+      "secondTime": "無",
+      "area": "苗栗縣公館鄉大坑村大坑",
+      "phone": "1911"
+    },
+    {
+      "office": "台電苗栗區營業處",
+      "requestId": "L11202",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~12:00",
+      "secondTime": "無",
+      "area": "苗栗縣竹南鎮大同段",
+      "phone": "1911"
+    },
+    {
+      "office": "台電苗栗區營業處",
+      "requestId": "L11202",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~12:00",
+      "secondTime": "無",
+      "area": "苗栗縣竹南鎮大埔里",
+      "phone": "1911"
+    },
+    {
+      "office": "台電苗栗區營業處",
+      "requestId": "L11202",
+      "summary": "管線遷移工程",
+      "firstTime": "2026/07/10 09:00~12:00",
+      "secondTime": "無",
+      "area": "苗栗縣竹南鎮科專一路",
+      "phone": "1911"
+    }
+  ]
+}

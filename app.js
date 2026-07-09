@@ -444,8 +444,7 @@ const typhoonRiskBadge = document.querySelector("#typhoonRiskBadge");
 const typhoonAnalysisList = document.querySelector("#typhoonAnalysisList");
 const windyEmbed = document.querySelector("#windyEmbed");
 const windyExternalLink = document.querySelector("#windyExternalLink");
-const windyWeatherStatus = document.querySelector("#windyWeatherStatus");
-const windyReplayMeta = document.querySelector("#windyReplayMeta");
+const powerOutageMeta = document.querySelector("#powerOutageMeta");
 const aiAlertList = document.querySelector("#aiAlertList");
 const rainProjection = document.querySelector("#rainProjection");
 const subscriptionForm = document.querySelector("#subscriptionForm");
@@ -462,13 +461,16 @@ let warningMap = null;
 let mapFloodLayer = null;
 let mapCameraLayer = null;
 let mapCityFocusLayer = null;
-const mapLayerOrder = ["flood-warning", "cctv-points", "city-focus"];
+let mapPowerOutageLayer = null;
+const mapLayerOrder = ["power-outage", "flood-warning", "cctv-points", "city-focus"];
 const mapLayerVisibility = {
+  "power-outage": true,
   "flood-warning": true,
   "cctv-points": true,
   "city-focus": true
 };
 const mapLayerConfig = {
+  "power-outage": { label: "停電區域標示", pane: "outagePane" },
   "flood-warning": { label: "即時積淹水感測", pane: "floodPane" },
   "cctv-points": { label: "縣市路口 CCTV", pane: "cameraPane" },
   "city-focus": { label: "縣市焦點圈", pane: "focusPane", hiddenInControl: true }
@@ -477,8 +479,14 @@ const AUTO_REFRESH_MS = 15 * 60 * 1000;
 const SUBSCRIPTION_STORAGE_KEY = "weatherMemberSubscriptionV1";
 const FLOOD_LATEST_API =
   "https://opendata.wra.gov.tw/api/v2/1b991bbb-ad85-4e7a-b931-06ce8749d3ed?format=JSON";
+const TAIPOWER_DISASTER_OUTAGE_URL =
+  "https://service.taipower.com.tw/data/opendata/apply/file/d006012/001.xml";
+const TAIPOWER_PLANNED_OUTAGE_ZIP_URL =
+  "https://service.taipower.com.tw/data/opendata/apply/file/d077004/001.zip";
 const TYPHOON_NEWS_MIRROR = "https://r.jina.ai/https://www.cwa.gov.tw/V8/C/P/Typhoon/TY_NEWS.html";
 const TYPHOON_WARN_MIRROR = "https://r.jina.ai/https://www.cwa.gov.tw/V8/C/P/Typhoon/TY_WARN.html";
+const WINDY_EMBED_HEIGHT = 580;
+let jsZipModulePromise = null;
 const appState = {
   weather: null,
   airQuality: null,
@@ -487,6 +495,8 @@ const appState = {
   floodLivePoints: [],
   floodFeatures: [],
   floodMetaText: "",
+  powerOutagePoints: [],
+  powerOutageMetaText: "",
   typhoon: null,
   typhoonOfficial: null,
   aiAlerts: [],
@@ -497,12 +507,6 @@ const appState = {
 };
 let autoRefreshTimer = null;
 let countdownTimer = null;
-let windyAutoReplayTimer = null;
-let windyAutoReplayEnabled = true;
-const WINDY_AUTO_REPLAY_MS = 28000;
-const WINDY_PLAYBAR_HEIGHT = 580;
-let lastWindyEmbedUrl = "";
-let windyEmbedLoadHandlerBound = false;
 
 function getRegionForCity(cityName) {
   return REGION_GROUPS.find((region) => region.cities.includes(cityName))?.name ?? REGION_GROUPS[0].name;
@@ -529,6 +533,269 @@ function getActiveWeatherLocation() {
   return city
     ? { label: city.name, cityName: city.name, townName: "", lat: city.lat, lon: city.lon }
     : null;
+}
+
+function normalizeTaiwanPlaceText(text) {
+  return String(text ?? "").replace(/臺/g, "台").trim();
+}
+
+function getTaiwanDateSlash() {
+  return new Date()
+    .toLocaleDateString("sv-SE", { timeZone: "Asia/Taipei" })
+    .replace(/-/g, "/");
+}
+
+function geocodeOutageArea(areaText) {
+  const normalizedArea = normalizeTaiwanPlaceText(areaText);
+  if (!normalizedArea) {
+    return null;
+  }
+  const townshipCandidates = [...TOWNSHIP_LOCATIONS].sort(
+    (a, b) => `${b.city}${b.town}`.length - `${a.city}${a.town}`.length
+  );
+  for (const township of townshipCandidates) {
+    const key = normalizeTaiwanPlaceText(`${township.city}${township.town}`);
+    if (normalizedArea.includes(key)) {
+      return {
+        lat: township.lat,
+        lon: township.lon,
+        label: `${township.city}${township.town}`
+      };
+    }
+  }
+  for (const city of CITY_LOCATIONS) {
+    if (normalizedArea.includes(normalizeTaiwanPlaceText(city.name))) {
+      return { lat: city.lat, lon: city.lon, label: city.name };
+    }
+  }
+  return null;
+}
+
+function parseSimpleCsv(text) {
+  return String(text ?? "")
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .slice(1)
+    .map((line) => {
+      const columns = line.split(",");
+      return {
+        office: columns[0] ?? "",
+        requestId: columns[1] ?? "",
+        summary: columns[2] ?? "",
+        firstTime: columns[3] ?? "",
+        secondTime: columns[4] ?? "",
+        area: columns[5] ?? "",
+        phone: columns[6] ?? ""
+      };
+    });
+}
+
+async function loadJsZipModule() {
+  if (!jsZipModulePromise) {
+    jsZipModulePromise = import("https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm").then((module) => module.default);
+  }
+  return jsZipModulePromise;
+}
+
+function parseDisasterOutageXml(xmlText) {
+  const doc = new DOMParser().parseFromString(xmlText, "text/xml");
+  const placemarks = [...doc.querySelectorAll("Placemark")];
+  return placemarks
+    .map((placemark) => {
+      const fields = {};
+      placemark.querySelectorAll("SimpleData").forEach((node) => {
+        const key = node.getAttribute("name");
+        if (key) {
+          fields[key] = node.textContent?.trim() ?? "";
+        }
+      });
+      placemark.querySelectorAll("Data").forEach((node) => {
+        const key = node.getAttribute("name");
+        if (key) {
+          fields[key] = node.querySelector("value")?.textContent?.trim() ?? "";
+        }
+      });
+      const coordinates = placemark.querySelector("coordinates")?.textContent?.trim() ?? "";
+      const [lonText, latText] = coordinates.split(",").map((part) => part.trim());
+      const lat = Number(latText);
+      const lon = Number(lonText);
+      const area = fields["停電區域"] || fields.area || "";
+      const geocoded = Number.isFinite(lat) && Number.isFinite(lon) ? null : geocodeOutageArea(area);
+      return {
+        type: "disaster",
+        area: area || fields["行政區"] || "未提供區域",
+        district: fields["行政區"] ?? "",
+        info: fields["停電資訊"] ?? "災害性停電",
+        affectedHouseholds: fields["影響戶數"] ?? "",
+        eta: fields["預計修復時間"] ?? "",
+        updatedAt: fields["資料更新時間"] ?? "",
+        lat: Number.isFinite(lat) ? lat : geocoded?.lat,
+        lon: Number.isFinite(lon) ? lon : geocoded?.lon,
+        label: geocoded?.label ?? area
+      };
+    })
+    .filter((point) => Number.isFinite(point.lat) && Number.isFinite(point.lon));
+}
+
+async function fetchPlannedOutagePoints() {
+  const todaySlash = getTaiwanDateSlash();
+  const selectedCity = normalizeTaiwanPlaceText(citySelect.value);
+
+  const buildPointsFromRows = (rows) => {
+    const points = [];
+    const seen = new Set();
+    rows.forEach((row) => {
+      if (!row.firstTime?.includes(todaySlash)) {
+        return;
+      }
+      const normalizedArea = normalizeTaiwanPlaceText(row.area);
+      if (selectedCity && !normalizedArea.includes(selectedCity)) {
+        return;
+      }
+      const geocoded = geocodeOutageArea(row.area);
+      if (!geocoded) {
+        return;
+      }
+      const dedupeKey = `${row.requestId}|${row.area}|${row.firstTime}`;
+      if (seen.has(dedupeKey)) {
+        return;
+      }
+      seen.add(dedupeKey);
+      points.push({
+        type: "planned",
+        area: row.area,
+        office: row.office,
+        summary: row.summary,
+        firstTime: row.firstTime,
+        secondTime: row.secondTime,
+        phone: row.phone,
+        lat: geocoded.lat,
+        lon: geocoded.lon,
+        label: geocoded.label
+      });
+    });
+    return points.slice(0, 260);
+  };
+
+  try {
+    const JSZip = await loadJsZipModule();
+    const response = await fetch(TAIPOWER_PLANNED_OUTAGE_ZIP_URL);
+    if (!response.ok) {
+      throw new Error(`計畫性停電資料讀取失敗：${response.status}`);
+    }
+    const zip = await JSZip.loadAsync(await response.arrayBuffer());
+    const rows = [];
+    await Promise.all(
+      Object.keys(zip.files).map(async (filename) => {
+        if (!/^\d{3}\.csv$/i.test(filename)) {
+          return;
+        }
+        const csvText = await zip.files[filename].async("string");
+        rows.push(...parseSimpleCsv(csvText));
+      })
+    );
+    return buildPointsFromRows(rows);
+  } catch {
+    const snapshotResponse = await fetch("./data/power_outage_snapshot.json");
+    if (!snapshotResponse.ok) {
+      throw new Error("計畫性停電資料與本地快照皆無法讀取");
+    }
+    const snapshot = await snapshotResponse.json();
+    if (snapshot.dateKey && snapshot.dateKey !== todaySlash) {
+      return [];
+    }
+    return buildPointsFromRows(snapshot.planned ?? []);
+  }
+}
+
+async function fetchPowerOutageData() {
+  const [disasterResult, plannedResult] = await Promise.allSettled([
+    fetch(TAIPOWER_DISASTER_OUTAGE_URL).then(async (response) => {
+      if (!response.ok) {
+        throw new Error(`災害停電資料讀取失敗：${response.status}`);
+      }
+      return parseDisasterOutageXml(await response.text());
+    }),
+    fetchPlannedOutagePoints()
+  ]);
+
+  const disasterPoints = disasterResult.status === "fulfilled" ? disasterResult.value : [];
+  const plannedPoints = plannedResult.status === "fulfilled" ? plannedResult.value : [];
+  appState.powerOutagePoints = [...disasterPoints, ...plannedPoints];
+
+  const disasterCount = disasterPoints.length;
+  const plannedCount = plannedPoints.length;
+  const cityLabel = citySelect.value || "所選縣市";
+  if (disasterCount || plannedCount) {
+    appState.powerOutageMetaText = `停電標示：災害性 ${disasterCount} 處、${cityLabel} 今日計畫性 ${plannedCount} 處。`;
+  } else {
+    appState.powerOutageMetaText = `目前無災害性停電通報，${cityLabel} 今日亦無計畫性停電標示。`;
+  }
+  if (powerOutageMeta) {
+    powerOutageMeta.textContent = appState.powerOutageMetaText;
+  }
+  updatePowerOutageMapLayer();
+}
+
+function buildPowerOutageMarkerStyle(type) {
+  if (type === "disaster") {
+    return {
+      radius: 8,
+      color: "#9d0208",
+      fillColor: "#d00000",
+      fillOpacity: 0.86,
+      weight: 2
+    };
+  }
+  return {
+    radius: 7,
+    color: "#7b2cbf",
+    fillColor: "#c77dff",
+    fillOpacity: 0.82,
+    weight: 2
+  };
+}
+
+function updatePowerOutageMapLayer() {
+  if (!warningMap) {
+    return;
+  }
+  if (mapPowerOutageLayer && warningMap.hasLayer(mapPowerOutageLayer)) {
+    warningMap.removeLayer(mapPowerOutageLayer);
+  }
+  mapPowerOutageLayer = L.layerGroup();
+  const grouped = new Map();
+
+  appState.powerOutagePoints.forEach((point) => {
+    const key = `${point.type}|${point.lat.toFixed(4)}|${point.lon.toFixed(4)}`;
+    if (!grouped.has(key)) {
+      grouped.set(key, []);
+    }
+    grouped.get(key).push(point);
+  });
+
+  grouped.forEach((items, key) => {
+    const [type] = key.split("|");
+    const sample = items[0];
+    const marker = L.circleMarker([sample.lat, sample.lon], {
+      pane: "outagePane",
+      ...buildPowerOutageMarkerStyle(type)
+    });
+    const popupLines = items
+      .slice(0, 4)
+      .map((item) => {
+        if (item.type === "disaster") {
+          return `<strong>${item.info}</strong><br/>${item.area}<br/>影響戶數：${item.affectedHouseholds || "-"}<br/>預計修復：${item.eta || "-"}`;
+        }
+        return `<strong>計畫性停電</strong><br/>${item.area}<br/>時段：${item.firstTime}<br/>工作：${item.summary || "-"}`;
+      })
+      .join("<hr/>");
+    marker.bindPopup(`${popupLines}<br/>來源：台灣電力公司開放資料`);
+    mapPowerOutageLayer.addLayer(marker);
+  });
+
+  syncMapLayerVisibility("power-outage");
 }
 
 function saveRegionPreference() {
@@ -1084,7 +1351,6 @@ async function fetchWeather() {
     rain24,
     rainProb
   };
-  renderWindyWeatherStatus();
 }
 
 function parseClosureMarkdown(markdownText) {
@@ -1294,14 +1560,14 @@ function parseTyphoonOfficialText(newsMarkdown, warnMarkdown) {
   };
 }
 
-function buildWindyEmbedUrl(lat, lon, zoom = 6, { bustCache = false } = {}) {
+function buildWindyEmbedUrl(lat, lon, zoom = 6) {
   const params = new URLSearchParams({
     lat: Number(lat).toFixed(3),
     lon: Number(lon).toFixed(3),
     detailLat: Number(lat).toFixed(3),
     detailLon: Number(lon).toFixed(3),
     width: "900",
-    height: String(WINDY_PLAYBAR_HEIGHT),
+    height: String(WINDY_EMBED_HEIGHT),
     zoom: String(zoom),
     level: "surface",
     overlay: "wind",
@@ -1318,25 +1584,7 @@ function buildWindyEmbedUrl(lat, lon, zoom = 6, { bustCache = false } = {}) {
     metricTemp: "default",
     radarRange: "-1"
   });
-  if (bustCache) {
-    params.set("_replay", String(Date.now()));
-  }
   return `https://embed.windy.com/embed2.html?${params.toString()}`;
-}
-
-function bindWindyEmbedLoadHandler() {
-  if (!windyEmbed || windyEmbedLoadHandlerBound) {
-    return;
-  }
-  windyEmbedLoadHandlerBound = true;
-  windyEmbed.addEventListener("load", () => {
-    if (!windyAutoReplayEnabled) {
-      return;
-    }
-    updateWindyReplayMeta(
-      `6 小時動態播放中（含播放列）｜上次載入 ${formatDateTime(Date.now())}`
-    );
-  });
 }
 
 function getWindyFocusPoint() {
@@ -1351,134 +1599,17 @@ function getWindyFocusPoint() {
   };
 }
 
-function updateWindyReplayMeta(message) {
-  if (!windyReplayMeta) {
-    return;
-  }
-  if (message) {
-    windyReplayMeta.textContent = message;
-    return;
-  }
-  windyReplayMeta.textContent = windyAutoReplayEnabled
-    ? `6 小時颱風動態循環播放中（每 ${Math.round(WINDY_AUTO_REPLAY_MS / 1000)} 秒重播）`
-    : "6 小時颱風動態已暫停";
-}
-
-function renderWindyWeatherStatus() {
-  if (!windyWeatherStatus) {
-    return;
-  }
-  const weather = appState.weather;
-  const official = appState.typhoonOfficial;
-  const location = getActiveWeatherLocation();
-  if (!weather?.current) {
-    windyWeatherStatus.innerHTML = `<p class="windy-status-head">天氣狀態讀取中...</p>`;
-    return;
-  }
-
-  const codeLabel = WEATHER_CODE_LABEL[weather.current.weather_code] ?? "天氣更新中";
-  const wind = Math.round(weather.current.wind_speed_10m ?? 0);
-  const gust = Math.round(weather.current.wind_gusts_10m ?? wind);
-  const rainProb = Math.round(weather.rainProb ?? 0);
-  const pressure = Math.round(weather.current.pressure_msl ?? 0);
-  const typhoonLine = official?.name
-    ? `<p class="windy-status-note">颱風動態：${official.name}${official.hasWarning ? "（已發布警報）" : ""}</p>`
-    : `<p class="windy-status-note">颱風動態：目前無官方警報</p>`;
-
-  windyWeatherStatus.innerHTML = `
-    <p class="windy-status-head">${location?.label ?? "所選區域"}｜${codeLabel}</p>
-    <dl class="metrics windy-status-metrics">
-      <div>
-        <dt>風速</dt>
-        <dd>${wind} km/h</dd>
-      </div>
-      <div>
-        <dt>陣風</dt>
-        <dd>${gust} km/h</dd>
-      </div>
-      <div>
-        <dt>降雨機率</dt>
-        <dd>${rainProb}%</dd>
-      </div>
-      <div>
-        <dt>氣壓</dt>
-        <dd>${pressure} hPa</dd>
-      </div>
-    </dl>
-    ${typhoonLine}
-  `;
-}
-
-function replayWindyTrack({ silent = false } = {}) {
-  if (!windyEmbed) {
-    return;
-  }
-  bindWindyEmbedLoadHandler();
-  const focus = getWindyFocusPoint();
-  const embedUrl = buildWindyEmbedUrl(focus.lat, focus.lon, focus.zoom, { bustCache: true });
-  lastWindyEmbedUrl = embedUrl;
-  windyEmbed.src = embedUrl;
-  if (windyExternalLink) {
-    windyExternalLink.href = `https://www.windy.com/?${focus.lat.toFixed(3)},${focus.lon.toFixed(3)},${focus.zoom},i:pressure`;
-  }
-  if (!silent) {
-    updateWindyReplayMeta(
-      `已播放 6 小時動態（${focus.hasTyphoonCenter ? "對準颱風中心" : "對準所選鄉鎮"}｜${formatDateTime(Date.now())}）`
-    );
-  }
-}
-
-function stopWindyAutoReplay() {
-  if (windyAutoReplayTimer) {
-    clearInterval(windyAutoReplayTimer);
-    windyAutoReplayTimer = null;
-  }
-}
-
-function startWindyAutoReplay() {
-  stopWindyAutoReplay();
-  windyAutoReplayTimer = setInterval(() => {
-    replayWindyTrack({ silent: true });
-    updateWindyReplayMeta(
-      `自動重播中… 上次播放時間 ${formatDateTime(Date.now())}（每 ${Math.round(WINDY_AUTO_REPLAY_MS / 1000)} 秒）`
-    );
-  }, WINDY_AUTO_REPLAY_MS);
-}
-
-function setWindyAutoReplayEnabled(enabled) {
-  windyAutoReplayEnabled = Boolean(enabled);
-  if (windyAutoReplayEnabled) {
-    replayWindyTrack({ silent: true });
-    startWindyAutoReplay();
-  } else {
-    stopWindyAutoReplay();
-  }
-  updateWindyReplayMeta();
-}
-
 function updateWindyTrackEmbed() {
   if (!windyEmbed) {
     return;
   }
-  bindWindyEmbedLoadHandler();
   const focus = getWindyFocusPoint();
   const embedUrl = buildWindyEmbedUrl(focus.lat, focus.lon, focus.zoom);
-  const currentBase = (windyEmbed.getAttribute("src") || "").replace(/([&?])_replay=\d+/, "");
-  const nextBase = embedUrl;
-  if (currentBase !== nextBase) {
-    lastWindyEmbedUrl = embedUrl;
-    windyEmbed.src = embedUrl;
-  } else if (!windyEmbed.getAttribute("src")) {
-    lastWindyEmbedUrl = embedUrl;
+  if (windyEmbed.getAttribute("src") !== embedUrl) {
     windyEmbed.src = embedUrl;
   }
   if (windyExternalLink) {
     windyExternalLink.href = `https://www.windy.com/?${focus.lat.toFixed(3)},${focus.lon.toFixed(3)},${focus.zoom},i:pressure`;
-  }
-  renderWindyWeatherStatus();
-  updateWindyReplayMeta();
-  if (windyAutoReplayEnabled && !windyAutoReplayTimer) {
-    startWindyAutoReplay();
   }
 }
 
@@ -1773,6 +1904,9 @@ async function maybeNotifySubscribers(triggerSource) {
 }
 
 function getMapLayerInstance(layerKey) {
+  if (layerKey === "power-outage") {
+    return mapPowerOutageLayer;
+  }
   if (layerKey === "flood-warning") {
     return mapFloodLayer;
   }
@@ -2126,6 +2260,12 @@ function updateMapForCityChange() {
   }
   updateCityFocusLayer();
   updateCameraMapLayer();
+  fetchPowerOutageData().catch((error) => {
+    appState.powerOutageMetaText = `停電區域資料暫時無法更新：${error.message}`;
+    if (powerOutageMeta) {
+      powerOutageMeta.textContent = appState.powerOutageMetaText;
+    }
+  });
 }
 
 function initWarningMap() {
@@ -2140,6 +2280,7 @@ function initWarningMap() {
     attributionControl: true
   }).setView([23.7, 120.96], 7);
 
+  warningMap.createPane("outagePane");
   warningMap.createPane("floodPane");
   warningMap.createPane("cameraPane");
   warningMap.createPane("focusPane");
@@ -2370,7 +2511,7 @@ initCameraRegionSelect();
 initCameraCitySelect();
 loadSubscription();
 renderSubscriptionStatus();
-setWindyAutoReplayEnabled(true);
+updateWindyTrackEmbed();
 performFullRefresh("manual");
 fetchRoadCameras();
 initWarningMap();
