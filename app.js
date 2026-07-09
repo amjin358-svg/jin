@@ -444,6 +444,9 @@ const typhoonRiskBadge = document.querySelector("#typhoonRiskBadge");
 const typhoonAnalysisList = document.querySelector("#typhoonAnalysisList");
 const windyEmbed = document.querySelector("#windyEmbed");
 const windyExternalLink = document.querySelector("#windyExternalLink");
+const windyReplayBtn = document.querySelector("#windyReplayBtn");
+const windyAutoReplayBtn = document.querySelector("#windyAutoReplayBtn");
+const windyReplayMeta = document.querySelector("#windyReplayMeta");
 const aiAlertList = document.querySelector("#aiAlertList");
 const rainProjection = document.querySelector("#rainProjection");
 const subscriptionForm = document.querySelector("#subscriptionForm");
@@ -494,6 +497,10 @@ const appState = {
 };
 let autoRefreshTimer = null;
 let countdownTimer = null;
+let windyAutoReplayTimer = null;
+let windyAutoReplayEnabled = false;
+const WINDY_AUTO_REPLAY_MS = 45000;
+let lastWindyEmbedUrl = "";
 
 function getRegionForCity(cityName) {
   return REGION_GROUPS.find((region) => region.cities.includes(cityName))?.name ?? REGION_GROUPS[0].name;
@@ -1218,7 +1225,7 @@ async function fetchAirQuality() {
   const pm10 = Number(payload.hourly.pm10[index] ?? 0);
   const ozone = Number(payload.hourly.ozone[index] ?? 0);
 
-  airSummary.textContent = `${location.label}・${getAqiLabel(aqi)}`;
+  airSummary.textContent = `今日空氣品質：${getAqiLabel(aqi)}`;
   aqiValue.textContent = `${Math.round(aqi)}`;
   pm25Value.textContent = `${pm25.toFixed(1)} μg/m³`;
   pm10Value.textContent = `${pm10.toFixed(1)} μg/m³`;
@@ -1284,7 +1291,7 @@ function parseTyphoonOfficialText(newsMarkdown, warnMarkdown) {
   };
 }
 
-function buildWindyEmbedUrl(lat, lon, zoom = 6) {
+function buildWindyEmbedUrl(lat, lon, zoom = 6, { bustCache = false } = {}) {
   const params = new URLSearchParams({
     lat: Number(lat).toFixed(3),
     lon: Number(lon).toFixed(3),
@@ -1308,26 +1315,112 @@ function buildWindyEmbedUrl(lat, lon, zoom = 6) {
     metricTemp: "default",
     radarRange: "-1"
   });
+  if (bustCache) {
+    params.set("_replay", String(Date.now()));
+  }
   return `https://embed.windy.com/embed2.html?${params.toString()}`;
+}
+
+function getWindyFocusPoint() {
+  const official = appState.typhoonOfficial;
+  const location = getActiveWeatherLocation();
+  const hasTyphoonCenter = Number.isFinite(official?.lat) && Number.isFinite(official?.lon);
+  return {
+    lat: hasTyphoonCenter ? official.lat : location?.lat ?? 23.7,
+    lon: hasTyphoonCenter ? official.lon : location?.lon ?? 121.0,
+    zoom: hasTyphoonCenter ? 5 : 6,
+    hasTyphoonCenter
+  };
+}
+
+function updateWindyReplayMeta(message) {
+  if (!windyReplayMeta) {
+    return;
+  }
+  if (message) {
+    windyReplayMeta.textContent = message;
+    return;
+  }
+  windyReplayMeta.textContent = windyAutoReplayEnabled
+    ? `自動重播已開啟，約每 ${Math.round(WINDY_AUTO_REPLAY_MS / 1000)} 秒循環播放 12 小時動態路徑。`
+    : "可按「重播走勢」立即重播，或開啟「自動重播」循環播放 12 小時動態路徑。";
+}
+
+function updateWindyAutoReplayButton() {
+  if (!windyAutoReplayBtn) {
+    return;
+  }
+  windyAutoReplayBtn.textContent = windyAutoReplayEnabled ? "自動重播：開啟" : "自動重播：關閉";
+  windyAutoReplayBtn.classList.toggle("is-active", windyAutoReplayEnabled);
+  updateWindyReplayMeta();
+}
+
+function replayWindyTrack({ silent = false } = {}) {
+  if (!windyEmbed) {
+    return;
+  }
+  const focus = getWindyFocusPoint();
+  const embedUrl = buildWindyEmbedUrl(focus.lat, focus.lon, focus.zoom, { bustCache: true });
+  lastWindyEmbedUrl = embedUrl;
+  windyEmbed.src = embedUrl;
+  if (windyExternalLink) {
+    windyExternalLink.href = `https://www.windy.com/?${focus.lat.toFixed(3)},${focus.lon.toFixed(3)},${focus.zoom},i:pressure`;
+  }
+  if (!silent) {
+    updateWindyReplayMeta(
+      `已重播走勢圖（${focus.hasTyphoonCenter ? "對準颱風中心" : "對準所選鄉鎮"}｜${formatDateTime(Date.now())}）`
+    );
+  }
+}
+
+function stopWindyAutoReplay() {
+  if (windyAutoReplayTimer) {
+    clearInterval(windyAutoReplayTimer);
+    windyAutoReplayTimer = null;
+  }
+}
+
+function startWindyAutoReplay() {
+  stopWindyAutoReplay();
+  windyAutoReplayTimer = setInterval(() => {
+    replayWindyTrack({ silent: true });
+    updateWindyReplayMeta(
+      `自動重播中… 上次重播時間 ${formatDateTime(Date.now())}（每 ${Math.round(WINDY_AUTO_REPLAY_MS / 1000)} 秒）`
+    );
+  }, WINDY_AUTO_REPLAY_MS);
+}
+
+function setWindyAutoReplayEnabled(enabled) {
+  windyAutoReplayEnabled = Boolean(enabled);
+  if (windyAutoReplayEnabled) {
+    replayWindyTrack({ silent: true });
+    startWindyAutoReplay();
+  } else {
+    stopWindyAutoReplay();
+  }
+  updateWindyAutoReplayButton();
 }
 
 function updateWindyTrackEmbed() {
   if (!windyEmbed) {
     return;
   }
-  const official = appState.typhoonOfficial;
-  const location = getActiveWeatherLocation();
-  const hasTyphoonCenter = Number.isFinite(official?.lat) && Number.isFinite(official?.lon);
-  const lat = hasTyphoonCenter ? official.lat : location?.lat ?? 23.7;
-  const lon = hasTyphoonCenter ? official.lon : location?.lon ?? 121.0;
-  const zoom = hasTyphoonCenter ? 5 : 6;
-  const embedUrl = buildWindyEmbedUrl(lat, lon, zoom);
-  if (windyEmbed.getAttribute("src") !== embedUrl) {
+  const focus = getWindyFocusPoint();
+  const embedUrl = buildWindyEmbedUrl(focus.lat, focus.lon, focus.zoom);
+  // Keep current animation if only cache-busting differs and auto-replay is running.
+  const currentBase = (windyEmbed.getAttribute("src") || "").replace(/([&?])_replay=\d+/, "");
+  const nextBase = embedUrl;
+  if (currentBase !== nextBase) {
+    lastWindyEmbedUrl = embedUrl;
+    windyEmbed.src = embedUrl;
+  } else if (!windyEmbed.getAttribute("src")) {
+    lastWindyEmbedUrl = embedUrl;
     windyEmbed.src = embedUrl;
   }
   if (windyExternalLink) {
-    windyExternalLink.href = `https://www.windy.com/?${lat.toFixed(3)},${lon.toFixed(3)},${zoom},i:pressure`;
+    windyExternalLink.href = `https://www.windy.com/?${focus.lat.toFixed(3)},${focus.lon.toFixed(3)},${focus.zoom},i:pressure`;
   }
+  updateWindyAutoReplayButton();
 }
 
 function calculateTyphoonRisk() {
@@ -2073,6 +2166,17 @@ cameraCitySelect?.addEventListener("change", () => {
   }
   renderAllCameraLists();
   updateCameraMapLayer();
+});
+
+windyReplayBtn?.addEventListener("click", () => {
+  replayWindyTrack();
+  if (windyAutoReplayEnabled) {
+    startWindyAutoReplay();
+  }
+});
+
+windyAutoReplayBtn?.addEventListener("click", () => {
+  setWindyAutoReplayEnabled(!windyAutoReplayEnabled);
 });
 
 subscriptionForm.addEventListener("submit", async (event) => {

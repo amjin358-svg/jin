@@ -105,7 +105,8 @@
             </div>
           </dl>
           <div class="air-inline">
-            <p id="airSummary" class="big-text air-inline-summary">空氣品質讀取中...</p>
+            <h3 class="air-inline-title">今日空氣品質</h3>
+            <p id="airSummary" class="big-text air-inline-summary">讀取中...</p>
             <dl class="metrics air-metrics">
               <div>
                 <dt>AQI (US)</dt>
@@ -151,7 +152,13 @@
             <ul id="typhoonAnalysisList" class="analysis-list"></ul>
           </div>
           <div class="windy-wrap">
-            <h3>12 小時走勢圖（Windy）</h3>
+            <div class="windy-toolbar">
+              <h3>12 小時走勢圖（Windy）</h3>
+              <div class="windy-actions">
+                <button id="windyReplayBtn" type="button" class="ghost-btn">重播走勢</button>
+                <button id="windyAutoReplayBtn" type="button" class="ghost-btn">自動重播：關閉</button>
+              </div>
+            </div>
             <iframe
               id="windyEmbed"
               class="windy-embed"
@@ -160,8 +167,8 @@
               referrerpolicy="no-referrer-when-downgrade"
               allowfullscreen
             ></iframe>
-            <p class="timestamp">
-              嵌入 Windy 公開地圖 API（未來 12 小時預報時間軸），中心會依颱風位置或所選鄉鎮自動調整。
+            <p id="windyReplayMeta" class="timestamp">
+              可按「重播走勢」立即重播，或開啟「自動重播」循環播放 12 小時動態路徑。
             </p>
           </div>
         </div>

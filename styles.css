@@ -121,12 +121,40 @@ label {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
+.weather-air-grid {
+  align-items: stretch;
+}
+
+.weather-air-card,
+.forecast-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 100%;
+}
+
+.forecast-card .rain-timeline {
+  flex: 1 1 auto;
+  min-height: 0;
+  align-content: start;
+}
+
+.forecast-card #rainProjection {
+  margin-top: auto;
+}
+
 .air-inline {
   margin-top: 14px;
   padding-top: 12px;
   border-top: 1px solid var(--border);
   display: grid;
   gap: 8px;
+}
+
+.air-inline-title {
+  margin: 0;
+  font-size: 16px;
+  color: var(--text);
 }
 
 .air-inline-summary {
@@ -155,9 +183,30 @@ label {
   gap: 8px;
 }
 
+.windy-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
 .windy-wrap h3 {
   margin: 0;
   font-size: 16px;
+}
+
+.windy-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.windy-actions .ghost-btn.is-active {
+  background: var(--primary-soft);
+  border-color: #9bb7f3;
+  color: #1f5ae1;
+  font-weight: 700;
 }
 
 .windy-embed {
@@ -269,6 +318,13 @@ select {
 .rain-timeline {
   display: grid;
   gap: 8px;
+}
+
+.weather-air-grid .forecast-card .rain-timeline {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 10px;
 }
 
 .rain-row {
@@ -552,6 +608,11 @@ select {
   .air-metrics,
   .typhoon-layout {
     grid-template-columns: 1fr;
+  }
+
+  .windy-toolbar {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .auto-refresh-row {
