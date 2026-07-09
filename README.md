@@ -38,4 +38,10 @@ python3 -m http.server 4173
 
 積淹水警示圖層資料：
 
-- `data/flood_warning_areas.geojson`
+- 測站快照：`data/flood_stations.json`
+- 即時水深：`https://opendata.wra.gov.tw/api/v2/1b991bbb-ad85-4e7a-b931-06ce8749d3ed?format=JSON`
+
+颱風分析資料：
+
+- `https://www.cwa.gov.tw/V8/C/P/Typhoon/TY_NEWS.html`
+- `https://www.cwa.gov.tw/V8/C/P/Typhoon/TY_WARN.html`

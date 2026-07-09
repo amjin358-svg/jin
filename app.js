@@ -129,18 +129,26 @@ const mapLayerVisibility = {
   "city-focus": true
 };
 const mapLayerConfig = {
-  "flood-warning": { label: "積淹水警示區塊", pane: "floodPane" },
+  "flood-warning": { label: "即時積淹水感測", pane: "floodPane" },
   "cctv-points": { label: "CCTV 監控點", pane: "cameraPane" },
   "city-focus": { label: "縣市焦點圈", pane: "focusPane" }
 };
 const AUTO_REFRESH_MS = 15 * 60 * 1000;
 const SUBSCRIPTION_STORAGE_KEY = "weatherMemberSubscriptionV1";
+const FLOOD_LATEST_API =
+  "https://opendata.wra.gov.tw/api/v2/1b991bbb-ad85-4e7a-b931-06ce8749d3ed?format=JSON";
+const TYPHOON_NEWS_MIRROR = "https://r.jina.ai/https://www.cwa.gov.tw/V8/C/P/Typhoon/TY_NEWS.html";
+const TYPHOON_WARN_MIRROR = "https://r.jina.ai/https://www.cwa.gov.tw/V8/C/P/Typhoon/TY_WARN.html";
 const appState = {
   weather: null,
   airQuality: null,
   closureRows: [],
+  floodStations: [],
+  floodLivePoints: [],
   floodFeatures: [],
+  floodMetaText: "",
   typhoon: null,
+  typhoonOfficial: null,
   aiAlerts: [],
   autoRefreshEnabled: true,
   nextAutoRefreshAt: Date.now() + AUTO_REFRESH_MS,
@@ -510,32 +518,97 @@ async function fetchAirQuality(cityName) {
   };
 }
 
+function getFloodLevelByDepth(depthCm) {
+  if (depthCm >= 50) return 4;
+  if (depthCm >= 30) return 3;
+  if (depthCm >= 15) return 2;
+  return 1;
+}
+
+function parseTyphoonOfficialText(newsMarkdown, warnMarkdown) {
+  const hasWarning = !/目前無發布颱風警報/.test(warnMarkdown || "");
+  const countMatch = (newsMarkdown || "").match(/有\s*(\d+)\s*個颱風/);
+  const typhoonCount = countMatch ? Number(countMatch[1]) : 0;
+  const nameMatch = (newsMarkdown || "").match(/(強烈颱風|中度颱風|輕度颱風)\s+([^\s]+)\s+編號第\s*(\d+)\s*號\s+國際命名\s+([A-Z]+)/);
+  const detailMatch = (newsMarkdown || "").match(
+    /中心位置在北緯\s*([0-9.]+)\s*度，東經\s*([0-9.]+)\s*度.*?中心氣壓\s*([0-9]+)\s*百帕，近中心最大風速每秒\s*([0-9]+)\s*公尺，瞬間最大陣風每秒\s*([0-9]+)\s*公尺/
+  );
+
+  const messages = [];
+  if (nameMatch) {
+    messages.push(`${nameMatch[1]} ${nameMatch[2]}（第 ${nameMatch[3]} 號 / ${nameMatch[4]}）`);
+  } else if (typhoonCount > 0) {
+    messages.push(`太平洋地區目前有 ${typhoonCount} 個颱風活動。`);
+  } else {
+    messages.push("目前中央氣象署颱風消息未顯示活躍颱風。");
+  }
+
+  if (detailMatch) {
+    messages.push(
+      `中心位置：北緯 ${detailMatch[1]}°、東經 ${detailMatch[2]}°；中心氣壓 ${detailMatch[3]} hPa。`
+    );
+    messages.push(
+      `近中心最大風速 ${detailMatch[4]} m/s，瞬間最大陣風 ${detailMatch[5]} m/s。`
+    );
+  }
+
+  messages.push(hasWarning ? "官方狀態：已發布颱風警報，請提高警戒。" : "官方狀態：目前無發布颱風警報。");
+  messages.push("資料來源：中央氣象署颱風消息／颱風警報頁面。");
+
+  return {
+    hasWarning,
+    typhoonCount,
+    name: nameMatch ? `${nameMatch[1]} ${nameMatch[2]}` : null,
+    pressure: detailMatch ? Number(detailMatch[3]) : null,
+    maxWindMs: detailMatch ? Number(detailMatch[4]) : null,
+    gustMs: detailMatch ? Number(detailMatch[5]) : null,
+    messages
+  };
+}
+
 function calculateTyphoonRisk() {
   const weather = appState.weather;
-  if (!weather) {
+  const official = appState.typhoonOfficial;
+  if (!weather && !official) {
     return null;
   }
-  const wind = Number(weather.current.wind_speed_10m ?? 0);
-  const gust = Number(weather.current.wind_gusts_10m ?? wind);
-  const pressure = Number(weather.current.pressure_msl ?? 1015);
-  const rainProbAvg =
-    weather.next12Hours.reduce((sum, item) => sum + item.probability, 0) / Math.max(weather.next12Hours.length, 1);
+
+  const wind = Number(weather?.current?.wind_speed_10m ?? 0);
+  const gust = Number(weather?.current?.wind_gusts_10m ?? wind);
+  const pressure = Number(weather?.current?.pressure_msl ?? 1015);
+  const rainProbAvg = weather
+    ? weather.next12Hours.reduce((sum, item) => sum + item.probability, 0) / Math.max(weather.next12Hours.length, 1)
+    : 0;
+  const rain24 = Number(weather?.rain24 ?? 0);
 
   let score = 0;
-  score += Math.min(wind * 1.6, 45);
-  score += Math.min(gust * 0.9, 35);
-  score += Math.max(0, 1012 - pressure) * 2.2;
-  score += Math.min(rainProbAvg * 0.35, 25);
-  score += Math.min(weather.rain24 * 0.6, 30);
-  score = Math.round(Math.min(score, 100));
+  score += Math.min(wind * 1.2, 30);
+  score += Math.min(gust * 0.7, 25);
+  score += Math.max(0, 1012 - pressure) * 1.6;
+  score += Math.min(rainProbAvg * 0.25, 18);
+  score += Math.min(rain24 * 0.45, 20);
 
+  if (official?.hasWarning) {
+    score += 35;
+  }
+  if ((official?.typhoonCount ?? 0) > 0) {
+    score += 18;
+  }
+  if (official?.maxWindMs) {
+    score += Math.min(official.maxWindMs * 0.55, 28);
+  }
+  if (official?.pressure && official.pressure < 970) {
+    score += 12;
+  }
+
+  score = Math.round(Math.min(score, 100));
   const level = score >= 70 ? "高" : score >= 40 ? "中" : "低";
   const messages = [
-    `風速 ${wind.toFixed(1)} km/h，陣風 ${gust.toFixed(1)} km/h。`,
-    `海平面氣壓 ${Math.round(pressure)} hPa，若持續下降需提高警戒。`,
-    `未來 12 小時平均降雨機率 ${Math.round(rainProbAvg)}%，24 小時雨量預估 ${weather.rain24.toFixed(1)} mm。`
+    ...(official?.messages ?? []),
+    `本地觀測：風速 ${wind.toFixed(1)} km/h，陣風 ${gust.toFixed(1)} km/h，氣壓 ${Math.round(pressure)} hPa。`,
+    `本地降雨：12 小時平均降雨機率 ${Math.round(rainProbAvg)}%，24 小時雨量預估 ${rain24.toFixed(1)} mm。`
   ];
-  return { level, score, messages };
+  return { level, score, messages, hasWarning: Boolean(official?.hasWarning) };
 }
 
 function renderTyphoonAnalysis() {
@@ -560,29 +633,19 @@ function renderTyphoonAnalysis() {
 
 function getNearbyFloodWarnings() {
   const city = CITY_LOCATIONS.find((item) => item.name === citySelect.value);
-  if (!city || !appState.floodFeatures.length) {
+  if (!city || !appState.floodLivePoints.length) {
     return [];
   }
-  return appState.floodFeatures
-    .map((feature) => {
-      const points = feature.geometry?.coordinates?.[0] ?? [];
-      if (!points.length) {
-        return null;
-      }
-      const center = points.reduce(
-        (acc, point) => ({ lon: acc.lon + point[0], lat: acc.lat + point[1] }),
-        { lon: 0, lat: 0 }
-      );
-      const lon = center.lon / points.length;
-      const lat = center.lat / points.length;
-      return {
-        ...feature.properties,
-        distanceKm: getDistanceKm(city.lat, city.lon, lat, lon)
-      };
-    })
-    .filter(Boolean)
-    .filter((row) => row.distanceKm <= 120)
-    .sort((a, b) => a.distanceKm - b.distanceKm);
+  return appState.floodLivePoints
+    .map((point) => ({
+      areaName: `${point.county}${point.town} ${point.name}`,
+      level: point.level,
+      waterDepthCm: point.depthCm,
+      updatedAt: point.updatedAt,
+      distanceKm: getDistanceKm(city.lat, city.lon, point.lat, point.lon)
+    }))
+    .filter((row) => row.distanceKm <= 80)
+    .sort((a, b) => b.level - a.level || a.distanceKm - b.distanceKm);
 }
 
 function renderAiAlerts() {
@@ -593,7 +656,7 @@ function renderAiAlerts() {
   const nearbyFlood = getNearbyFloodWarnings();
 
   if (typhoon) {
-    if (typhoon.level === "高") {
+    if (typhoon.hasWarning || typhoon.level === "高") {
       alerts.push(`【高風險】颱風風險指數 ${typhoon.score}，建議預先備妥防災物資並避免非必要外出。`);
     } else if (typhoon.level === "中") {
       alerts.push(`【注意】颱風風險指數 ${typhoon.score}，請關注地方政府後續警戒資訊。`);
@@ -608,7 +671,11 @@ function renderAiAlerts() {
 
   if (nearbyFlood.length > 0) {
     const top = nearbyFlood[0];
-    alerts.push(`【積淹水警示】${top.areaName} 距離約 ${top.distanceKm.toFixed(1)} km，警示等級 ${top.level}。`);
+    alerts.push(
+      `【積淹水警示】${top.areaName} 距離約 ${top.distanceKm.toFixed(1)} km，水深 ${top.waterDepthCm} cm（等級 ${top.level}）。`
+    );
+  } else if (appState.floodMetaText) {
+    alerts.push(`【積淹水監測】${appState.floodMetaText}`);
   }
 
   if (cityClosure && cityClosure.message.includes("停止上班")) {
@@ -844,57 +911,161 @@ function renderLayerControl() {
   });
 }
 
-function buildFloodStyle(feature) {
-  const level = Number(feature.properties?.level ?? 1);
+function buildFloodPointStyle(depthCm) {
+  const level = getFloodLevelByDepth(depthCm);
   if (level >= 4) {
-    return { color: "#790000", fillColor: "#d00000", fillOpacity: 0.62, weight: 2 };
+    return { color: "#790000", fillColor: "#d00000", fillOpacity: 0.85, radius: 9, weight: 2 };
   }
   if (level === 3) {
-    return { color: "#8a1c00", fillColor: "#e85d04", fillOpacity: 0.58, weight: 2 };
+    return { color: "#8a1c00", fillColor: "#e85d04", fillOpacity: 0.8, radius: 8, weight: 2 };
   }
   if (level === 2) {
-    return { color: "#9c5800", fillColor: "#ffba08", fillOpacity: 0.54, weight: 2 };
+    return { color: "#9c5800", fillColor: "#ffba08", fillOpacity: 0.78, radius: 7, weight: 2 };
   }
-  return { color: "#616161", fillColor: "#ffd166", fillOpacity: 0.48, weight: 2 };
+  return { color: "#616161", fillColor: "#ffd166", fillOpacity: 0.72, radius: 6, weight: 1 };
 }
 
-async function loadFloodWarningLayer() {
+function updateFloodMapLayer() {
   if (!warningMap) {
     return;
   }
-  try {
-    const response = await fetch("./data/flood_warning_areas.geojson");
-    if (!response.ok) {
-      throw new Error(`積淹水圖層讀取失敗：${response.status}`);
-    }
-    const geojson = await response.json();
-    appState.floodFeatures = geojson.features ?? [];
-    mapFloodLayer = L.geoJSON(geojson, {
-      pane: "floodPane",
-      style: buildFloodStyle,
-      onEachFeature: (feature, layer) => {
-        const { areaName, level, waterDepthCm, updatedAt, note } = feature.properties ?? {};
-        layer.bindPopup(
-          `
-            <strong>${areaName ?? "未命名警示區"}</strong><br/>
-            警示等級：${level ?? "-"}<br/>
-            估計積水深度：${waterDepthCm ?? "-"} cm<br/>
-            更新時間：${updatedAt ?? "-"}<br/>
-            備註：${note ?? "無"}
-          `
-        );
-      }
-    });
-    syncMapLayerVisibility("flood-warning");
-    renderAiAlerts();
-  } catch (error) {
-    if (mapLayerList) {
-      const warn = document.createElement("p");
-      warn.className = "status-warn";
-      warn.textContent = `積淹水圖層載入失敗：${error.message}`;
-      mapLayerList.append(warn);
-    }
+  if (mapFloodLayer && warningMap.hasLayer(mapFloodLayer)) {
+    warningMap.removeLayer(mapFloodLayer);
   }
+  mapFloodLayer = L.layerGroup();
+
+  const points = appState.floodLivePoints.length
+    ? appState.floodLivePoints
+    : [];
+
+  if (!points.length && appState.floodStations.length) {
+    // Keep a light fallback sample of stations when all depths are zero,
+    // so the layer remains inspectable.
+    appState.floodStations.slice(0, 40).forEach((station) => {
+      const marker = L.circleMarker([station.lat, station.lon], {
+        pane: "floodPane",
+        ...buildFloodPointStyle(0)
+      });
+      marker.bindPopup(
+        `
+          <strong>${station.name}</strong><br/>
+          ${station.county}${station.town}<br/>
+          目前水深：0 cm<br/>
+          來源：水利署 IoW 即時感測
+        `
+      );
+      mapFloodLayer.addLayer(marker);
+    });
+  } else {
+    points.forEach((point) => {
+      const marker = L.circleMarker([point.lat, point.lon], {
+        pane: "floodPane",
+        ...buildFloodPointStyle(point.depthCm)
+      });
+      marker.bindPopup(
+        `
+          <strong>${point.name}</strong><br/>
+          ${point.county}${point.town}<br/>
+          警示等級：${point.level}<br/>
+          即時水深：${point.depthCm} cm<br/>
+          更新時間：${point.updatedAt || "-"}<br/>
+          來源：水利署 IoW 即時感測
+        `
+      );
+      mapFloodLayer.addLayer(marker);
+    });
+  }
+
+  syncMapLayerVisibility("flood-warning");
+  updateFloodLayerMetaText();
+}
+
+function updateFloodLayerMetaText() {
+  const floodedCount = appState.floodLivePoints.length;
+  const stationCount = appState.floodStations.length;
+  appState.floodMetaText =
+    floodedCount > 0
+      ? `即時積水感測點 ${floodedCount} 處（測站總數 ${stationCount}）。`
+      : `目前全台 IoW 測站未回報積水（測站總數 ${stationCount}）。`;
+
+  const note = document.querySelector(".layer-panel .timestamp");
+  if (note) {
+    note.textContent = `${appState.floodMetaText} 顏色越深代表水深越高。`;
+  }
+}
+
+async function loadFloodStations() {
+  const response = await fetch("./data/flood_stations.json");
+  if (!response.ok) {
+    throw new Error(`淹水測站資料讀取失敗：${response.status}`);
+  }
+  const payload = await response.json();
+  appState.floodStations = payload.stations ?? [];
+}
+
+async function fetchLiveFloodData() {
+  if (!appState.floodStations.length) {
+    await loadFloodStations();
+  }
+  const response = await fetch(FLOOD_LATEST_API);
+  if (!response.ok) {
+    throw new Error(`即時淹水資料讀取失敗：${response.status}`);
+  }
+  const latestRows = await response.json();
+  const stationMap = new Map(appState.floodStations.map((station) => [station.sensorid, station]));
+  const livePoints = [];
+
+  latestRows.forEach((row) => {
+    const depthCm = Number(row.latestvalue ?? 0);
+    if (!(depthCm > 0)) {
+      return;
+    }
+    const station = stationMap.get(row.sensorid);
+    if (!station) {
+      return;
+    }
+    livePoints.push({
+      sensorid: row.sensorid,
+      name: station.name,
+      county: station.county,
+      town: station.town,
+      lat: station.lat,
+      lon: station.lon,
+      depthCm,
+      level: getFloodLevelByDepth(depthCm),
+      updatedAt: row.timestamp
+    });
+  });
+
+  appState.floodLivePoints = livePoints.sort((a, b) => b.depthCm - a.depthCm);
+  appState.floodFeatures = livePoints.map((point) => ({
+    type: "Feature",
+    properties: {
+      areaName: `${point.county}${point.town} ${point.name}`,
+      level: point.level,
+      waterDepthCm: point.depthCm,
+      updatedAt: point.updatedAt,
+      note: "水利署 IoW 即時感測"
+    },
+    geometry: {
+      type: "Point",
+      coordinates: [point.lon, point.lat]
+    }
+  }));
+  updateFloodMapLayer();
+}
+
+async function fetchTyphoonOfficial() {
+  const [newsResponse, warnResponse] = await Promise.all([
+    fetch(TYPHOON_NEWS_MIRROR),
+    fetch(TYPHOON_WARN_MIRROR)
+  ]);
+  if (!newsResponse.ok || !warnResponse.ok) {
+    throw new Error("中央氣象署颱風資料讀取失敗");
+  }
+  const newsMarkdown = await newsResponse.text();
+  const warnMarkdown = await warnResponse.text();
+  appState.typhoonOfficial = parseTyphoonOfficialText(newsMarkdown, warnMarkdown);
 }
 
 function updateCityFocusLayer() {
@@ -990,7 +1161,17 @@ function initWarningMap() {
 
   renderLayerControl();
   applyMapLayerOrder();
-  loadFloodWarningLayer();
+  loadFloodStations()
+    .then(() => fetchLiveFloodData())
+    .then(() => renderAiAlerts())
+    .catch((error) => {
+      if (mapLayerList) {
+        const warn = document.createElement("p");
+        warn.className = "status-warn";
+        warn.textContent = `積淹水即時圖層載入失敗：${error.message}`;
+        mapLayerList.append(warn);
+      }
+    });
   updateCityFocusLayer();
   updateCameraMapLayer();
 }
@@ -1072,7 +1253,13 @@ async function performFullRefresh(triggerSource) {
       fetchWeather(citySelect.value),
       fetchClosureNotices(),
       fetchTownshipWeather(),
-      fetchAirQuality(citySelect.value)
+      fetchAirQuality(citySelect.value),
+      fetchTyphoonOfficial().catch(() => {
+        appState.typhoonOfficial = null;
+      }),
+      fetchLiveFloodData().catch((error) => {
+        appState.floodMetaText = `即時淹水資料暫時無法更新：${error.message}`;
+      })
     ]);
     renderTyphoonAnalysis();
     renderAiAlerts();

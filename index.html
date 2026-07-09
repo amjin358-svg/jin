@@ -201,7 +201,7 @@
             <h3>圖層控制</h3>
             <ul id="mapLayerList" class="layer-list"></ul>
             <p class="timestamp">
-              已積淹水警示區塊以紅色顯示，顏色越深代表警示等級越高。
+              積淹水圖層改接水利署 IoW 即時感測，顏色越深代表水深越高。
             </p>
           </aside>
           <div id="warningMap" class="warning-map" aria-label="積淹水警示地圖"></div>
@@ -215,7 +215,8 @@
           <li>空氣品質：Open-Meteo Air Quality（AQI / PM2.5 / PM10 / O₃）。</li>
           <li>停班停課資料：行政院人事行政總處公告頁面（經公開鏡像讀取）。</li>
           <li>路口監控資料：交通部公路局即時 CCTV 公開資料（部署時快照）。</li>
-          <li>積淹水警示區塊：政府公開資訊整理為 GeoJSON 圖層（示警視覺化）。</li>
+          <li>積淹水警示：經濟部水利署 IoW 即時淹水深度感測（公開 API）。</li>
+          <li>颱風分析：中央氣象署颱風消息／警報頁面即時解析 + 本地觀測風險指數。</li>
           <li>若公告暫無資料或來源暫時無法連線，頁面會顯示提示並保留上一筆成功結果。</li>
         </ul>
       </section>
