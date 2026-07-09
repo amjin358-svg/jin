@@ -436,7 +436,6 @@ const freewayCameraMeta = document.querySelector("#freewayCameraMeta");
 const freewayCameraList = document.querySelector("#freewayCameraList");
 const mapLayerList = document.querySelector("#mapLayerList");
 const airSummary = document.querySelector("#airSummary");
-const airInline = document.querySelector("#airInline");
 const aqiMetric = document.querySelector("#aqiMetric");
 const pm25Metric = document.querySelector("#pm25Metric");
 const pm10Metric = document.querySelector("#pm10Metric");
