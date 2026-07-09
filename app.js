@@ -2786,19 +2786,18 @@ function updateAutoRefreshMeta() {
   if (!autoRefreshMeta) {
     return;
   }
-  const intervalLabel = getAutoRefreshIntervalLabel();
   if (!appState.autoRefreshEnabled) {
-    autoRefreshMeta.textContent = `每 ${intervalLabel} 自動更新：已暫停`;
+    autoRefreshMeta.textContent = "自動更新：已暫停";
     autoRefreshToggle.textContent = "恢復自動更新";
     return;
   }
   if (appState.autoRefreshRunning) {
-    autoRefreshMeta.textContent = `每 ${intervalLabel} 自動更新：資料更新中...`;
+    autoRefreshMeta.textContent = "自動更新：資料更新中...";
     autoRefreshToggle.textContent = "暫停自動更新";
     return;
   }
   const remainingMs = Math.max(0, appState.nextAutoRefreshAt - Date.now());
-  autoRefreshMeta.textContent = `每 ${intervalLabel} 自動更新：啟用中（${formatAutoRefreshCountdown(remainingMs)} 後）`;
+  autoRefreshMeta.textContent = `自動更新：啟用中（${formatAutoRefreshCountdown(remainingMs)} 後）`;
   autoRefreshToggle.textContent = "暫停自動更新";
 }
 
