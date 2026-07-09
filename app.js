@@ -436,6 +436,11 @@ const freewayCameraMeta = document.querySelector("#freewayCameraMeta");
 const freewayCameraList = document.querySelector("#freewayCameraList");
 const mapLayerList = document.querySelector("#mapLayerList");
 const airSummary = document.querySelector("#airSummary");
+const airInline = document.querySelector("#airInline");
+const aqiMetric = document.querySelector("#aqiMetric");
+const pm25Metric = document.querySelector("#pm25Metric");
+const pm10Metric = document.querySelector("#pm10Metric");
+const ozoneMetric = document.querySelector("#ozoneMetric");
 const aqiValue = document.querySelector("#aqiValue");
 const pm25Value = document.querySelector("#pm25Value");
 const pm10Value = document.querySelector("#pm10Value");
@@ -1264,6 +1269,72 @@ function getAqiLabel(aqi) {
   return "非常不健康";
 }
 
+const AIR_LEVEL_CLASSES = [
+  "air-level-good",
+  "air-level-moderate",
+  "air-level-sensitive",
+  "air-level-unhealthy",
+  "air-level-very-unhealthy",
+  "air-level-hazardous",
+  "air-level-unknown"
+];
+
+function getAirQualityLevelKey(value, pollutant = "aqi") {
+  const reading = Number(value);
+  if (!Number.isFinite(reading)) {
+    return "unknown";
+  }
+  if (pollutant === "aqi") {
+    if (reading <= 50) return "good";
+    if (reading <= 100) return "moderate";
+    if (reading <= 150) return "sensitive";
+    if (reading <= 200) return "unhealthy";
+    if (reading <= 300) return "very-unhealthy";
+    return "hazardous";
+  }
+  if (pollutant === "pm25") {
+    if (reading <= 12) return "good";
+    if (reading <= 35.4) return "moderate";
+    if (reading <= 55.4) return "sensitive";
+    if (reading <= 150.4) return "unhealthy";
+    if (reading <= 250.4) return "very-unhealthy";
+    return "hazardous";
+  }
+  if (pollutant === "pm10") {
+    if (reading <= 54) return "good";
+    if (reading <= 154) return "moderate";
+    if (reading <= 254) return "sensitive";
+    if (reading <= 354) return "unhealthy";
+    if (reading <= 424) return "very-unhealthy";
+    return "hazardous";
+  }
+  if (pollutant === "ozone") {
+    if (reading <= 100) return "good";
+    if (reading <= 160) return "moderate";
+    if (reading <= 214) return "sensitive";
+    if (reading <= 404) return "unhealthy";
+    if (reading <= 504) return "very-unhealthy";
+    return "hazardous";
+  }
+  return "unknown";
+}
+
+function setAirLevelClass(element, levelKey) {
+  if (!element) {
+    return;
+  }
+  element.classList.remove(...AIR_LEVEL_CLASSES);
+  element.classList.add(`air-level-${levelKey || "unknown"}`);
+}
+
+function renderAirQualityLevelStyles({ aqi, pm25, pm10, ozone }) {
+  setAirLevelClass(airSummary, getAirQualityLevelKey(aqi, "aqi"));
+  setAirLevelClass(aqiMetric, getAirQualityLevelKey(aqi, "aqi"));
+  setAirLevelClass(pm25Metric, getAirQualityLevelKey(pm25, "pm25"));
+  setAirLevelClass(pm10Metric, getAirQualityLevelKey(pm10, "pm10"));
+  setAirLevelClass(ozoneMetric, getAirQualityLevelKey(ozone, "ozone"));
+}
+
 function renderRainTimeline(hours) {
   rainTimeline.innerHTML = "";
   if (!hours.length) {
@@ -1499,6 +1570,8 @@ async function fetchAirQuality() {
   pm25Value.textContent = `${pm25.toFixed(1)} μg/m³`;
   pm10Value.textContent = `${pm10.toFixed(1)} μg/m³`;
   ozoneValue.textContent = `${ozone.toFixed(1)} μg/m³`;
+
+  renderAirQualityLevelStyles({ aqi, pm25, pm10, ozone });
 
   appState.airQuality = {
     cityName: location.cityName,

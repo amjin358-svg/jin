@@ -187,15 +187,92 @@ label {
 
 .air-inline {
   margin-top: 14px;
-  padding-top: 12px;
+  padding: 12px;
   border-top: 1px solid var(--border);
+  border-radius: 12px;
   display: grid;
-  gap: 8px;
+  gap: 10px;
+  transition: background-color 0.25s ease, border-color 0.25s ease;
 }
 
 .air-inline-summary {
   margin: 0;
   font-size: 18px;
+  font-weight: 700;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+}
+
+.air-metrics div {
+  background: #eef2f8;
+  border: 1px solid #d5deec;
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+}
+
+.air-level-good {
+  background: #b7e4c7 !important;
+  border-color: #52b788 !important;
+  color: #1b4332;
+}
+
+.air-level-good dd {
+  color: #1b4332;
+}
+
+.air-level-moderate {
+  background: #fde68a !important;
+  border-color: #f59e0b !important;
+  color: #78350f;
+}
+
+.air-level-moderate dd {
+  color: #78350f;
+}
+
+.air-level-sensitive {
+  background: #fdba74 !important;
+  border-color: #ea580c !important;
+  color: #7c2d12;
+}
+
+.air-level-sensitive dd {
+  color: #7c2d12;
+}
+
+.air-level-unhealthy {
+  background: #fca5a5 !important;
+  border-color: #dc2626 !important;
+  color: #7f1d1d;
+}
+
+.air-level-unhealthy dd {
+  color: #7f1d1d;
+}
+
+.air-level-very-unhealthy {
+  background: #d8b4fe !important;
+  border-color: #9333ea !important;
+  color: #581c87;
+}
+
+.air-level-very-unhealthy dd {
+  color: #581c87;
+}
+
+.air-level-hazardous {
+  background: #c4b5fd !important;
+  border-color: #6b21a8 !important;
+  color: #3b0764;
+}
+
+.air-level-hazardous dd {
+  color: #3b0764;
+}
+
+.air-level-unknown {
+  background: #eef2f8 !important;
+  border-color: #d5deec !important;
 }
 
 .typhoon-wide {
