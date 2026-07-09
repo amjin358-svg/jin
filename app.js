@@ -837,6 +837,32 @@ function getFilteredSortedFreewayCameras() {
     .sort((a, b) => a.distanceKm - b.distanceKm);
 }
 
+function isLikelyDirectImageStream(url = "") {
+  const lower = String(url).toLowerCase();
+  if (!lower) {
+    return false;
+  }
+  if (lower.includes("index.html") || lower.includes("/play/") || lower.includes(".html")) {
+    return false;
+  }
+  if (lower.includes("mjpg") || lower.includes("mjpeg") || lower.includes("jpeg") || lower.includes("jpg")) {
+    return true;
+  }
+  if (lower.includes("bmjpg") || lower.includes("getjpeg") || lower.includes("snapshot")) {
+    return true;
+  }
+  // Many city feeds are player pages; prefer iframe/link preview.
+  if (
+    lower.includes("showframe") ||
+    lower.includes("showcctv") ||
+    lower.includes("hls.") ||
+    lower.includes("/live/")
+  ) {
+    return false;
+  }
+  return true;
+}
+
 function createCameraCard(camera, scopeLabel) {
   const card = document.createElement("article");
   card.className = "camera-item";
@@ -844,9 +870,14 @@ function createCameraCard(camera, scopeLabel) {
   const safeStake = camera.stakenumber || camera.roadName || "未提供路口資訊";
   const distance = Number.isFinite(camera.distanceKm) ? `${camera.distanceKm.toFixed(1)} km` : "--";
   const cityLabel = camera.city ? `${camera.city}｜` : "";
+  const directImage = isLikelyDirectImageStream(streamUrl);
+
+  const mediaHtml = directImage
+    ? `<img src="${streamUrl}" alt="${camera.id} 即時影像" loading="lazy" />`
+    : `<iframe class="camera-frame" src="${streamUrl}" title="${camera.id} 即時影像" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>`;
 
   card.innerHTML = `
-    <img src="${streamUrl}" alt="${camera.id} 即時影像" loading="lazy" />
+    ${mediaHtml}
     <div class="camera-body">
       <h3>${camera.id}</h3>
       <p>${safeStake}</p>
@@ -856,9 +887,17 @@ function createCameraCard(camera, scopeLabel) {
   `;
   const img = card.querySelector("img");
   img?.addEventListener("error", () => {
-    img.alt = `${camera.id} 影像暫時無法顯示`;
-    img.src =
-      "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='640' height='360'%3E%3Crect width='100%25' height='100%25' fill='%23e7ecf7'/%3E%3Ctext x='50%25' y='50%25' font-size='20' fill='%235a6787' text-anchor='middle' dominant-baseline='middle'%3E%E5%BD%B1%E5%83%8F%E6%9A%AB%E6%99%82%E7%84%A1%E6%B3%95%E8%BC%89%E5%85%A5%3C/text%3E%3C/svg%3E";
+    img.replaceWith(Object.assign(document.createElement("div"), {
+      className: "camera-fallback",
+      innerHTML: `<p>影像需於官方頁面開啟</p><a href="${streamUrl}" target="_blank" rel="noopener noreferrer">前往即時影像</a>`
+    }));
+  });
+  const frame = card.querySelector("iframe");
+  frame?.addEventListener("error", () => {
+    frame.replaceWith(Object.assign(document.createElement("div"), {
+      className: "camera-fallback",
+      innerHTML: `<p>此鏡頭需於官方頁面開啟</p><a href="${streamUrl}" target="_blank" rel="noopener noreferrer">前往即時影像</a>`
+    }));
   });
   return card;
 }
@@ -1042,20 +1081,21 @@ function parseClosureMarkdown(markdownText) {
   const lines = markdownText.split("\n").map((line) => line.trim());
   const updateLine = lines.find((line) => line.startsWith("#### 更新時間：")) ?? "";
   const updateAt = updateLine.replace("#### 更新時間：", "").trim();
+  const noClosure = /無停班停課訊息/.test(markdownText);
 
   const rows = [];
   lines.forEach((line) => {
     if (!line.startsWith("|")) {
       return;
     }
-    if (line.includes("---") || line.includes("縣市名稱")) {
+    if (line.includes("---") || line.includes("縣市名稱") || line.includes("無停班停課訊息")) {
       return;
     }
     const raw = line.split("|").map((cell) => cell.trim()).filter(Boolean);
     if (raw.length < 2) {
       return;
     }
-    const city = raw[0];
+    const city = raw[0].replace(/^#+/, "").trim();
     const message = raw.slice(1).join(" ");
     if (!KNOWN_CITIES.has(city)) {
       return;
@@ -1065,7 +1105,8 @@ function parseClosureMarkdown(markdownText) {
 
   return {
     updateAt,
-    rows
+    rows,
+    noClosure
   };
 }
 
@@ -1087,14 +1128,19 @@ function readClosureCache() {
 
 function renderClosure(data, sourceLabel) {
   closureList.innerHTML = "";
-  const sorted = [...data.rows].sort((a, b) => {
+  const sorted = [...(data.rows || [])].sort((a, b) => {
     const aStop = Number(a.message.includes("停止上班") || a.message.includes("停止上課"));
     const bStop = Number(b.message.includes("停止上班") || b.message.includes("停止上課"));
     return bStop - aStop;
   });
 
   if (!sorted.length) {
-    closureList.innerHTML = `<p class="status-ok">目前未讀取到停班停課區域，請點擊「立即更新資料」重試。</p>`;
+    const okText = data.noClosure
+      ? "目前全台無停班停課訊息。"
+      : "目前未讀取到停班停課區域，請點擊「立即更新資料」重試。";
+    closureList.innerHTML = `<p class="status-ok">${okText}</p>`;
+    appState.closureRows = [];
+    closureMeta.textContent = `公告更新時間：${data.updateAt || "未提供"}（來源：${sourceLabel}）`;
     return;
   }
 
@@ -1115,7 +1161,7 @@ function renderClosure(data, sourceLabel) {
 }
 
 async function fetchClosureNotices() {
-  const endpoint = "https://r.jina.ai/http://www.dgpa.gov.tw/typh/daily/nds.html";
+  const endpoint = "https://r.jina.ai/https://www.dgpa.gov.tw/typh/daily/nds.html";
   try {
     const response = await fetch(endpoint);
     if (!response.ok) {
@@ -1123,7 +1169,7 @@ async function fetchClosureNotices() {
     }
     const markdown = await response.text();
     const data = parseClosureMarkdown(markdown);
-    if (!data.rows.length) {
+    if (!data.rows.length && !data.noClosure && !data.updateAt) {
       throw new Error("停班停課資料格式無法解析");
     }
     saveClosureCache(data);
@@ -1133,7 +1179,7 @@ async function fetchClosureNotices() {
     if (cache) {
       renderClosure(cache, "本機快取");
       closureMeta.textContent += "（目前使用快取，請稍後重試）";
-      appState.closureRows = cache.rows;
+      appState.closureRows = cache.rows || [];
       return;
     }
     closureMeta.textContent = `停班停課資料暫時無法更新：${error.message}`;

@@ -338,11 +338,29 @@ select {
   background: #fff;
 }
 
-.camera-item img {
+.camera-item img,
+.camera-frame,
+.camera-fallback {
   width: 100%;
   aspect-ratio: 16 / 9;
   object-fit: cover;
   background: #e7ecf7;
+  border: 0;
+}
+
+.camera-fallback {
+  display: grid;
+  place-content: center;
+  gap: 8px;
+  text-align: center;
+  color: #5a6787;
+  font-size: 14px;
+}
+
+.camera-fallback a {
+  color: #1f5ae1;
+  text-decoration: none;
+  font-weight: 700;
 }
 
 .camera-body {
