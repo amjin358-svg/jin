@@ -490,6 +490,7 @@ const mapLayerConfig = {
 };
 const AUTO_REFRESH_MS = 15 * 60 * 1000;
 const SUBSCRIPTION_STORAGE_KEY = "weatherMemberSubscriptionV1";
+const RECOVERY_STATE_STORAGE_KEY = "subscriptionRecoveryStateV1";
 const FLOOD_LATEST_API =
   "https://opendata.wra.gov.tw/api/v2/1b991bbb-ad85-4e7a-b931-06ce8749d3ed?format=JSON";
 const TAIPOWER_DISASTER_OUTAGE_URL =
@@ -502,6 +503,8 @@ const WINDY_EMBED_HEIGHT = 580;
 const CITY_CCTV_RADIUS_KM = 5;
 const FREEWAY_CCTV_RADIUS_KM = 50;
 const POWER_OUTAGE_NOTIFY_RADIUS_KM = 10;
+const FLOOD_NOTIFY_RADIUS_KM = 80;
+const FLOOD_SAFE_DEPTH_CM = 15;
 const VISITOR_COUNTER_NAMESPACE = "jin-weather-tw-v1";
 const VISITOR_COUNTER_KEY = "visits";
 const VISITOR_COUNTER_STORAGE_KEY = "siteVisitCountV1";
@@ -1688,7 +1691,10 @@ function getFloodLevelByDepth(depthCm) {
 }
 
 function parseTyphoonOfficialText(newsMarkdown, warnMarkdown) {
-  const hasWarning = !/目前無發布颱風警報/.test(warnMarkdown || "");
+  const warnText = warnMarkdown || "";
+  const hasWarning = !/目前無發布颱風警報/.test(warnText);
+  const hasLandWarning =
+    hasWarning && /陸上颱風警報/.test(warnText) && !/解除陸上颱風警報/.test(warnText);
   const countMatch = (newsMarkdown || "").match(/有\s*(\d+)\s*個颱風/);
   const typhoonCount = countMatch ? Number(countMatch[1]) : 0;
   const nameMatch = (newsMarkdown || "").match(/(強烈颱風|中度颱風|輕度颱風)\s+([^\s]+)\s+編號第\s*(\d+)\s*號\s+國際命名\s+([A-Z]+)/);
@@ -1719,6 +1725,7 @@ function parseTyphoonOfficialText(newsMarkdown, warnMarkdown) {
 
   return {
     hasWarning,
+    hasLandWarning,
     typhoonCount,
     name: nameMatch ? `${nameMatch[1]} ${nameMatch[2]}` : null,
     lat: detailMatch ? Number(detailMatch[1]) : null,
@@ -1893,16 +1900,144 @@ function getNearbyFloodWarnings() {
   if (!location || !appState.floodLivePoints.length) {
     return [];
   }
+  return getNearbyFloodPoints(location, FLOOD_NOTIFY_RADIUS_KM);
+}
+
+function getNearbyFloodPoints(location, radiusKm = FLOOD_NOTIFY_RADIUS_KM) {
+  if (!location || !appState.floodLivePoints.length) {
+    return [];
+  }
   return appState.floodLivePoints
     .map((point) => ({
       areaName: `${point.county}${point.town} ${point.name}`,
+      sensorid: point.sensorid,
       level: point.level,
       waterDepthCm: point.depthCm,
+      depthCm: point.depthCm,
       updatedAt: point.updatedAt,
+      lat: point.lat,
+      lon: point.lon,
       distanceKm: getDistanceKm(location.lat, location.lon, point.lat, point.lon)
     }))
-    .filter((row) => row.distanceKm <= 80)
+    .filter((row) => row.distanceKm <= radiusKm)
     .sort((a, b) => b.level - a.level || a.distanceKm - b.distanceKm);
+}
+
+function isFloodWarningDepth(depthCm) {
+  return Number(depthCm) >= FLOOD_SAFE_DEPTH_CM;
+}
+
+function buildPowerOutageTrackingKey(point) {
+  const area = normalizeTaiwanPlaceText(point.area || point.label || "");
+  const lat = Number(point.lat).toFixed(4);
+  const lon = Number(point.lon).toFixed(4);
+  return `${point.type}|${area}|${lat}|${lon}`;
+}
+
+function createDefaultRecoveryState() {
+  return {
+    floodSensors: {},
+    powerOutages: {},
+    hasLandTyphoonWarning: false
+  };
+}
+
+function loadRecoveryState() {
+  try {
+    const raw = localStorage.getItem(RECOVERY_STATE_STORAGE_KEY);
+    if (!raw) {
+      return createDefaultRecoveryState();
+    }
+    const parsed = JSON.parse(raw);
+    return {
+      floodSensors: parsed.floodSensors ?? {},
+      powerOutages: parsed.powerOutages ?? {},
+      hasLandTyphoonWarning: Boolean(parsed.hasLandTyphoonWarning)
+    };
+  } catch {
+    return createDefaultRecoveryState();
+  }
+}
+
+function saveRecoveryState(state) {
+  localStorage.setItem(RECOVERY_STATE_STORAGE_KEY, JSON.stringify(state));
+}
+
+function updateRecoveryTrackingState() {
+  const prev = loadRecoveryState();
+  const next = createDefaultRecoveryState();
+  const messages = [];
+  const topics = new Set(appState.subscription?.topics ?? []);
+  const isSubscribed = Boolean(appState.subscription?.email);
+  const location = getSubscriptionWeatherLocation();
+  const locationLabel = getSubscriptionLocationLabel();
+
+  if (location) {
+    const nearbyFloods = getNearbyFloodPoints(location);
+    const currentWarningSensors = {};
+    nearbyFloods.forEach((point) => {
+      if (!isFloodWarningDepth(point.depthCm)) {
+        return;
+      }
+      currentWarningSensors[point.sensorid] = {
+        areaName: point.areaName,
+        level: point.level,
+        depthCm: point.depthCm,
+        distanceKm: point.distanceKm
+      };
+    });
+
+    if (isSubscribed && topics.has("flood")) {
+      Object.entries(prev.floodSensors).forEach(([sensorid, point]) => {
+        if (currentWarningSensors[sensorid]) {
+          return;
+        }
+        messages.push(
+          `【積淹水消退】${point.areaName} 已消退至安全警戒高度（原水深 ${point.depthCm} cm、等級 ${point.level}），${locationLabel} 周邊約 ${point.distanceKm.toFixed(1)} km，請恢復通行並持續留意。`
+        );
+      });
+    }
+    next.floodSensors = currentWarningSensors;
+  } else {
+    next.floodSensors = prev.floodSensors;
+  }
+
+  const currentOutages = {};
+  getNearbyPowerOutages().forEach((point) => {
+    const key = buildPowerOutageTrackingKey(point);
+    currentOutages[key] = {
+      area: point.area,
+      type: point.type,
+      label: point.label,
+      distanceKm: point.distanceKm
+    };
+  });
+
+  if (isSubscribed && topics.has("power-outage")) {
+    Object.entries(prev.powerOutages).forEach(([key, point]) => {
+      if (currentOutages[key]) {
+        return;
+      }
+      const typeLabel = point.type === "disaster" ? "災害性停電" : "計畫性停電";
+      const place = point.label || point.area || "未提供區域";
+      messages.push(
+        `【電力回復】${place}（${typeLabel}）已恢復供電，${locationLabel} 半徑 ${POWER_OUTAGE_NOTIFY_RADIUS_KM} 公里內距離約 ${Number(point.distanceKm).toFixed(1)} km。`
+      );
+    });
+  }
+  next.powerOutages = currentOutages;
+
+  const hasLandWarning = Boolean(appState.typhoonOfficial?.hasLandWarning);
+  if (isSubscribed && prev.hasLandTyphoonWarning && !hasLandWarning) {
+    const typhoonName = appState.typhoonOfficial?.name;
+    messages.push(
+      `【解除颱風警報】中央氣象署已解除陸上颱風警報${typhoonName ? `（${typhoonName}）` : ""}，${locationLabel} 請持續留意後續天氣與防災資訊。`
+    );
+  }
+  next.hasLandTyphoonWarning = hasLandWarning;
+
+  saveRecoveryState(next);
+  return messages;
 }
 
 function renderAiAlerts() {
@@ -2128,6 +2263,24 @@ function buildSubscriptionNotificationMessages() {
   return messages;
 }
 
+async function sendRecoveryNotifications(messages) {
+  if (!messages.length || !appState.subscription?.email) {
+    return false;
+  }
+  const permissionGranted = await ensureNotificationPermission();
+  if (!permissionGranted) {
+    return false;
+  }
+  for (const message of messages) {
+    new Notification("災害狀態更新", {
+      body: message,
+      tag: `recovery-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+    });
+    await sleep(900);
+  }
+  return true;
+}
+
 async function sendSubscriptionNotification({ force = false } = {}) {
   if (!appState.subscription?.email) {
     renderSubscriptionStatus("請先輸入 Email 並儲存訂閱。");
@@ -2178,9 +2331,12 @@ async function sendSubscriptionNotification({ force = false } = {}) {
   return true;
 }
 
-async function maybeNotifySubscribers(triggerSource) {
+async function maybeNotifySubscribers(triggerSource, recoveryMessages = []) {
   if (triggerSource !== "auto" || !appState.subscription?.email) {
     return;
+  }
+  if (recoveryMessages.length) {
+    await sendRecoveryNotifications(recoveryMessages);
   }
   await sendSubscriptionNotification();
 }
@@ -2682,7 +2838,8 @@ async function performFullRefresh(triggerSource) {
     renderTyphoonAnalysis();
     renderAiAlerts();
     updateMapForCityChange();
-    await maybeNotifySubscribers(triggerSource);
+    const recoveryMessages = updateRecoveryTrackingState();
+    await maybeNotifySubscribers(triggerSource, recoveryMessages);
     lastUpdated.textContent = `資料更新時間：${formatDateTime(Date.now())}${triggerSource === "auto" ? "（自動）" : ""}`;
     if (appState.autoRefreshEnabled) {
       scheduleNextAutoRefresh();
