@@ -533,11 +533,11 @@ const appState = {
   autoRefreshEnabled: true,
   autoRefreshIntervalMinutes: DEFAULT_AUTO_REFRESH_MINUTES,
   nextAutoRefreshAt: Date.now() + AUTO_REFRESH_OPTIONS[DEFAULT_AUTO_REFRESH_MINUTES].ms,
+  autoRefreshRunning: false,
   subscription: null,
   lastNotifiedAt: 0
 };
-let autoRefreshTimer = null;
-let countdownTimer = null;
+let autoRefreshTickTimer = null;
 
 function getRegionForCity(cityName) {
   return REGION_GROUPS.find((region) => region.cities.includes(cityName))?.name ?? REGION_GROUPS[0].name;
@@ -2767,18 +2767,15 @@ function loadAutoRefreshIntervalPreference() {
   }
 }
 
-function restartAutoRefreshTimers() {
-  scheduleNextAutoRefresh();
-  if (autoRefreshTimer) {
-    clearInterval(autoRefreshTimer);
+function formatAutoRefreshCountdown(remainingMs) {
+  const totalSeconds = Math.max(0, Math.ceil(remainingMs / 1000));
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  if (hours > 0) {
+    return `${hours}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
   }
-  autoRefreshTimer = setInterval(() => {
-    if (!appState.autoRefreshEnabled) {
-      return;
-    }
-    performFullRefresh("auto");
-  }, getAutoRefreshIntervalMs());
-  updateAutoRefreshMeta();
+  return `${minutes}:${String(seconds).padStart(2, "0")}`;
 }
 
 function scheduleNextAutoRefresh() {
@@ -2786,29 +2783,64 @@ function scheduleNextAutoRefresh() {
 }
 
 function updateAutoRefreshMeta() {
+  if (!autoRefreshMeta) {
+    return;
+  }
   const intervalLabel = getAutoRefreshIntervalLabel();
   if (!appState.autoRefreshEnabled) {
     autoRefreshMeta.textContent = `每 ${intervalLabel} 自動更新：已暫停`;
     autoRefreshToggle.textContent = "恢復自動更新";
     return;
   }
-  const diff = Math.max(0, appState.nextAutoRefreshAt - Date.now());
-  const minutes = Math.floor(diff / 60000);
-  const seconds = Math.floor((diff % 60000) / 1000);
-  autoRefreshMeta.textContent = `每 ${intervalLabel} 自動更新：啟用中（${minutes}:${String(seconds).padStart(2, "0")} 後）`;
+  if (appState.autoRefreshRunning) {
+    autoRefreshMeta.textContent = `每 ${intervalLabel} 自動更新：資料更新中...`;
+    autoRefreshToggle.textContent = "暫停自動更新";
+    return;
+  }
+  const remainingMs = Math.max(0, appState.nextAutoRefreshAt - Date.now());
+  autoRefreshMeta.textContent = `每 ${intervalLabel} 自動更新：啟用中（${formatAutoRefreshCountdown(remainingMs)} 後）`;
   autoRefreshToggle.textContent = "暫停自動更新";
+}
+
+async function tickAutoRefreshCountdown() {
+  updateAutoRefreshMeta();
+  if (!appState.autoRefreshEnabled || appState.autoRefreshRunning) {
+    return;
+  }
+  if (Date.now() < appState.nextAutoRefreshAt) {
+    return;
+  }
+  appState.autoRefreshRunning = true;
+  updateAutoRefreshMeta();
+  try {
+    await performFullRefresh("auto");
+  } finally {
+    appState.autoRefreshRunning = false;
+    if (appState.autoRefreshEnabled) {
+      scheduleNextAutoRefresh();
+    }
+    updateAutoRefreshMeta();
+  }
+}
+
+function startAutoRefreshTick() {
+  if (autoRefreshTickTimer) {
+    clearInterval(autoRefreshTickTimer);
+  }
+  autoRefreshTickTimer = setInterval(() => {
+    tickAutoRefreshCountdown();
+  }, 1000);
+  tickAutoRefreshCountdown();
+}
+
+function restartAutoRefreshTimers() {
+  scheduleNextAutoRefresh();
+  startAutoRefreshTick();
 }
 
 function startAutoRefreshTimers() {
   loadAutoRefreshIntervalPreference();
   restartAutoRefreshTimers();
-  if (countdownTimer) {
-    clearInterval(countdownTimer);
-  }
-  countdownTimer = setInterval(() => {
-    updateAutoRefreshMeta();
-  }, 1000);
-  updateAutoRefreshMeta();
 }
 
 async function performFullRefresh(triggerSource) {
