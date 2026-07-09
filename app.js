@@ -1014,10 +1014,16 @@ async function fetchLiveFloodData() {
   const latestRows = await response.json();
   const stationMap = new Map(appState.floodStations.map((station) => [station.sensorid, station]));
   const livePoints = [];
+  const freshnessLimitMs = 36 * 60 * 60 * 1000;
+  const nowMs = Date.now();
 
   latestRows.forEach((row) => {
     const depthCm = Number(row.latestvalue ?? 0);
-    if (!(depthCm > 0)) {
+    if (!(depthCm > 0) || depthCm >= 500) {
+      return;
+    }
+    const updatedMs = Date.parse(row.timestamp || "");
+    if (Number.isFinite(updatedMs) && nowMs - updatedMs > freshnessLimitMs) {
       return;
     }
     const station = stationMap.get(row.sensorid);
@@ -1153,10 +1159,10 @@ function initWarningMap() {
   warningMap.createPane("cameraPane");
   warningMap.createPane("focusPane");
 
-  L.tileLayer("https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png", {
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
     className: "high-contrast-tiles",
     maxZoom: 18,
-    attribution: "&copy; OpenStreetMap &copy; CARTO"
+    attribution: "&copy; OpenStreetMap contributors"
   }).addTo(warningMap);
 
   renderLayerControl();
