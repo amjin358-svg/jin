@@ -151,12 +151,6 @@ label {
   gap: 8px;
 }
 
-.air-inline-title {
-  margin: 0;
-  font-size: 16px;
-  color: var(--text);
-}
-
 .air-inline-summary {
   margin: 0;
   font-size: 18px;

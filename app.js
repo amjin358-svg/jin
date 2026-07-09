@@ -499,7 +499,7 @@ let autoRefreshTimer = null;
 let countdownTimer = null;
 let windyAutoReplayTimer = null;
 let windyAutoReplayEnabled = false;
-const WINDY_AUTO_REPLAY_MS = 45000;
+const WINDY_AUTO_REPLAY_MS = 30000;
 let lastWindyEmbedUrl = "";
 
 function getRegionForCity(cityName) {
@@ -1225,7 +1225,7 @@ async function fetchAirQuality() {
   const pm10 = Number(payload.hourly.pm10[index] ?? 0);
   const ozone = Number(payload.hourly.ozone[index] ?? 0);
 
-  airSummary.textContent = `今日空氣品質：${getAqiLabel(aqi)}`;
+  airSummary.textContent = `${getAqiLabel(aqi)}`;
   aqiValue.textContent = `${Math.round(aqi)}`;
   pm25Value.textContent = `${pm25.toFixed(1)} μg/m³`;
   pm10Value.textContent = `${pm10.toFixed(1)} μg/m³`;
@@ -1306,7 +1306,7 @@ function buildWindyEmbedUrl(lat, lon, zoom = 6, { bustCache = false } = {}) {
     menu: "",
     message: "true",
     marker: "true",
-    calendar: "12",
+    calendar: "6",
     pressure: "true",
     type: "map",
     location: "coordinates",
@@ -1342,8 +1342,8 @@ function updateWindyReplayMeta(message) {
     return;
   }
   windyReplayMeta.textContent = windyAutoReplayEnabled
-    ? `自動重播已開啟，約每 ${Math.round(WINDY_AUTO_REPLAY_MS / 1000)} 秒循環播放 12 小時動態路徑。`
-    : "可按「重播走勢」立即重播，或開啟「自動重播」循環播放 12 小時動態路徑。";
+    ? `自動重播已開啟，約每 ${Math.round(WINDY_AUTO_REPLAY_MS / 1000)} 秒循環播放 6 小時動態路徑。`
+    : "可按「播放 6 小時動態」立即播放，或開啟「自動重播」循環播放 6 小時動態路徑。";
 }
 
 function updateWindyAutoReplayButton() {
@@ -1368,7 +1368,7 @@ function replayWindyTrack({ silent = false } = {}) {
   }
   if (!silent) {
     updateWindyReplayMeta(
-      `已重播走勢圖（${focus.hasTyphoonCenter ? "對準颱風中心" : "對準所選鄉鎮"}｜${formatDateTime(Date.now())}）`
+      `已播放 6 小時動態（${focus.hasTyphoonCenter ? "對準颱風中心" : "對準所選鄉鎮"}｜${formatDateTime(Date.now())}）`
     );
   }
 }
@@ -1385,7 +1385,7 @@ function startWindyAutoReplay() {
   windyAutoReplayTimer = setInterval(() => {
     replayWindyTrack({ silent: true });
     updateWindyReplayMeta(
-      `自動重播中… 上次重播時間 ${formatDateTime(Date.now())}（每 ${Math.round(WINDY_AUTO_REPLAY_MS / 1000)} 秒）`
+      `自動重播中… 上次播放時間 ${formatDateTime(Date.now())}（每 ${Math.round(WINDY_AUTO_REPLAY_MS / 1000)} 秒）`
     );
   }, WINDY_AUTO_REPLAY_MS);
 }
