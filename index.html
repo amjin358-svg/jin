@@ -26,16 +26,25 @@
       </header>
 
       <section class="controls card">
-        <div class="control-grid">
+        <div class="control-grid region-grid">
+          <div>
+            <label for="regionSelect">選擇區域</label>
+            <select id="regionSelect" aria-label="選擇區域"></select>
+          </div>
           <div>
             <label for="citySelect">選擇縣市</label>
             <select id="citySelect" aria-label="選擇縣市"></select>
           </div>
           <div>
-            <label for="townshipSelect">鄉鎮級天氣資訊</label>
-            <select id="townshipSelect" aria-label="選擇鄉鎮"></select>
+            <label for="townshipSelect">選擇鄉鎮市區</label>
+            <select id="townshipSelect" aria-label="選擇鄉鎮市區"></select>
+          </div>
+          <div class="locate-wrap">
+            <label for="locateBtn">衛星定位</label>
+            <button id="locateBtn" type="button" class="ghost-btn locate-btn">依設備定位選區</button>
           </div>
         </div>
+        <p id="regionMemoryMeta" class="timestamp">區域偏好：尚未儲存</p>
         <p id="lastUpdated" class="timestamp">尚未更新資料</p>
         <div class="auto-refresh-row">
           <p id="autoRefreshMeta" class="timestamp">每 15 分鐘自動更新：啟用中</p>
@@ -45,12 +54,16 @@
 
       <section class="grid">
         <article class="card weather-card">
-          <h2>即時天氣</h2>
+          <h2>即時天氣（鄉鎮級）</h2>
           <p id="weatherSummary" class="big-text">資料讀取中...</p>
-          <dl class="metrics">
+          <dl class="metrics weather-metrics">
             <div>
               <dt>溫度</dt>
               <dd id="tempValue">--</dd>
+            </div>
+            <div>
+              <dt>體感溫度</dt>
+              <dd id="feelValue">--</dd>
             </div>
             <div>
               <dt>濕度</dt>
@@ -64,6 +77,18 @@
               <dt>降雨量</dt>
               <dd id="rainValue">--</dd>
             </div>
+            <div>
+              <dt>降雨機率</dt>
+              <dd id="rainProbValue">--</dd>
+            </div>
+            <div>
+              <dt>雲量</dt>
+              <dd id="cloudValue">--</dd>
+            </div>
+            <div>
+              <dt>氣壓</dt>
+              <dd id="pressureValue">--</dd>
+            </div>
           </dl>
         </article>
 
@@ -74,30 +99,7 @@
         </article>
       </section>
 
-      <section class="grid triple-grid">
-        <article class="card township-card">
-          <h2>鄉鎮級天氣資訊</h2>
-          <p id="townshipSummary" class="big-text">資料讀取中...</p>
-          <dl class="metrics">
-            <div>
-              <dt>體感溫度</dt>
-              <dd id="townshipFeelValue">--</dd>
-            </div>
-            <div>
-              <dt>降雨機率</dt>
-              <dd id="townshipRainProbValue">--</dd>
-            </div>
-            <div>
-              <dt>雲量</dt>
-              <dd id="townshipCloudValue">--</dd>
-            </div>
-            <div>
-              <dt>氣壓</dt>
-              <dd id="townshipPressureValue">--</dd>
-            </div>
-          </dl>
-        </article>
-
+      <section class="grid">
         <article class="card air-card">
           <h2>空氣品質</h2>
           <p id="airSummary" class="big-text">資料讀取中...</p>
@@ -125,6 +127,29 @@
           <h2>颱風分析</h2>
           <p id="typhoonRiskBadge" class="risk-badge risk-low">風險等級：資料讀取中</p>
           <ul id="typhoonAnalysisList" class="analysis-list"></ul>
+          <div class="windy-wrap">
+            <div class="section-head">
+              <h3>12 小時走勢圖（Windy）</h3>
+              <a
+                id="windyExternalLink"
+                href="https://www.windy.com/?23.700,121.000,6"
+                target="_blank"
+                rel="noopener noreferrer"
+                >開啟 Windy 完整版</a
+              >
+            </div>
+            <iframe
+              id="windyEmbed"
+              class="windy-embed"
+              title="Windy 颱風 12 小時走勢圖"
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade"
+              allowfullscreen
+            ></iframe>
+            <p class="timestamp">
+              嵌入 Windy 公開地圖 API（未來 12 小時預報時間軸），中心會依颱風位置或所選鄉鎮自動調整。
+            </p>
+          </div>
         </article>
       </section>
 
@@ -179,14 +204,20 @@
           >
         </div>
         <p id="cameraMeta" class="timestamp">讀取中...</p>
-        <div class="camera-controls">
-          <label for="cameraKeyword">關鍵字篩選（路線/里程/代碼）</label>
-          <input
-            id="cameraKeyword"
-            type="text"
-            placeholder="例如：國3、南港、100K"
-            autocomplete="off"
-          />
+        <div class="camera-controls camera-controls-grid">
+          <div>
+            <label for="cameraRegionSelect">地區範圍</label>
+            <select id="cameraRegionSelect" aria-label="選擇監控地區範圍"></select>
+          </div>
+          <div>
+            <label for="cameraKeyword">關鍵字篩選（路線/里程/代碼）</label>
+            <input
+              id="cameraKeyword"
+              type="text"
+              placeholder="例如：國3、南港、100K"
+              autocomplete="off"
+            />
+          </div>
         </div>
         <div id="cameraList" class="camera-list"></div>
       </section>
@@ -211,12 +242,13 @@
       <section class="card notice-card">
         <h2>資料說明</h2>
         <ul>
-          <li>天氣資料：Open-Meteo（即時與短時預報）。</li>
+          <li>天氣資料：Open-Meteo（鄉鎮級即時與短時預報）。</li>
+          <li>區域記憶：瀏覽器 localStorage 保留上次選取的區域／縣市／鄉鎮。</li>
           <li>空氣品質：Open-Meteo Air Quality（AQI / PM2.5 / PM10 / O₃）。</li>
           <li>停班停課資料：行政院人事行政總處公告頁面（經公開鏡像讀取）。</li>
-          <li>路口監控資料：交通部公路局即時 CCTV 公開資料（部署時快照）。</li>
+          <li>路口監控資料：交通部公路局即時 CCTV 公開資料（部署時快照），可依地區範圍篩選。</li>
           <li>積淹水警示：經濟部水利署 IoW 即時淹水深度感測（公開 API）。</li>
-          <li>颱風分析：中央氣象署颱風消息／警報頁面即時解析 + 本地觀測風險指數。</li>
+          <li>颱風分析：中央氣象署颱風消息／警報頁面即時解析 + Windy 12 小時走勢圖嵌入。</li>
           <li>若公告暫無資料或來源暫時無法連線，頁面會顯示提示並保留上一筆成功結果。</li>
         </ul>
       </section>

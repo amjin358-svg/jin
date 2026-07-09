@@ -24,30 +24,358 @@ const CITY_LOCATIONS = [
 ];
 
 const TOWNSHIP_LOCATIONS = [
+  { city: "臺北市", town: "中正區", lat: 25.0324, lon: 121.5183 },
+  { city: "臺北市", town: "大同區", lat: 25.0627, lon: 121.5113 },
+  { city: "臺北市", town: "中山區", lat: 25.0689, lon: 121.5337 },
+  { city: "臺北市", town: "松山區", lat: 25.0542, lon: 121.5638 },
+  { city: "臺北市", town: "大安區", lat: 25.0263, lon: 121.5435 },
+  { city: "臺北市", town: "萬華區", lat: 25.0358, lon: 121.4997 },
   { city: "臺北市", town: "信義區", lat: 25.0335, lon: 121.5627 },
+  { city: "臺北市", town: "士林區", lat: 25.0928, lon: 121.5244 },
   { city: "臺北市", town: "北投區", lat: 25.1323, lon: 121.5015 },
+  { city: "臺北市", town: "內湖區", lat: 25.0697, lon: 121.5891 },
+  { city: "臺北市", town: "南港區", lat: 25.0546, lon: 121.6068 },
+  { city: "臺北市", town: "文山區", lat: 24.9898, lon: 121.5705 },
   { city: "新北市", town: "板橋區", lat: 25.0119, lon: 121.4628 },
+  { city: "新北市", town: "三重區", lat: 25.062, lon: 121.487 },
+  { city: "新北市", town: "中和區", lat: 24.999, lon: 121.499 },
+  { city: "新北市", town: "永和區", lat: 25.007, lon: 121.514 },
+  { city: "新北市", town: "新莊區", lat: 25.0359, lon: 121.432 },
+  { city: "新北市", town: "新店區", lat: 24.9674, lon: 121.5417 },
+  { city: "新北市", town: "土城區", lat: 24.9722, lon: 121.443 },
+  { city: "新北市", town: "蘆洲區", lat: 25.0847, lon: 121.4737 },
+  { city: "新北市", town: "汐止區", lat: 25.0617, lon: 121.6617 },
+  { city: "新北市", town: "樹林區", lat: 24.99, lon: 121.424 },
   { city: "新北市", town: "淡水區", lat: 25.1695, lon: 121.4441 },
+  { city: "新北市", town: "三峽區", lat: 24.934, lon: 121.369 },
+  { city: "新北市", town: "瑞芳區", lat: 25.108, lon: 121.805 },
+  { city: "新北市", town: "五股區", lat: 25.083, lon: 121.433 },
+  { city: "新北市", town: "泰山區", lat: 25.059, lon: 121.43 },
+  { city: "新北市", town: "林口區", lat: 25.077, lon: 121.388 },
+  { city: "新北市", town: "鶯歌區", lat: 24.954, lon: 121.353 },
+  { city: "新北市", town: "三芝區", lat: 25.258, lon: 121.501 },
+  { city: "基隆市", town: "中正區", lat: 25.151, lon: 121.774 },
+  { city: "基隆市", town: "七堵區", lat: 25.095, lon: 121.713 },
+  { city: "基隆市", town: "暖暖區", lat: 25.08, lon: 121.745 },
+  { city: "基隆市", town: "仁愛區", lat: 25.127, lon: 121.741 },
+  { city: "基隆市", town: "中山區", lat: 25.149, lon: 121.73 },
+  { city: "基隆市", town: "安樂區", lat: 25.141, lon: 121.723 },
+  { city: "基隆市", town: "信義區", lat: 25.129, lon: 121.753 },
+  { city: "桃園市", town: "桃園區", lat: 24.9936, lon: 121.301 },
   { city: "桃園市", town: "中壢區", lat: 24.9536, lon: 121.2258 },
+  { city: "桃園市", town: "平鎮區", lat: 24.944, lon: 121.216 },
+  { city: "桃園市", town: "八德區", lat: 24.928, lon: 121.284 },
+  { city: "桃園市", town: "楊梅區", lat: 24.908, lon: 121.145 },
+  { city: "桃園市", town: "蘆竹區", lat: 25.049, lon: 121.291 },
+  { city: "桃園市", town: "大溪區", lat: 24.884, lon: 121.287 },
+  { city: "桃園市", town: "龍潭區", lat: 24.864, lon: 121.212 },
+  { city: "桃園市", town: "龜山區", lat: 25.019, lon: 121.365 },
+  { city: "桃園市", town: "大園區", lat: 25.064, lon: 121.197 },
+  { city: "桃園市", town: "觀音區", lat: 25.036, lon: 121.082 },
+  { city: "桃園市", town: "新屋區", lat: 24.972, lon: 121.105 },
+  { city: "桃園市", town: "復興區", lat: 24.816, lon: 121.351 },
   { city: "新竹市", town: "東區", lat: 24.8018, lon: 120.9716 },
+  { city: "新竹市", town: "北區", lat: 24.805, lon: 120.968 },
+  { city: "新竹市", town: "香山區", lat: 24.771, lon: 120.959 },
+  { city: "新竹縣", town: "竹北市", lat: 24.8387, lon: 121.0177 },
+  { city: "新竹縣", town: "竹東鎮", lat: 24.736, lon: 121.088 },
+  { city: "新竹縣", town: "新埔鎮", lat: 24.827, lon: 121.074 },
+  { city: "新竹縣", town: "關西鎮", lat: 24.792, lon: 121.177 },
+  { city: "新竹縣", town: "湖口鄉", lat: 24.903, lon: 121.045 },
+  { city: "新竹縣", town: "新豐鄉", lat: 24.9, lon: 120.986 },
+  { city: "新竹縣", town: "芎林鄉", lat: 24.776, lon: 121.078 },
+  { city: "新竹縣", town: "橫山鄉", lat: 24.718, lon: 121.137 },
+  { city: "新竹縣", town: "北埔鄉", lat: 24.698, lon: 121.056 },
+  { city: "新竹縣", town: "寶山鄉", lat: 24.743, lon: 120.999 },
+  { city: "新竹縣", town: "峨眉鄉", lat: 24.688, lon: 121.017 },
+  { city: "新竹縣", town: "尖石鄉", lat: 24.705, lon: 121.281 },
+  { city: "新竹縣", town: "五峰鄉", lat: 24.632, lon: 121.119 },
+  { city: "苗栗縣", town: "苗栗市", lat: 24.5602, lon: 120.8214 },
+  { city: "苗栗縣", town: "頭份市", lat: 24.688, lon: 120.907 },
+  { city: "苗栗縣", town: "竹南鎮", lat: 24.686, lon: 120.873 },
+  { city: "苗栗縣", town: "後龍鎮", lat: 24.615, lon: 120.789 },
+  { city: "苗栗縣", town: "通霄鎮", lat: 24.491, lon: 120.679 },
+  { city: "苗栗縣", town: "苑裡鎮", lat: 24.443, lon: 120.651 },
+  { city: "苗栗縣", town: "卓蘭鎮", lat: 24.311, lon: 120.853 },
+  { city: "苗栗縣", town: "大湖鄉", lat: 24.422, lon: 120.868 },
+  { city: "苗栗縣", town: "公館鄉", lat: 24.502, lon: 120.828 },
+  { city: "苗栗縣", town: "銅鑼鄉", lat: 24.487, lon: 120.786 },
+  { city: "苗栗縣", town: "南庄鄉", lat: 24.597, lon: 121.0 },
+  { city: "苗栗縣", town: "三義鄉", lat: 24.354, lon: 120.773 },
+  { city: "臺中市", town: "中區", lat: 24.1417, lon: 120.68 },
+  { city: "臺中市", town: "東區", lat: 24.137, lon: 120.697 },
+  { city: "臺中市", town: "南區", lat: 24.121, lon: 120.664 },
+  { city: "臺中市", town: "西區", lat: 24.143, lon: 120.662 },
+  { city: "臺中市", town: "北區", lat: 24.158, lon: 120.681 },
   { city: "臺中市", town: "西屯區", lat: 24.1769, lon: 120.6399 },
+  { city: "臺中市", town: "南屯區", lat: 24.141, lon: 120.637 },
   { city: "臺中市", town: "北屯區", lat: 24.1892, lon: 120.6863 },
+  { city: "臺中市", town: "豐原區", lat: 24.252, lon: 120.72 },
+  { city: "臺中市", town: "東勢區", lat: 24.258, lon: 120.828 },
+  { city: "臺中市", town: "大里區", lat: 24.099, lon: 120.678 },
+  { city: "臺中市", town: "太平區", lat: 24.124, lon: 120.721 },
+  { city: "臺中市", town: "清水區", lat: 24.268, lon: 120.569 },
+  { city: "臺中市", town: "沙鹿區", lat: 24.234, lon: 120.569 },
+  { city: "臺中市", town: "大甲區", lat: 24.349, lon: 120.622 },
+  { city: "臺中市", town: "烏日區", lat: 24.104, lon: 120.623 },
+  { city: "臺中市", town: "大雅區", lat: 24.227, lon: 120.647 },
+  { city: "臺中市", town: "潭子區", lat: 24.209, lon: 120.705 },
   { city: "彰化縣", town: "彰化市", lat: 24.0685, lon: 120.5575 },
+  { city: "彰化縣", town: "員林市", lat: 23.959, lon: 120.572 },
+  { city: "彰化縣", town: "和美鎮", lat: 24.114, lon: 120.494 },
+  { city: "彰化縣", town: "鹿港鎮", lat: 24.057, lon: 120.435 },
+  { city: "彰化縣", town: "溪湖鎮", lat: 23.962, lon: 120.479 },
+  { city: "彰化縣", town: "田中鎮", lat: 23.861, lon: 120.581 },
+  { city: "彰化縣", town: "北斗鎮", lat: 23.871, lon: 120.525 },
+  { city: "彰化縣", town: "二林鎮", lat: 23.899, lon: 120.367 },
+  { city: "彰化縣", town: "線西鄉", lat: 24.131, lon: 120.467 },
+  { city: "彰化縣", town: "伸港鄉", lat: 24.146, lon: 120.486 },
+  { city: "彰化縣", town: "福興鄉", lat: 24.047, lon: 120.431 },
+  { city: "彰化縣", town: "花壇鄉", lat: 24.03, lon: 120.547 },
   { city: "南投縣", town: "南投市", lat: 23.908, lon: 120.6853 },
+  { city: "南投縣", town: "埔里鎮", lat: 23.966, lon: 120.968 },
+  { city: "南投縣", town: "草屯鎮", lat: 23.974, lon: 120.683 },
+  { city: "南投縣", town: "竹山鎮", lat: 23.757, lon: 120.675 },
+  { city: "南投縣", town: "集集鎮", lat: 23.829, lon: 120.785 },
+  { city: "南投縣", town: "名間鄉", lat: 23.838, lon: 120.703 },
+  { city: "南投縣", town: "鹿谷鄉", lat: 23.745, lon: 120.752 },
+  { city: "南投縣", town: "中寮鄉", lat: 23.879, lon: 120.766 },
+  { city: "南投縣", town: "魚池鄉", lat: 23.896, lon: 120.94 },
+  { city: "南投縣", town: "國姓鄉", lat: 24.041, lon: 120.858 },
+  { city: "南投縣", town: "水里鄉", lat: 23.811, lon: 120.855 },
+  { city: "南投縣", town: "信義鄉", lat: 23.567, lon: 120.987 },
+  { city: "南投縣", town: "仁愛鄉", lat: 24.023, lon: 121.133 },
   { city: "雲林縣", town: "斗六市", lat: 23.7119, lon: 120.5442 },
+  { city: "雲林縣", town: "斗南鎮", lat: 23.679, lon: 120.477 },
+  { city: "雲林縣", town: "虎尾鎮", lat: 23.708, lon: 120.433 },
+  { city: "雲林縣", town: "西螺鎮", lat: 23.798, lon: 120.462 },
+  { city: "雲林縣", town: "土庫鎮", lat: 23.677, lon: 120.393 },
+  { city: "雲林縣", town: "北港鎮", lat: 23.575, lon: 120.302 },
+  { city: "雲林縣", town: "古坑鄉", lat: 23.644, lon: 120.562 },
+  { city: "雲林縣", town: "大埤鄉", lat: 23.646, lon: 120.43 },
+  { city: "雲林縣", town: "莿桐鄉", lat: 23.761, lon: 120.502 },
+  { city: "雲林縣", town: "林內鄉", lat: 23.759, lon: 120.615 },
+  { city: "雲林縣", town: "二崙鄉", lat: 23.771, lon: 120.415 },
+  { city: "雲林縣", town: "崙背鄉", lat: 23.76, lon: 120.354 },
+  { city: "雲林縣", town: "麥寮鄉", lat: 23.754, lon: 120.252 },
+  { city: "雲林縣", town: "東勢鄉", lat: 23.675, lon: 120.253 },
+  { city: "雲林縣", town: "褒忠鄉", lat: 23.697, lon: 120.311 },
+  { city: "雲林縣", town: "臺西鄉", lat: 23.702, lon: 120.199 },
+  { city: "雲林縣", town: "元長鄉", lat: 23.649, lon: 120.316 },
+  { city: "雲林縣", town: "四湖鄉", lat: 23.637, lon: 120.226 },
+  { city: "雲林縣", town: "口湖鄉", lat: 23.583, lon: 120.185 },
+  { city: "雲林縣", town: "水林鄉", lat: 23.573, lon: 120.248 },
   { city: "嘉義市", town: "東區", lat: 23.4786, lon: 120.4586 },
+  { city: "嘉義市", town: "西區", lat: 23.479, lon: 120.434 },
+  { city: "嘉義縣", town: "太保市", lat: 23.459, lon: 120.332 },
+  { city: "嘉義縣", town: "朴子市", lat: 23.465, lon: 120.247 },
+  { city: "嘉義縣", town: "布袋鎮", lat: 23.378, lon: 120.158 },
+  { city: "嘉義縣", town: "大林鎮", lat: 23.604, lon: 120.454 },
+  { city: "嘉義縣", town: "民雄鄉", lat: 23.551, lon: 120.429 },
+  { city: "嘉義縣", town: "溪口鄉", lat: 23.603, lon: 120.395 },
+  { city: "嘉義縣", town: "新港鄉", lat: 23.555, lon: 120.348 },
+  { city: "嘉義縣", town: "六腳鄉", lat: 23.493, lon: 120.29 },
+  { city: "嘉義縣", town: "東石鄉", lat: 23.459, lon: 120.154 },
+  { city: "嘉義縣", town: "義竹鄉", lat: 23.336, lon: 120.244 },
+  { city: "嘉義縣", town: "鹿草鄉", lat: 23.408, lon: 120.309 },
+  { city: "嘉義縣", town: "水上鄉", lat: 23.429, lon: 120.398 },
+  { city: "嘉義縣", town: "中埔鄉", lat: 23.425, lon: 120.523 },
+  { city: "嘉義縣", town: "竹崎鄉", lat: 23.524, lon: 120.551 },
+  { city: "嘉義縣", town: "梅山鄉", lat: 23.545, lon: 120.644 },
+  { city: "嘉義縣", town: "番路鄉", lat: 23.465, lon: 120.555 },
+  { city: "嘉義縣", town: "大埔鄉", lat: 23.296, lon: 120.591 },
+  { city: "嘉義縣", town: "阿里山鄉", lat: 23.508, lon: 120.805 },
+  { city: "臺南市", town: "中西區", lat: 22.992, lon: 120.205 },
+  { city: "臺南市", town: "東區", lat: 22.981, lon: 120.228 },
+  { city: "臺南市", town: "南區", lat: 22.961, lon: 120.188 },
+  { city: "臺南市", town: "北區", lat: 23.01, lon: 120.207 },
   { city: "臺南市", town: "安平區", lat: 22.9997, lon: 120.1615 },
+  { city: "臺南市", town: "安南區", lat: 23.047, lon: 120.185 },
   { city: "臺南市", town: "永康區", lat: 23.0265, lon: 120.2531 },
+  { city: "臺南市", town: "歸仁區", lat: 22.967, lon: 120.294 },
+  { city: "臺南市", town: "新化區", lat: 23.038, lon: 120.311 },
+  { city: "臺南市", town: "左鎮區", lat: 23.057, lon: 120.407 },
+  { city: "臺南市", town: "玉井區", lat: 23.124, lon: 120.461 },
+  { city: "臺南市", town: "楠西區", lat: 23.179, lon: 120.485 },
+  { city: "臺南市", town: "南化區", lat: 23.043, lon: 120.477 },
+  { city: "臺南市", town: "仁德區", lat: 22.972, lon: 120.252 },
+  { city: "臺南市", town: "關廟區", lat: 22.963, lon: 120.328 },
+  { city: "臺南市", town: "龍崎區", lat: 22.966, lon: 120.371 },
+  { city: "臺南市", town: "官田區", lat: 23.194, lon: 120.315 },
+  { city: "臺南市", town: "麻豆區", lat: 23.182, lon: 120.248 },
+  { city: "臺南市", town: "佳里區", lat: 23.165, lon: 120.177 },
+  { city: "臺南市", town: "西港區", lat: 23.124, lon: 120.203 },
+  { city: "臺南市", town: "七股區", lat: 23.141, lon: 120.101 },
+  { city: "臺南市", town: "將軍區", lat: 23.199, lon: 120.127 },
+  { city: "臺南市", town: "學甲區", lat: 23.232, lon: 120.181 },
+  { city: "臺南市", town: "北門區", lat: 23.268, lon: 120.125 },
+  { city: "臺南市", town: "新營區", lat: 23.31, lon: 120.317 },
+  { city: "臺南市", town: "後壁區", lat: 23.366, lon: 120.362 },
+  { city: "臺南市", town: "白河區", lat: 23.351, lon: 120.415 },
+  { city: "臺南市", town: "東山區", lat: 23.326, lon: 120.404 },
+  { city: "臺南市", town: "六甲區", lat: 23.232, lon: 120.348 },
+  { city: "臺南市", town: "下營區", lat: 23.236, lon: 120.265 },
+  { city: "臺南市", town: "柳營區", lat: 23.278, lon: 120.312 },
+  { city: "臺南市", town: "鹽水區", lat: 23.32, lon: 120.267 },
+  { city: "臺南市", town: "善化區", lat: 23.132, lon: 120.297 },
+  { city: "臺南市", town: "大內區", lat: 23.119, lon: 120.359 },
+  { city: "臺南市", town: "山上區", lat: 23.104, lon: 120.351 },
+  { city: "臺南市", town: "新市區", lat: 23.078, lon: 120.295 },
+  { city: "臺南市", town: "安定區", lat: 23.121, lon: 120.237 },
+  { city: "高雄市", town: "新興區", lat: 22.631, lon: 120.31 },
+  { city: "高雄市", town: "前金區", lat: 22.627, lon: 120.294 },
+  { city: "高雄市", town: "苓雅區", lat: 22.622, lon: 120.313 },
+  { city: "高雄市", town: "鹽埕區", lat: 22.624, lon: 120.284 },
+  { city: "高雄市", town: "鼓山區", lat: 22.65, lon: 120.274 },
+  { city: "高雄市", town: "旗津區", lat: 22.589, lon: 120.289 },
   { city: "高雄市", town: "前鎮區", lat: 22.5908, lon: 120.3076 },
+  { city: "高雄市", town: "三民區", lat: 22.65, lon: 120.31 },
+  { city: "高雄市", town: "楠梓區", lat: 22.727, lon: 120.328 },
+  { city: "高雄市", town: "小港區", lat: 22.565, lon: 120.353 },
   { city: "高雄市", town: "左營區", lat: 22.6876, lon: 120.2944 },
+  { city: "高雄市", town: "仁武區", lat: 22.701, lon: 120.348 },
+  { city: "高雄市", town: "大社區", lat: 22.73, lon: 120.347 },
+  { city: "高雄市", town: "岡山區", lat: 22.797, lon: 120.296 },
+  { city: "高雄市", town: "路竹區", lat: 22.854, lon: 120.262 },
+  { city: "高雄市", town: "阿蓮區", lat: 22.883, lon: 120.327 },
+  { city: "高雄市", town: "田寮區", lat: 22.87, lon: 120.363 },
+  { city: "高雄市", town: "燕巢區", lat: 22.793, lon: 120.36 },
+  { city: "高雄市", town: "橋頭區", lat: 22.758, lon: 120.306 },
+  { city: "高雄市", town: "梓官區", lat: 22.761, lon: 120.259 },
+  { city: "高雄市", town: "彌陀區", lat: 22.783, lon: 120.248 },
+  { city: "高雄市", town: "永安區", lat: 22.818, lon: 120.225 },
+  { city: "高雄市", town: "湖內區", lat: 22.885, lon: 120.212 },
+  { city: "高雄市", town: "鳳山區", lat: 22.627, lon: 120.357 },
+  { city: "高雄市", town: "大寮區", lat: 22.606, lon: 120.395 },
+  { city: "高雄市", town: "林園區", lat: 22.508, lon: 120.395 },
+  { city: "高雄市", town: "鳥松區", lat: 22.659, lon: 120.364 },
+  { city: "高雄市", town: "大樹區", lat: 22.693, lon: 120.431 },
+  { city: "高雄市", town: "旗山區", lat: 22.888, lon: 120.483 },
+  { city: "高雄市", town: "美濃區", lat: 22.898, lon: 120.541 },
+  { city: "高雄市", town: "六龜區", lat: 22.998, lon: 120.633 },
+  { city: "高雄市", town: "甲仙區", lat: 23.083, lon: 120.591 },
+  { city: "高雄市", town: "杉林區", lat: 22.971, lon: 120.54 },
+  { city: "高雄市", town: "內門區", lat: 22.942, lon: 120.463 },
+  { city: "高雄市", town: "茂林區", lat: 22.886, lon: 120.663 },
+  { city: "高雄市", town: "桃源區", lat: 23.159, lon: 120.764 },
+  { city: "高雄市", town: "那瑪夏區", lat: 23.273, lon: 120.695 },
+  { city: "屏東縣", town: "屏東市", lat: 22.669, lon: 120.488 },
+  { city: "屏東縣", town: "潮州鎮", lat: 22.55, lon: 120.543 },
   { city: "屏東縣", town: "東港鎮", lat: 22.4653, lon: 120.4493 },
+  { city: "屏東縣", town: "恆春鎮", lat: 22.002, lon: 120.746 },
+  { city: "屏東縣", town: "萬丹鄉", lat: 22.59, lon: 120.485 },
+  { city: "屏東縣", town: "長治鄉", lat: 22.676, lon: 120.53 },
+  { city: "屏東縣", town: "麟洛鄉", lat: 22.65, lon: 120.527 },
+  { city: "屏東縣", town: "九如鄉", lat: 22.74, lon: 120.49 },
+  { city: "屏東縣", town: "里港鄉", lat: 22.779, lon: 120.495 },
+  { city: "屏東縣", town: "鹽埔鄉", lat: 22.755, lon: 120.574 },
+  { city: "屏東縣", town: "高樹鄉", lat: 22.827, lon: 120.601 },
+  { city: "屏東縣", town: "萬巒鄉", lat: 22.572, lon: 120.567 },
+  { city: "屏東縣", town: "內埔鄉", lat: 22.614, lon: 120.567 },
+  { city: "屏東縣", town: "竹田鄉", lat: 22.584, lon: 120.544 },
+  { city: "屏東縣", town: "新埤鄉", lat: 22.47, lon: 120.55 },
+  { city: "屏東縣", town: "枋寮鄉", lat: 22.366, lon: 120.595 },
+  { city: "屏東縣", town: "新園鄉", lat: 22.544, lon: 120.462 },
+  { city: "屏東縣", town: "崁頂鄉", lat: 22.515, lon: 120.515 },
+  { city: "屏東縣", town: "林邊鄉", lat: 22.434, lon: 120.515 },
+  { city: "屏東縣", town: "南州鄉", lat: 22.49, lon: 120.51 },
+  { city: "屏東縣", town: "佳冬鄉", lat: 22.418, lon: 120.548 },
+  { city: "屏東縣", town: "琉球鄉", lat: 22.34, lon: 120.37 },
+  { city: "屏東縣", town: "車城鄉", lat: 22.073, lon: 120.713 },
+  { city: "屏東縣", town: "滿州鄉", lat: 22.021, lon: 120.838 },
+  { city: "屏東縣", town: "枋山鄉", lat: 22.261, lon: 120.656 },
+  { city: "屏東縣", town: "三地門鄉", lat: 22.713, lon: 120.654 },
+  { city: "屏東縣", town: "霧臺鄉", lat: 22.745, lon: 120.733 },
+  { city: "屏東縣", town: "瑪家鄉", lat: 22.671, lon: 120.644 },
+  { city: "屏東縣", town: "泰武鄉", lat: 22.591, lon: 120.632 },
+  { city: "屏東縣", town: "來義鄉", lat: 22.526, lon: 120.633 },
+  { city: "屏東縣", town: "春日鄉", lat: 22.371, lon: 120.629 },
+  { city: "屏東縣", town: "獅子鄉", lat: 22.202, lon: 120.706 },
+  { city: "屏東縣", town: "牡丹鄉", lat: 22.126, lon: 120.775 },
+  { city: "宜蘭縣", town: "宜蘭市", lat: 24.757, lon: 121.753 },
   { city: "宜蘭縣", town: "羅東鎮", lat: 24.6786, lon: 121.7669 },
+  { city: "宜蘭縣", town: "蘇澳鎮", lat: 24.594, lon: 121.851 },
+  { city: "宜蘭縣", town: "頭城鎮", lat: 24.859, lon: 121.823 },
+  { city: "宜蘭縣", town: "礁溪鄉", lat: 24.821, lon: 121.771 },
+  { city: "宜蘭縣", town: "壯圍鄉", lat: 24.747, lon: 121.793 },
+  { city: "宜蘭縣", town: "員山鄉", lat: 24.742, lon: 121.723 },
+  { city: "宜蘭縣", town: "冬山鄉", lat: 24.635, lon: 121.792 },
+  { city: "宜蘭縣", town: "五結鄉", lat: 24.685, lon: 121.798 },
+  { city: "宜蘭縣", town: "三星鄉", lat: 24.661, lon: 121.654 },
+  { city: "宜蘭縣", town: "大同鄉", lat: 24.677, lon: 121.605 },
+  { city: "宜蘭縣", town: "南澳鄉", lat: 24.465, lon: 121.801 },
   { city: "花蓮縣", town: "花蓮市", lat: 23.9877, lon: 121.6014 },
+  { city: "花蓮縣", town: "鳳林鎮", lat: 23.745, lon: 121.448 },
+  { city: "花蓮縣", town: "玉里鎮", lat: 23.336, lon: 121.315 },
+  { city: "花蓮縣", town: "新城鄉", lat: 24.127, lon: 121.648 },
+  { city: "花蓮縣", town: "吉安鄉", lat: 23.973, lon: 121.568 },
+  { city: "花蓮縣", town: "壽豐鄉", lat: 23.871, lon: 121.509 },
+  { city: "花蓮縣", town: "光復鄉", lat: 23.669, lon: 121.424 },
+  { city: "花蓮縣", town: "豐濱鄉", lat: 23.602, lon: 121.521 },
+  { city: "花蓮縣", town: "瑞穗鄉", lat: 23.497, lon: 121.376 },
+  { city: "花蓮縣", town: "富里鄉", lat: 23.179, lon: 121.298 },
+  { city: "花蓮縣", town: "秀林鄉", lat: 24.158, lon: 121.62 },
+  { city: "花蓮縣", town: "萬榮鄉", lat: 23.715, lon: 121.319 },
+  { city: "花蓮縣", town: "卓溪鄉", lat: 23.346, lon: 121.183 },
   { city: "臺東縣", town: "臺東市", lat: 22.7553, lon: 121.15 },
+  { city: "臺東縣", town: "成功鎮", lat: 23.101, lon: 121.38 },
+  { city: "臺東縣", town: "關山鎮", lat: 23.048, lon: 121.163 },
+  { city: "臺東縣", town: "卑南鄉", lat: 22.783, lon: 121.087 },
+  { city: "臺東縣", town: "大武鄉", lat: 22.341, lon: 120.904 },
+  { city: "臺東縣", town: "太麻里鄉", lat: 22.615, lon: 121.007 },
+  { city: "臺東縣", town: "東河鄉", lat: 22.97, lon: 121.302 },
+  { city: "臺東縣", town: "長濱鄉", lat: 23.315, lon: 121.455 },
+  { city: "臺東縣", town: "鹿野鄉", lat: 22.914, lon: 121.136 },
+  { city: "臺東縣", town: "池上鄉", lat: 23.122, lon: 121.215 },
+  { city: "臺東縣", town: "綠島鄉", lat: 22.662, lon: 121.49 },
+  { city: "臺東縣", town: "蘭嶼鄉", lat: 22.057, lon: 121.551 },
+  { city: "臺東縣", town: "延平鄉", lat: 22.902, lon: 121.086 },
+  { city: "臺東縣", town: "海端鄉", lat: 23.102, lon: 121.017 },
+  { city: "臺東縣", town: "達仁鄉", lat: 22.295, lon: 120.884 },
+  { city: "臺東縣", town: "金峰鄉", lat: 22.595, lon: 120.952 },
   { city: "澎湖縣", town: "馬公市", lat: 23.5662, lon: 119.5666 },
-  { city: "金門縣", town: "金城鎮", lat: 24.4321, lon: 118.3186 }
+  { city: "澎湖縣", town: "湖西鄉", lat: 23.589, lon: 119.659 },
+  { city: "澎湖縣", town: "白沙鄉", lat: 23.666, lon: 119.598 },
+  { city: "澎湖縣", town: "西嶼鄉", lat: 23.6, lon: 119.508 },
+  { city: "澎湖縣", town: "望安鄉", lat: 23.358, lon: 119.504 },
+  { city: "澎湖縣", town: "七美鄉", lat: 23.208, lon: 119.424 },
+  { city: "金門縣", town: "金城鎮", lat: 24.4321, lon: 118.3186 },
+  { city: "金門縣", town: "金湖鎮", lat: 24.441, lon: 118.434 },
+  { city: "金門縣", town: "金沙鎮", lat: 24.488, lon: 118.413 },
+  { city: "金門縣", town: "金寧鄉", lat: 24.456, lon: 118.334 },
+  { city: "金門縣", town: "烈嶼鄉", lat: 24.429, lon: 118.247 },
+  { city: "金門縣", town: "烏坵鄉", lat: 24.992, lon: 119.453 },
+  { city: "連江縣", town: "南竿鄉", lat: 26.1543, lon: 119.9517 },
+  { city: "連江縣", town: "北竿鄉", lat: 26.224, lon: 119.998 },
+  { city: "連江縣", town: "莒光鄉", lat: 25.973, lon: 119.939 },
+  { city: "連江縣", town: "東引鄉", lat: 26.366, lon: 120.49 },
 ];
 
+
+const REGION_GROUPS = [
+  { name: "北部", cities: ["臺北市", "新北市", "基隆市", "桃園市", "新竹市", "新竹縣", "宜蘭縣"] },
+  { name: "中部", cities: ["苗栗縣", "臺中市", "彰化縣", "南投縣", "雲林縣"] },
+  { name: "南部", cities: ["嘉義市", "嘉義縣", "臺南市", "高雄市", "屏東縣"] },
+  { name: "東部", cities: ["花蓮縣", "臺東縣"] },
+  { name: "離島", cities: ["澎湖縣", "金門縣", "連江縣"] }
+];
+
+const CAMERA_REGIONS = [
+  { id: "all", label: "全台", lat: 23.7, lon: 120.96, radiusKm: 9999, routes: null },
+  { id: "north", label: "北部地區", lat: 25.05, lon: 121.5, radiusKm: 55, routes: null },
+  { id: "taoyuan-hsinchu", label: "桃竹苗地區", lat: 24.8, lon: 121.0, radiusKm: 55, routes: null },
+  { id: "central", label: "中部地區", lat: 24.15, lon: 120.67, radiusKm: 60, routes: null },
+  { id: "south", label: "南部地區", lat: 22.9, lon: 120.4, radiusKm: 70, routes: null },
+  { id: "east", label: "東部地區", lat: 23.8, lon: 121.5, radiusKm: 90, routes: null },
+  { id: "n1", label: "國道1號沿線", lat: 24.5, lon: 120.9, radiusKm: 9999, routes: ["N1", "N1H", "N1K"] },
+  { id: "n3", label: "國道3號沿線", lat: 24.5, lon: 120.9, radiusKm: 9999, routes: ["N3", "N3A", "N3K", "N3N"] },
+  { id: "n5", label: "國道5號沿線", lat: 24.8, lon: 121.8, radiusKm: 9999, routes: ["N5"] },
+  { id: "n2-n4", label: "國道2／4號沿線", lat: 24.9, lon: 121.2, radiusKm: 9999, routes: ["N2", "N2A", "N4"] },
+  { id: "n6-n8-n10", label: "國道6／8／10號沿線", lat: 23.8, lon: 120.6, radiusKm: 9999, routes: ["N6", "N8", "N10"] },
+  { id: "near-city", label: "靠近所選縣市（80km）", lat: null, lon: null, radiusKm: 80, routes: null }
+];
+
+const REGION_STORAGE_KEY = "weatherRegionPreferenceV1";
 const KNOWN_CITIES = new Set(CITY_LOCATIONS.map((city) => city.name));
 const WEATHER_CODE_LABEL = {
   0: "晴朗",
@@ -80,27 +408,30 @@ const WEATHER_CODE_LABEL = {
   99: "強雷雨伴冰雹"
 };
 
+const regionSelect = document.querySelector("#regionSelect");
 const citySelect = document.querySelector("#citySelect");
+const townshipSelect = document.querySelector("#townshipSelect");
+const locateBtn = document.querySelector("#locateBtn");
+const regionMemoryMeta = document.querySelector("#regionMemoryMeta");
 const refreshBtn = document.querySelector("#refreshBtn");
 const lastUpdated = document.querySelector("#lastUpdated");
 const weatherSummary = document.querySelector("#weatherSummary");
 const tempValue = document.querySelector("#tempValue");
+const feelValue = document.querySelector("#feelValue");
 const humidityValue = document.querySelector("#humidityValue");
 const windValue = document.querySelector("#windValue");
 const rainValue = document.querySelector("#rainValue");
+const rainProbValue = document.querySelector("#rainProbValue");
+const cloudValue = document.querySelector("#cloudValue");
+const pressureValue = document.querySelector("#pressureValue");
 const rainTimeline = document.querySelector("#rainTimeline");
 const closureMeta = document.querySelector("#closureMeta");
 const closureList = document.querySelector("#closureList");
 const cameraMeta = document.querySelector("#cameraMeta");
 const cameraList = document.querySelector("#cameraList");
 const cameraKeyword = document.querySelector("#cameraKeyword");
+const cameraRegionSelect = document.querySelector("#cameraRegionSelect");
 const mapLayerList = document.querySelector("#mapLayerList");
-const townshipSelect = document.querySelector("#townshipSelect");
-const townshipSummary = document.querySelector("#townshipSummary");
-const townshipFeelValue = document.querySelector("#townshipFeelValue");
-const townshipRainProbValue = document.querySelector("#townshipRainProbValue");
-const townshipCloudValue = document.querySelector("#townshipCloudValue");
-const townshipPressureValue = document.querySelector("#townshipPressureValue");
 const airSummary = document.querySelector("#airSummary");
 const aqiValue = document.querySelector("#aqiValue");
 const pm25Value = document.querySelector("#pm25Value");
@@ -108,6 +439,8 @@ const pm10Value = document.querySelector("#pm10Value");
 const ozoneValue = document.querySelector("#ozoneValue");
 const typhoonRiskBadge = document.querySelector("#typhoonRiskBadge");
 const typhoonAnalysisList = document.querySelector("#typhoonAnalysisList");
+const windyEmbed = document.querySelector("#windyEmbed");
+const windyExternalLink = document.querySelector("#windyExternalLink");
 const aiAlertList = document.querySelector("#aiAlertList");
 const rainProjection = document.querySelector("#rainProjection");
 const subscriptionForm = document.querySelector("#subscriptionForm");
@@ -158,32 +491,187 @@ const appState = {
 let autoRefreshTimer = null;
 let countdownTimer = null;
 
-function initCitySelect() {
-  CITY_LOCATIONS.forEach((city) => {
+function getRegionForCity(cityName) {
+  return REGION_GROUPS.find((region) => region.cities.includes(cityName))?.name ?? REGION_GROUPS[0].name;
+}
+
+function getSelectedTownship() {
+  const city = citySelect.value;
+  const town = townshipSelect.value;
+  return TOWNSHIP_LOCATIONS.find((item) => item.city === city && item.town === town) ?? null;
+}
+
+function getActiveWeatherLocation() {
+  const township = getSelectedTownship();
+  if (township) {
+    return {
+      label: `${township.city}${township.town}`,
+      cityName: township.city,
+      townName: township.town,
+      lat: township.lat,
+      lon: township.lon
+    };
+  }
+  const city = CITY_LOCATIONS.find((item) => item.name === citySelect.value);
+  return city
+    ? { label: city.name, cityName: city.name, townName: "", lat: city.lat, lon: city.lon }
+    : null;
+}
+
+function saveRegionPreference() {
+  const payload = {
+    region: regionSelect.value,
+    city: citySelect.value,
+    town: townshipSelect.value,
+    savedAt: new Date().toISOString()
+  };
+  localStorage.setItem(REGION_STORAGE_KEY, JSON.stringify(payload));
+  regionMemoryMeta.textContent = `區域偏好：已記住 ${payload.region}／${payload.city}${payload.town}（下次開啟自動套用）`;
+}
+
+function readRegionPreference() {
+  try {
+    const raw = localStorage.getItem(REGION_STORAGE_KEY);
+    if (!raw) {
+      return null;
+    }
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
+function fillRegionSelect() {
+  regionSelect.innerHTML = "";
+  REGION_GROUPS.forEach((region) => {
     const option = document.createElement("option");
-    option.value = city.name;
-    option.textContent = city.name;
+    option.value = region.name;
+    option.textContent = region.name;
+    regionSelect.append(option);
+  });
+}
+
+function fillCitySelect(regionName, preferredCity) {
+  const region = REGION_GROUPS.find((item) => item.name === regionName) ?? REGION_GROUPS[0];
+  citySelect.innerHTML = "";
+  region.cities.forEach((cityName) => {
+    const option = document.createElement("option");
+    option.value = cityName;
+    option.textContent = cityName;
     citySelect.append(option);
   });
-  citySelect.value = "臺北市";
+  if (preferredCity && region.cities.includes(preferredCity)) {
+    citySelect.value = preferredCity;
+  } else {
+    citySelect.value = region.cities[0];
+  }
 }
 
-function initTownshipSelect() {
+function fillTownshipSelect(cityName, preferredTown) {
+  const towns = TOWNSHIP_LOCATIONS.filter((item) => item.city === cityName);
   townshipSelect.innerHTML = "";
-  TOWNSHIP_LOCATIONS.forEach((item, index) => {
+  towns.forEach((item) => {
     const option = document.createElement("option");
-    option.value = String(index);
-    option.textContent = `${item.city}・${item.town}`;
+    option.value = item.town;
+    option.textContent = item.town;
     townshipSelect.append(option);
   });
-  setTownshipByCity(citySelect.value);
+  if (preferredTown && towns.some((item) => item.town === preferredTown)) {
+    townshipSelect.value = preferredTown;
+  } else if (towns.length) {
+    townshipSelect.value = towns[0].town;
+  }
 }
 
-function setTownshipByCity(cityName) {
-  const matchIndex = TOWNSHIP_LOCATIONS.findIndex((item) => item.city === cityName);
-  if (matchIndex >= 0) {
-    townshipSelect.value = String(matchIndex);
+function applyRegionSelection(regionName, cityName, townName, { persist = true } = {}) {
+  const region = regionName || getRegionForCity(cityName || "臺北市");
+  regionSelect.value = region;
+  fillCitySelect(region, cityName);
+  fillTownshipSelect(citySelect.value, townName);
+  if (persist) {
+    saveRegionPreference();
   }
+}
+
+function initRegionSelectors() {
+  fillRegionSelect();
+  const saved = readRegionPreference();
+  if (saved?.city) {
+    applyRegionSelection(saved.region || getRegionForCity(saved.city), saved.city, saved.town, {
+      persist: false
+    });
+    regionMemoryMeta.textContent = `區域偏好：已套用上次選取 ${saved.region || getRegionForCity(saved.city)}／${saved.city}${saved.town || ""}`;
+  } else {
+    applyRegionSelection("北部", "臺北市", "信義區", { persist: false });
+    regionMemoryMeta.textContent = "區域偏好：尚未儲存（選取後會自動記住）";
+  }
+}
+
+function initCameraRegionSelect() {
+  cameraRegionSelect.innerHTML = "";
+  CAMERA_REGIONS.forEach((region) => {
+    const option = document.createElement("option");
+    option.value = region.id;
+    option.textContent = region.label;
+    cameraRegionSelect.append(option);
+  });
+  cameraRegionSelect.value = "near-city";
+}
+
+function findNearestTownship(lat, lon) {
+  let best = null;
+  let bestDistance = Infinity;
+  TOWNSHIP_LOCATIONS.forEach((item) => {
+    const distance = getDistanceKm(lat, lon, item.lat, item.lon);
+    if (distance < bestDistance) {
+      bestDistance = distance;
+      best = item;
+    }
+  });
+  return best ? { ...best, distanceKm: bestDistance } : null;
+}
+
+function locateByDevice() {
+  if (!navigator.geolocation) {
+    regionMemoryMeta.textContent = "區域偏好：此裝置不支援衛星定位";
+    return;
+  }
+  locateBtn.disabled = true;
+  locateBtn.textContent = "定位中...";
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      const { latitude, longitude } = position.coords;
+      const nearest = findNearestTownship(latitude, longitude);
+      if (!nearest) {
+        regionMemoryMeta.textContent = "區域偏好：定位成功，但找不到對應鄉鎮";
+        locateBtn.disabled = false;
+        locateBtn.textContent = "依設備定位選區";
+        return;
+      }
+      applyRegionSelection(getRegionForCity(nearest.city), nearest.city, nearest.town, { persist: true });
+      regionMemoryMeta.textContent = `區域偏好：定位完成，已選 ${nearest.city}${nearest.town}（距離約 ${nearest.distanceKm.toFixed(1)} km）`;
+      locateBtn.disabled = false;
+      locateBtn.textContent = "依設備定位選區";
+      performFullRefresh("manual");
+      renderCameraList();
+      updateMapForCityChange();
+    },
+    (error) => {
+      regionMemoryMeta.textContent = `區域偏好：定位失敗（${error.message}）`;
+      locateBtn.disabled = false;
+      locateBtn.textContent = "依設備定位選區";
+    },
+    { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 }
+  );
+}
+
+function getCameraRouteCode(cameraId = "") {
+  const match = String(cameraId).match(/CCTV-([A-Z0-9]+)-/i);
+  return match ? match[1].toUpperCase() : "";
+}
+
+function getSelectedCameraRegion() {
+  return CAMERA_REGIONS.find((item) => item.id === cameraRegionSelect.value) ?? CAMERA_REGIONS[0];
 }
 
 function formatDateTime(value) {
@@ -231,8 +719,13 @@ function getFilteredSortedCameras() {
     return [];
   }
   const city = CITY_LOCATIONS.find((item) => item.name === citySelect.value);
+  const cameraRegion = getSelectedCameraRegion();
   const keyword = cameraKeyword.value.trim().toLowerCase();
   const normalize = (text) => text.toLowerCase().replaceAll("臺", "台");
+  const focusLat =
+    cameraRegion.id === "near-city" ? city?.lat : cameraRegion.lat ?? city?.lat;
+  const focusLon =
+    cameraRegion.id === "near-city" ? city?.lon : cameraRegion.lon ?? city?.lon;
 
   return cameraDataset.cameras
     .filter((camera) => {
@@ -250,10 +743,28 @@ function getFilteredSortedCameras() {
       const haystack = normalize(`${camera.id ?? ""} ${camera.stakenumber ?? ""}`);
       return haystack.includes(normalize(keyword));
     })
-    .map((camera) => ({
-      ...camera,
-      distanceKm: city ? getDistanceKm(city.lat, city.lon, Number(camera.gisy), Number(camera.gisx)) : Infinity
-    }))
+    .filter((camera) => {
+      const routeCode = getCameraRouteCode(camera.id);
+      if (cameraRegion.routes?.length) {
+        return cameraRegion.routes.includes(routeCode);
+      }
+      if (!Number.isFinite(focusLat) || !Number.isFinite(focusLon)) {
+        return true;
+      }
+      const distanceKm = getDistanceKm(focusLat, focusLon, Number(camera.gisy), Number(camera.gisx));
+      return distanceKm <= cameraRegion.radiusKm;
+    })
+    .map((camera) => {
+      const distanceKm =
+        Number.isFinite(focusLat) && Number.isFinite(focusLon)
+          ? getDistanceKm(focusLat, focusLon, Number(camera.gisy), Number(camera.gisx))
+          : Infinity;
+      return {
+        ...camera,
+        distanceKm,
+        routeCode: getCameraRouteCode(camera.id)
+      };
+    })
     .sort((a, b) => a.distanceKm - b.distanceKm);
 }
 
@@ -278,15 +789,15 @@ function renderRainTimeline(hours) {
   });
 }
 
-async function fetchWeather(cityName) {
-  const city = CITY_LOCATIONS.find((item) => item.name === cityName);
-  if (!city) {
-    throw new Error("找不到指定縣市座標");
+async function fetchWeather() {
+  const location = getActiveWeatherLocation();
+  if (!location) {
+    throw new Error("找不到指定鄉鎮座標");
   }
 
   const endpoint = new URL("https://api.open-meteo.com/v1/forecast");
-  endpoint.searchParams.set("latitude", city.lat.toString());
-  endpoint.searchParams.set("longitude", city.lon.toString());
+  endpoint.searchParams.set("latitude", location.lat.toString());
+  endpoint.searchParams.set("longitude", location.lon.toString());
   endpoint.searchParams.set(
     "current",
     "temperature_2m,relative_humidity_2m,precipitation,weather_code,wind_speed_10m,wind_gusts_10m,pressure_msl,apparent_temperature,cloud_cover"
@@ -317,21 +828,32 @@ async function fetchWeather(cityName) {
   const next12Hours = allHours.slice(startIndex, startIndex + 12);
   const next24Hours = allHours.slice(startIndex, startIndex + 24);
   const rain24 = next24Hours.reduce((sum, item) => sum + item.precipitation, 0);
+  const rainProbIndex = findNearestTimeIndex(payload.hourly.time, current.time);
+  const rainProb = Number(payload.hourly.precipitation_probability[rainProbIndex] ?? 0);
 
-  weatherSummary.textContent = `${cityName}・${WEATHER_CODE_LABEL[current.weather_code] ?? "天氣狀態更新中"}`;
+  weatherSummary.textContent = `${location.label}・${WEATHER_CODE_LABEL[current.weather_code] ?? "天氣狀態更新中"}`;
   tempValue.textContent = `${Math.round(current.temperature_2m)}°C`;
+  feelValue.textContent = `${Math.round(current.apparent_temperature)}°C`;
   humidityValue.textContent = `${Math.round(current.relative_humidity_2m)}%`;
   windValue.textContent = `${Math.round(current.wind_speed_10m)} km/h`;
   rainValue.textContent = `${current.precipitation.toFixed(1)} mm`;
+  rainProbValue.textContent = `${Math.round(rainProb)}%`;
+  cloudValue.textContent = `${Math.round(current.cloud_cover)}%`;
+  pressureValue.textContent = `${Math.round(current.pressure_msl)} hPa`;
   rainProjection.textContent = `未來 24 小時累積降雨預估：${rain24.toFixed(1)} mm`;
   renderRainTimeline(next12Hours);
 
   appState.weather = {
-    cityName,
+    cityName: location.cityName,
+    townName: location.townName,
+    label: location.label,
+    lat: location.lat,
+    lon: location.lon,
     current,
     next12Hours,
     next24Hours,
-    rain24
+    rain24,
+    rainProb
   };
 }
 
@@ -445,48 +967,14 @@ async function fetchClosureNotices() {
   }
 }
 
-async function fetchTownshipWeather() {
-  const selectedIndex = Number(townshipSelect.value);
-  const target = TOWNSHIP_LOCATIONS[selectedIndex];
-  if (!target) {
-    townshipSummary.textContent = "找不到鄉鎮資料";
-    return;
-  }
-
-  const endpoint = new URL("https://api.open-meteo.com/v1/forecast");
-  endpoint.searchParams.set("latitude", String(target.lat));
-  endpoint.searchParams.set("longitude", String(target.lon));
-  endpoint.searchParams.set(
-    "current",
-    "temperature_2m,apparent_temperature,pressure_msl,cloud_cover,weather_code"
-  );
-  endpoint.searchParams.set("hourly", "precipitation_probability");
-  endpoint.searchParams.set("timezone", "Asia/Taipei");
-  endpoint.searchParams.set("forecast_days", "2");
-
-  const response = await fetch(endpoint.toString());
-  if (!response.ok) {
-    throw new Error(`鄉鎮資料讀取失敗：${response.status}`);
-  }
-  const payload = await response.json();
-  const index = findNearestTimeIndex(payload.hourly.time, payload.current.time);
-  const rainProb = Number(payload.hourly.precipitation_probability[index] ?? 0);
-
-  townshipSummary.textContent = `${target.city}${target.town}・${WEATHER_CODE_LABEL[payload.current.weather_code] ?? "天氣更新中"}`;
-  townshipFeelValue.textContent = `${Math.round(payload.current.apparent_temperature)}°C`;
-  townshipRainProbValue.textContent = `${Math.round(rainProb)}%`;
-  townshipCloudValue.textContent = `${Math.round(payload.current.cloud_cover)}%`;
-  townshipPressureValue.textContent = `${Math.round(payload.current.pressure_msl)} hPa`;
-}
-
-async function fetchAirQuality(cityName) {
-  const city = CITY_LOCATIONS.find((item) => item.name === cityName);
-  if (!city) {
-    throw new Error("找不到空品縣市座標");
+async function fetchAirQuality() {
+  const location = getActiveWeatherLocation();
+  if (!location) {
+    throw new Error("找不到空品鄉鎮座標");
   }
   const endpoint = new URL("https://air-quality-api.open-meteo.com/v1/air-quality");
-  endpoint.searchParams.set("latitude", String(city.lat));
-  endpoint.searchParams.set("longitude", String(city.lon));
+  endpoint.searchParams.set("latitude", String(location.lat));
+  endpoint.searchParams.set("longitude", String(location.lon));
   endpoint.searchParams.set("hourly", "us_aqi,pm2_5,pm10,ozone");
   endpoint.searchParams.set("timezone", "Asia/Taipei");
   endpoint.searchParams.set("forecast_days", "2");
@@ -503,14 +991,15 @@ async function fetchAirQuality(cityName) {
   const pm10 = Number(payload.hourly.pm10[index] ?? 0);
   const ozone = Number(payload.hourly.ozone[index] ?? 0);
 
-  airSummary.textContent = `${cityName}・${getAqiLabel(aqi)}`;
+  airSummary.textContent = `${location.label}・${getAqiLabel(aqi)}`;
   aqiValue.textContent = `${Math.round(aqi)}`;
   pm25Value.textContent = `${pm25.toFixed(1)} μg/m³`;
   pm10Value.textContent = `${pm10.toFixed(1)} μg/m³`;
   ozoneValue.textContent = `${ozone.toFixed(1)} μg/m³`;
 
   appState.airQuality = {
-    cityName,
+    cityName: location.cityName,
+    label: location.label,
     aqi,
     pm25,
     pm10,
@@ -559,11 +1048,59 @@ function parseTyphoonOfficialText(newsMarkdown, warnMarkdown) {
     hasWarning,
     typhoonCount,
     name: nameMatch ? `${nameMatch[1]} ${nameMatch[2]}` : null,
+    lat: detailMatch ? Number(detailMatch[1]) : null,
+    lon: detailMatch ? Number(detailMatch[2]) : null,
     pressure: detailMatch ? Number(detailMatch[3]) : null,
     maxWindMs: detailMatch ? Number(detailMatch[4]) : null,
     gustMs: detailMatch ? Number(detailMatch[5]) : null,
     messages
   };
+}
+
+function buildWindyEmbedUrl(lat, lon, zoom = 6) {
+  const params = new URLSearchParams({
+    lat: Number(lat).toFixed(3),
+    lon: Number(lon).toFixed(3),
+    detailLat: Number(lat).toFixed(3),
+    detailLon: Number(lon).toFixed(3),
+    width: "650",
+    height: "450",
+    zoom: String(zoom),
+    level: "surface",
+    overlay: "wind",
+    product: "ecmwf",
+    menu: "",
+    message: "true",
+    marker: "true",
+    calendar: "12",
+    pressure: "true",
+    type: "map",
+    location: "coordinates",
+    detail: "true",
+    metricWind: "default",
+    metricTemp: "default",
+    radarRange: "-1"
+  });
+  return `https://embed.windy.com/embed2.html?${params.toString()}`;
+}
+
+function updateWindyTrackEmbed() {
+  if (!windyEmbed) {
+    return;
+  }
+  const official = appState.typhoonOfficial;
+  const location = getActiveWeatherLocation();
+  const hasTyphoonCenter = Number.isFinite(official?.lat) && Number.isFinite(official?.lon);
+  const lat = hasTyphoonCenter ? official.lat : location?.lat ?? 23.7;
+  const lon = hasTyphoonCenter ? official.lon : location?.lon ?? 121.0;
+  const zoom = hasTyphoonCenter ? 5 : 6;
+  const embedUrl = buildWindyEmbedUrl(lat, lon, zoom);
+  if (windyEmbed.getAttribute("src") !== embedUrl) {
+    windyEmbed.src = embedUrl;
+  }
+  if (windyExternalLink) {
+    windyExternalLink.href = `https://www.windy.com/?${lat.toFixed(3)},${lon.toFixed(3)},${zoom},i:pressure`;
+  }
 }
 
 function calculateTyphoonRisk() {
@@ -617,6 +1154,7 @@ function renderTyphoonAnalysis() {
     typhoonRiskBadge.textContent = "風險等級：資料不足";
     typhoonRiskBadge.className = "risk-badge risk-low";
     typhoonAnalysisList.innerHTML = "<li>等待氣象資料。</li>";
+    updateWindyTrackEmbed();
     return;
   }
   appState.typhoon = result;
@@ -629,11 +1167,12 @@ function renderTyphoonAnalysis() {
     item.textContent = message;
     typhoonAnalysisList.append(item);
   });
+  updateWindyTrackEmbed();
 }
 
 function getNearbyFloodWarnings() {
-  const city = CITY_LOCATIONS.find((item) => item.name === citySelect.value);
-  if (!city || !appState.floodLivePoints.length) {
+  const location = getActiveWeatherLocation();
+  if (!location || !appState.floodLivePoints.length) {
     return [];
   }
   return appState.floodLivePoints
@@ -642,7 +1181,7 @@ function getNearbyFloodWarnings() {
       level: point.level,
       waterDepthCm: point.depthCm,
       updatedAt: point.updatedAt,
-      distanceKm: getDistanceKm(city.lat, city.lon, point.lat, point.lon)
+      distanceKm: getDistanceKm(location.lat, location.lon, point.lat, point.lon)
     }))
     .filter((row) => row.distanceKm <= 80)
     .sort((a, b) => b.level - a.level || a.distanceKm - b.distanceKm);
@@ -761,10 +1300,11 @@ function renderCameraList() {
   const rows = getFilteredSortedCameras().slice(0, 12);
 
   if (!rows.length) {
-    cameraList.innerHTML = `<p class="status-warn">查無符合條件的監控點位，請更換關鍵字。</p>`;
+    cameraList.innerHTML = `<p class="status-warn">查無符合條件的監控點位，請更換地區範圍或關鍵字。</p>`;
     return;
   }
 
+  const cameraRegion = getSelectedCameraRegion();
   rows.forEach((camera) => {
     const card = document.createElement("article");
     card.className = "camera-item";
@@ -777,7 +1317,7 @@ function renderCameraList() {
       <div class="camera-body">
         <h3>${camera.id}</h3>
         <p>${safeStake}</p>
-        <p>距離所選縣市中心：約 ${distance}</p>
+        <p>地區範圍：${cameraRegion.label}｜距離中心：約 ${distance}</p>
         <a href="${streamUrl}" target="_blank" rel="noopener noreferrer">開啟官方即時影像</a>
       </div>
     `;
@@ -1078,21 +1618,21 @@ function updateCityFocusLayer() {
   if (!warningMap) {
     return;
   }
-  const city = CITY_LOCATIONS.find((item) => item.name === citySelect.value);
+  const location = getActiveWeatherLocation();
   if (mapCityFocusLayer && warningMap.hasLayer(mapCityFocusLayer)) {
     warningMap.removeLayer(mapCityFocusLayer);
   }
-  if (!city) {
+  if (!location) {
     return;
   }
-  mapCityFocusLayer = L.circle([city.lat, city.lon], {
+  mapCityFocusLayer = L.circle([location.lat, location.lon], {
     pane: "focusPane",
-    radius: 15000,
+    radius: 12000,
     color: "#00b4d8",
     weight: 2,
     fillColor: "#00b4d8",
     fillOpacity: 0.09
-  }).bindTooltip(`${city.name} 焦點區`);
+  }).bindTooltip(`${location.label} 焦點區`);
   syncMapLayerVisibility("city-focus");
 }
 
@@ -1122,7 +1662,7 @@ function updateCameraMapLayer() {
         `
           <strong>${camera.id}</strong><br/>
           ${camera.stakenumber ?? "未提供里程資訊"}<br/>
-          距離所選縣市：約 ${camera.distanceKm.toFixed(1)} km<br/>
+          距離篩選中心：約 ${camera.distanceKm.toFixed(1)} km<br/>
           <a href="${camera.html}" target="_blank" rel="noopener noreferrer">開啟官方即時影像</a>
         `
       );
@@ -1135,9 +1675,9 @@ function updateMapForCityChange() {
   if (!warningMap) {
     return;
   }
-  const city = CITY_LOCATIONS.find((item) => item.name === citySelect.value);
-  if (city) {
-    warningMap.setView([city.lat, city.lon], 9, { animate: true });
+  const location = getActiveWeatherLocation();
+  if (location) {
+    warningMap.setView([location.lat, location.lon], 10, { animate: true });
   }
   updateCityFocusLayer();
   updateCameraMapLayer();
@@ -1256,10 +1796,9 @@ async function performFullRefresh(triggerSource) {
   }
   try {
     await Promise.all([
-      fetchWeather(citySelect.value),
+      fetchWeather(),
       fetchClosureNotices(),
-      fetchTownshipWeather(),
-      fetchAirQuality(citySelect.value),
+      fetchAirQuality(),
       fetchTyphoonOfficial().catch(() => {
         appState.typhoonOfficial = null;
       }),
@@ -1284,11 +1823,31 @@ async function performFullRefresh(triggerSource) {
   }
 }
 
-citySelect.addEventListener("change", () => {
-  setTownshipByCity(citySelect.value);
+regionSelect.addEventListener("change", () => {
+  fillCitySelect(regionSelect.value);
+  fillTownshipSelect(citySelect.value);
+  saveRegionPreference();
   performFullRefresh("manual");
   renderCameraList();
   updateMapForCityChange();
+});
+
+citySelect.addEventListener("change", () => {
+  fillTownshipSelect(citySelect.value);
+  saveRegionPreference();
+  performFullRefresh("manual");
+  renderCameraList();
+  updateMapForCityChange();
+});
+
+townshipSelect.addEventListener("change", () => {
+  saveRegionPreference();
+  performFullRefresh("manual");
+  updateMapForCityChange();
+});
+
+locateBtn.addEventListener("click", () => {
+  locateByDevice();
 });
 
 refreshBtn.addEventListener("click", () => {
@@ -1300,10 +1859,9 @@ cameraKeyword.addEventListener("input", () => {
   updateCameraMapLayer();
 });
 
-townshipSelect.addEventListener("change", () => {
-  fetchTownshipWeather().catch((error) => {
-    townshipSummary.textContent = `鄉鎮資料更新失敗：${error.message}`;
-  });
+cameraRegionSelect.addEventListener("change", () => {
+  renderCameraList();
+  updateCameraMapLayer();
 });
 
 subscriptionForm.addEventListener("submit", async (event) => {
@@ -1328,10 +1886,11 @@ autoRefreshToggle.addEventListener("click", () => {
   updateAutoRefreshMeta();
 });
 
-initCitySelect();
-initTownshipSelect();
+initRegionSelectors();
+initCameraRegionSelect();
 loadSubscription();
 renderSubscriptionStatus();
+updateWindyTrackEmbed();
 performFullRefresh("manual");
 fetchRoadCameras();
 initWarningMap();
