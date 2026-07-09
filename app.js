@@ -497,6 +497,7 @@ const AUTO_REFRESH_OPTIONS = {
 const AUTO_REFRESH_STORAGE_KEY = "autoRefreshIntervalMinutesV1";
 const DEFAULT_AUTO_REFRESH_MINUTES = 15;
 const SUBSCRIPTION_STORAGE_KEY = "weatherMemberSubscriptionV1";
+const SUBSCRIPTION_TOPIC_ORDER = ["closure", "flood", "power-outage", "weather", "air"];
 const RECOVERY_STATE_STORAGE_KEY = "subscriptionRecoveryStateV1";
 const FLOOD_LATEST_API =
   "https://opendata.wra.gov.tw/api/v2/1b991bbb-ad85-4e7a-b931-06ce8749d3ed?format=JSON";
@@ -2130,7 +2131,7 @@ function renderSubscriptionStatus(message) {
         : Notification.permission === "denied"
           ? "通知權限已封鎖"
           : "尚未允許瀏覽器通知";
-  subscriptionStatus.textContent = `已訂閱 ${appState.subscription.email}（地區：${appState.subscription.city || "未指定"}｜主題：${appState.subscription.topics.join("、")}｜${permissionLabel}）`;
+  subscriptionStatus.textContent = `已訂閱 ${appState.subscription.email}（地區：${appState.subscription.city || "未指定"}｜主題：${getSelectedSubscriptionTopics().join("、")}｜${permissionLabel}）`;
 }
 
 async function ensureNotificationPermission() {
@@ -2244,31 +2245,52 @@ function sleep(ms) {
   });
 }
 
-function buildSubscriptionNotificationMessages() {
+function getSelectedSubscriptionTopics() {
   const topics = new Set(appState.subscription?.topics ?? []);
-  const messages = [];
+  return SUBSCRIPTION_TOPIC_ORDER.filter((topic) => topics.has(topic));
+}
 
-  if (topics.has("closure")) {
-    messages.push(getSubscriptionClosureMessage());
+function getSubscriptionFloodMessage() {
+  const locationLabel = getSubscriptionLocationLabel();
+  const location = getSubscriptionWeatherLocation();
+  const nearbyFloods = location ? getNearbyFloodPoints(location) : [];
+  const warningFloods = nearbyFloods.filter((point) => isFloodWarningDepth(point.depthCm));
+  if (warningFloods.length) {
+    const top = warningFloods[0];
+    return `【積淹水警示】${top.areaName} 距離約 ${top.distanceKm.toFixed(1)} km，水深 ${top.waterDepthCm} cm（等級 ${top.level}）。`;
   }
-  if (topics.has("flood")) {
-    const floodAlert = appState.aiAlerts.find((text) => text.includes("積淹水警示"));
-    if (floodAlert) {
-      messages.push(floodAlert);
-    } else if (appState.floodMetaText) {
-      messages.push(`【積淹水監測】${appState.floodMetaText}`);
-    }
+  if (nearbyFloods.length) {
+    const top = nearbyFloods[0];
+    return `【積淹水監測】${locationLabel} 周邊 ${FLOOD_NOTIFY_RADIUS_KM} 公里內有 ${nearbyFloods.length} 處感測積水，最近 ${top.areaName} 水深 ${top.waterDepthCm} cm（未達警戒）。`;
   }
-  if (topics.has("power-outage")) {
-    messages.push(getSubscriptionPowerOutageMessage());
+  return `【積淹水監測】${locationLabel} 周邊 ${FLOOD_NOTIFY_RADIUS_KM} 公里內目前無積淹水警戒。`;
+}
+
+function getSubscriptionWeatherMessage() {
+  const locationLabel = getSubscriptionLocationLabel();
+  if (!appState.weather?.current) {
+    return `【即時天氣】${locationLabel} 天氣資料暫時無法讀取。`;
   }
-  if (topics.has("weather") && appState.weather) {
-    messages.push(`【即時天氣】${appState.weather.label} ${Math.round(appState.weather.current.temperature_2m)}°C，降雨機率 ${Math.round(appState.weather.rainProb ?? 0)}%。`);
+  return `【即時天氣】${appState.weather.label} ${Math.round(appState.weather.current.temperature_2m)}°C，降雨機率 ${Math.round(appState.weather.rainProb ?? 0)}%。`;
+}
+
+function getSubscriptionAirQualityMessage() {
+  const locationLabel = getSubscriptionLocationLabel();
+  if (!appState.airQuality) {
+    return `【空氣品質】${locationLabel} 空氣品質資料暫時無法讀取。`;
   }
-  if (topics.has("air") && appState.airQuality) {
-    messages.push(`【空氣品質】AQI ${Math.round(appState.airQuality.aqi)}，${getAqiLabel(appState.airQuality.aqi)}。`);
-  }
-  return messages;
+  return `【空氣品質】${locationLabel} AQI ${Math.round(appState.airQuality.aqi)}，${getAqiLabel(appState.airQuality.aqi)}。`;
+}
+
+function buildSubscriptionNotificationMessages() {
+  const topicBuilders = {
+    closure: getSubscriptionClosureMessage,
+    flood: getSubscriptionFloodMessage,
+    "power-outage": getSubscriptionPowerOutageMessage,
+    weather: getSubscriptionWeatherMessage,
+    air: getSubscriptionAirQualityMessage
+  };
+  return getSelectedSubscriptionTopics().map((topic) => topicBuilders[topic]());
 }
 
 async function sendRecoveryNotifications(messages) {
@@ -2300,41 +2322,32 @@ async function sendSubscriptionNotification({ force = false } = {}) {
   }
   const messages = buildSubscriptionNotificationMessages();
   if (!messages.length) {
-    renderSubscriptionStatus("目前沒有符合所選主題的可推播內容。");
+    renderSubscriptionStatus("請先勾選至少一項訂閱主題。");
     return false;
   }
   if (!force && Date.now() - appState.lastNotifiedAt < getAutoRefreshIntervalMs() - 5000) {
     return false;
   }
 
-  const closureMessages = messages.filter((message) => message.includes("停班停課"));
-  const otherMessages = messages.filter((message) => !message.includes("停班停課"));
+  const body = messages.join("\n");
+  const hasClosureAlert = messages.some((message) => isClosureAlertMessage(message));
+  const repeatCount = hasClosureAlert ? 3 : 1;
 
-  for (const closureMessage of closureMessages) {
-    const repeatCount = isClosureAlertMessage(closureMessage) ? 3 : 1;
-    for (let repeat = 0; repeat < repeatCount; repeat += 1) {
-      const suffix = repeatCount > 1 ? `（第 ${repeat + 1}/${repeatCount} 次提醒）` : "";
-      new Notification("預報訂閱通知", {
-        body: `${closureMessage}${suffix}`,
-        tag: `closure-alert-${repeat}-${Date.now()}`
-      });
-      if (repeat < repeatCount - 1) {
-        await sleep(1800);
-      }
+  for (let repeat = 0; repeat < repeatCount; repeat += 1) {
+    const suffix = repeatCount > 1 ? `\n（第 ${repeat + 1}/${repeatCount} 次提醒）` : "";
+    new Notification("預報訂閱通知", {
+      body: `${body}${suffix}`,
+      tag: `subscription-alert-${repeat}-${Date.now()}`
+    });
+    if (repeat < repeatCount - 1) {
+      await sleep(1800);
     }
   }
 
-  if (otherMessages.length) {
-    const body = otherMessages.slice(0, 3).join("\n");
-    new Notification("預報訂閱通知", { body });
-  }
-
   appState.lastNotifiedAt = Date.now();
-  const statusHint = closureMessages.length
-    ? isClosureAlertMessage(closureMessages[0])
-      ? `已送出停班停課通知 3 次：${closureMessages[0]}`
-      : `已送出停班停課狀態：${closureMessages[0]}`
-    : `已送出通知：${messages[0]}`;
+  const statusHint = hasClosureAlert
+    ? `已依訂閱順序同步送出 ${messages.length} 項通知（停班停課提醒 3 次）`
+    : `已依訂閱順序同步送出 ${messages.length} 項通知`;
   renderSubscriptionStatus(statusHint);
   return true;
 }
@@ -2899,7 +2912,10 @@ freewayCitySelect?.addEventListener("change", () => {
 
 subscriptionForm.addEventListener("submit", async (event) => {
   event.preventDefault();
-  const topics = [...subscriptionForm.querySelectorAll("input[name='topic']:checked")].map((item) => item.value);
+  const checkedTopics = new Set(
+    [...subscriptionForm.querySelectorAll("input[name='topic']:checked")].map((item) => item.value)
+  );
+  const topics = SUBSCRIPTION_TOPIC_ORDER.filter((topic) => checkedTopics.has(topic));
   appState.subscription = {
     email: subscriberEmail.value.trim(),
     topics,
