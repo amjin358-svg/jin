@@ -507,6 +507,7 @@ const TAIPOWER_PLANNED_OUTAGE_ZIP_URL =
   "https://service.taipower.com.tw/data/opendata/apply/file/d077004/001.zip";
 const TYPHOON_NEWS_MIRROR = "https://r.jina.ai/https://www.cwa.gov.tw/V8/C/P/Typhoon/TY_NEWS.html";
 const TYPHOON_WARN_MIRROR = "https://r.jina.ai/https://www.cwa.gov.tw/V8/C/P/Typhoon/TY_WARN.html";
+const CLOSURE_OFFICIAL_URL = "https://www.dgpa.gov.tw/typh/daily/nds.html";
 const WINDY_EMBED_HEIGHT = 580;
 const CITY_CCTV_RADIUS_KM = 5;
 const FREEWAY_CCTV_RADIUS_KM = 50;
@@ -1582,7 +1583,20 @@ function readClosureCache() {
   }
 }
 
-function renderClosure(data, sourceLabel) {
+function renderClosureMeta(updateAt, sourceLabel, { cacheSuffix = false } = {}) {
+  if (!closureMeta) {
+    return;
+  }
+  const timeText = updateAt || "未提供";
+  const linkLabel =
+    sourceLabel === "本機快取" ? "行政院人事行政總處" : sourceLabel || "行政院人事行政總處";
+  closureMeta.innerHTML = `公告更新時間：${timeText}（來源：<a href="${CLOSURE_OFFICIAL_URL}" target="_blank" rel="noopener noreferrer" class="closure-meta-link">${linkLabel}</a>）`;
+  if (cacheSuffix) {
+    closureMeta.insertAdjacentText("beforeend", "（目前使用快取，請稍後重試）");
+  }
+}
+
+function renderClosure(data, sourceLabel, { cacheSuffix = false } = {}) {
   closureList.innerHTML = "";
   const sorted = [...(data.rows || [])].sort((a, b) => {
     const aStop = Number(a.message.includes("停止上班") || a.message.includes("停止上課"));
@@ -1596,7 +1610,7 @@ function renderClosure(data, sourceLabel) {
       : "目前未讀取到停班停課區域，請點擊「立即更新資料」重試。";
     closureList.innerHTML = `<p class="status-ok">${okText}</p>`;
     appState.closureRows = [];
-    closureMeta.textContent = `公告更新時間：${data.updateAt || "未提供"}（來源：${sourceLabel}）`;
+    renderClosureMeta(data.updateAt, sourceLabel, { cacheSuffix });
     return;
   }
 
@@ -1613,11 +1627,11 @@ function renderClosure(data, sourceLabel) {
   });
 
   appState.closureRows = sorted;
-  closureMeta.textContent = `公告更新時間：${data.updateAt || "未提供"}（來源：${sourceLabel}）`;
+  renderClosureMeta(data.updateAt, sourceLabel, { cacheSuffix });
 }
 
 async function fetchClosureNotices() {
-  const endpoint = "https://r.jina.ai/https://www.dgpa.gov.tw/typh/daily/nds.html";
+  const endpoint = `https://r.jina.ai/${CLOSURE_OFFICIAL_URL}`;
   try {
     const response = await fetch(endpoint);
     if (!response.ok) {
@@ -1633,8 +1647,7 @@ async function fetchClosureNotices() {
   } catch (error) {
     const cache = readClosureCache();
     if (cache) {
-      renderClosure(cache, "本機快取");
-      closureMeta.textContent += "（目前使用快取，請稍後重試）";
+      renderClosure(cache, "本機快取", { cacheSuffix: true });
       appState.closureRows = cache.rows || [];
       return;
     }

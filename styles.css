@@ -372,6 +372,16 @@ label {
   margin-top: 0;
 }
 
+.closure-meta-link {
+  color: #1f5ae1;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.closure-meta-link:hover {
+  text-decoration: underline;
+}
+
 .closure-list {
   max-height: 320px;
   overflow: auto;
@@ -825,11 +835,6 @@ select {
 
   .grid {
     grid-template-columns: 1fr;
-  }
-
-  .weather-air-grid {
-    width: 100%;
-    max-width: none;
   }
 
   .control-grid,
