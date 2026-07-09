@@ -609,20 +609,27 @@ select {
 .map-layout {
   margin-top: 12px;
   display: grid;
-  grid-template-columns: minmax(0, max-content) minmax(0, 1fr);
+  grid-template-columns: 1fr 1fr;
   gap: 12px;
-  align-items: start;
+  align-items: stretch;
+  min-height: 500px;
+}
+
+.map-pane {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  min-height: 500px;
+  height: 100%;
 }
 
 .layer-panel {
-  border: 1px solid var(--border);
-  border-radius: 10px;
   padding: 8px;
   background: #fbfdff;
   display: flex;
   flex-direction: column;
   gap: 6px;
-  align-self: start;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .layer-panel .timestamp {
@@ -722,9 +729,6 @@ select {
 }
 
 .warning-map {
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  min-height: 500px;
   overflow: hidden;
 }
 
@@ -889,6 +893,11 @@ select {
 
   .map-layout {
     grid-template-columns: 1fr;
+    min-height: 0;
+  }
+
+  .map-pane {
+    min-height: 400px;
   }
 
   .warning-map,
