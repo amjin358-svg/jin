@@ -508,9 +508,11 @@ const TAIPOWER_PLANNED_OUTAGE_ZIP_URL =
 const TYPHOON_NEWS_MIRROR = "https://r.jina.ai/https://www.cwa.gov.tw/V8/C/P/Typhoon/TY_NEWS.html";
 const TYPHOON_WARN_MIRROR = "https://r.jina.ai/https://www.cwa.gov.tw/V8/C/P/Typhoon/TY_WARN.html";
 const CLOSURE_OFFICIAL_URL = "https://www.dgpa.gov.tw/typh/daily/nds.html";
+const CLOSURE_REGION_LABELS = ["北部地區", "中部地區", "南部地區", "東部地區", "外島地區"];
+const MAP_FOCUS_CIRCLE_RADIUS_M = 12000;
 const WINDY_EMBED_HEIGHT = 580;
 const CITY_CCTV_RADIUS_KM = 5;
-const FREEWAY_CCTV_RADIUS_KM = 50;
+const FREEWAY_CCTV_RADIUS_KM = 65;
 const POWER_OUTAGE_NOTIFY_RADIUS_KM = 10;
 const FLOOD_NOTIFY_RADIUS_KM = 80;
 const FLOOD_SUBSCRIPTION_RADIUS_KM = 20;
@@ -1535,36 +1537,100 @@ async function fetchWeather() {
   };
 }
 
+function getClosureCityNamesDescending() {
+  return CITY_LOCATIONS.map((city) => city.name).sort((a, b) => b.length - a.length);
+}
+
+function resolveClosureCityFromLine(line) {
+  let rest = normalizeTaiwanPlaceText(line.trim());
+  if (!rest) {
+    return null;
+  }
+
+  for (const region of CLOSURE_REGION_LABELS) {
+    const normalizedRegion = normalizeTaiwanPlaceText(region);
+    if (rest.startsWith(normalizedRegion)) {
+      rest = rest.slice(normalizedRegion.length).trim();
+      break;
+    }
+  }
+
+  for (const cityName of getClosureCityNamesDescending()) {
+    const normalizedCity = normalizeTaiwanPlaceText(cityName);
+    if (!rest.startsWith(normalizedCity)) {
+      continue;
+    }
+    const message = rest.slice(normalizedCity.length).trim();
+    if (!message || !/(今天|明日|停止|照常)/.test(message)) {
+      return null;
+    }
+    return { city: cityName, message };
+  }
+
+  return null;
+}
+
 function parseClosureMarkdown(markdownText) {
-  const lines = markdownText.split("\n").map((line) => line.trim());
-  const updateLine = lines.find((line) => line.startsWith("#### 更新時間：")) ?? "";
-  const updateAt = updateLine.replace("#### 更新時間：", "").trim();
-  const noClosure = /無停班停課訊息/.test(markdownText);
+  const text = String(markdownText ?? "");
+  const lines = text.split("\n").map((line) => line.trim());
+  const updateLine = lines.find((line) => /更新時間：/.test(line)) ?? "";
+  const updateAt = updateLine.replace(/^#+\s*/, "").replace(/更新時間：/, "").trim();
+  const noClosure = /無停班停課訊息/.test(text);
+
+  if (noClosure) {
+    return { updateAt, rows: [], noClosure: true };
+  }
 
   const rows = [];
-  lines.forEach((line) => {
-    if (!line.startsWith("|")) {
-      return;
+  const seenCities = new Set();
+
+  for (const line of lines) {
+    if (!line || line.startsWith("#")) {
+      continue;
     }
-    if (line.includes("---") || line.includes("縣市名稱") || line.includes("無停班停課訊息")) {
-      return;
+    if (/^備註：?/.test(line) || /^[一二三四五六七八九十]+、/.test(line) || line.startsWith("（")) {
+      break;
     }
-    const raw = line.split("|").map((cell) => cell.trim()).filter(Boolean);
-    if (raw.length < 2) {
-      return;
+    if (line.includes("縣市名稱") && line.includes("區域")) {
+      continue;
     }
-    const city = raw[0].replace(/^#+/, "").trim();
-    const message = raw.slice(1).join(" ");
-    if (!KNOWN_CITIES.has(city)) {
-      return;
+
+    if (line.startsWith("|")) {
+      if (line.includes("---") || line.includes("縣市名稱") || line.includes("無停班停課訊息")) {
+        continue;
+      }
+      const raw = line.split("|").map((cell) => cell.trim()).filter(Boolean);
+      if (raw.length < 2) {
+        continue;
+      }
+      const cityCell = raw[0].replace(/^#+/, "").trim();
+      const city =
+        CITY_LOCATIONS.find((item) => normalizeTaiwanPlaceText(item.name) === normalizeTaiwanPlaceText(cityCell))
+          ?.name ?? null;
+      if (!city || seenCities.has(city)) {
+        continue;
+      }
+      const message = raw.slice(1).join(" ").trim();
+      if (!message) {
+        continue;
+      }
+      seenCities.add(city);
+      rows.push({ city, message });
+      continue;
     }
-    rows.push({ city, message });
-  });
+
+    const parsed = resolveClosureCityFromLine(line);
+    if (!parsed || seenCities.has(parsed.city)) {
+      continue;
+    }
+    seenCities.add(parsed.city);
+    rows.push(parsed);
+  }
 
   return {
     updateAt,
     rows,
-    noClosure
+    noClosure: rows.length === 0 ? noClosure : false
   };
 }
 
@@ -2618,6 +2684,17 @@ async function fetchTyphoonOfficial() {
   appState.typhoonOfficial = parseTyphoonOfficialText(newsMarkdown, warnMarkdown);
 }
 
+function fitMapToFocusArea() {
+  if (!warningMap || !mapCityFocusLayer) {
+    return;
+  }
+  warningMap.invalidateSize();
+  warningMap.fitBounds(mapCityFocusLayer.getBounds(), {
+    padding: [12, 12],
+    maxZoom: 15
+  });
+}
+
 function updateCityFocusLayer() {
   if (!warningMap) {
     return;
@@ -2631,13 +2708,14 @@ function updateCityFocusLayer() {
   }
   mapCityFocusLayer = L.circle([location.lat, location.lon], {
     pane: "focusPane",
-    radius: 12000,
+    radius: MAP_FOCUS_CIRCLE_RADIUS_M,
     color: "#00b4d8",
     weight: 2,
     fillColor: "#00b4d8",
     fillOpacity: 0.09
   }).bindTooltip(`${location.label} 焦點區`);
   syncMapLayerVisibility("city-focus");
+  fitMapToFocusArea();
 }
 
 function updateCameraMapLayer() {
@@ -2678,10 +2756,6 @@ function updateCameraMapLayer() {
 function updateMapForCityChange() {
   if (!warningMap) {
     return;
-  }
-  const location = getActiveWeatherLocation();
-  if (location) {
-    warningMap.setView([location.lat, location.lon], 10, { animate: true });
   }
   updateCityFocusLayer();
   updateCameraMapLayer();
@@ -2731,6 +2805,9 @@ function initWarningMap() {
     });
   updateCityFocusLayer();
   updateCameraMapLayer();
+  requestAnimationFrame(() => {
+    fitMapToFocusArea();
+  });
 }
 
 async function fetchRoadCameras() {
@@ -2887,6 +2964,7 @@ async function performFullRefresh(triggerSource) {
     if (appState.autoRefreshEnabled) {
       scheduleNextAutoRefresh();
     }
+    updateAutoRefreshMeta();
   } catch (error) {
     lastUpdated.textContent = `更新失敗：${error.message}`;
   } finally {
@@ -2925,7 +3003,9 @@ locateBtn.addEventListener("click", () => {
 });
 
 refreshBtn.addEventListener("click", () => {
-  performFullRefresh("manual");
+  performFullRefresh("manual").catch(() => {
+    setRefreshButtonLoading(false);
+  });
 });
 
 cameraKeyword.addEventListener("input", () => {
