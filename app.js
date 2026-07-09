@@ -1643,7 +1643,7 @@ async function fetchClosureNotices() {
       throw new Error("停班停課資料格式無法解析");
     }
     saveClosureCache(data);
-    renderClosure(data, "行政院人事行政總處（公開鏡像）");
+    renderClosure(data, "行政院人事行政總處");
   } catch (error) {
     const cache = readClosureCache();
     if (cache) {
