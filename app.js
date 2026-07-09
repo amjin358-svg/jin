@@ -377,7 +377,7 @@ const FREEWAY_CAMERA_REGIONS = [
   { id: "n5", label: "國道5號", lat: 24.8, lon: 121.8, radiusKm: 9999, routes: ["N5"] },
   { id: "n2-n4", label: "國道2／4號", lat: 24.9, lon: 121.2, radiusKm: 9999, routes: ["N2", "N2A", "N4"] },
   { id: "n6-n8-n10", label: "國道6／8／10號", lat: 23.8, lon: 120.6, radiusKm: 9999, routes: ["N6", "N8", "N10"] },
-  { id: "near-city", label: "靠近所選位置（50km）", lat: null, lon: null, radiusKm: 50, routes: null }
+  { id: "near-city", label: "靠近所選位置（65km）", lat: null, lon: null, radiusKm: 65, routes: null }
 ];
 
 const REGION_STORAGE_KEY = "weatherRegionPreferenceV1";
@@ -1996,7 +1996,7 @@ function updateRecoveryTrackingState() {
   const locationLabel = getSubscriptionLocationLabel();
 
   if (location) {
-    const nearbyFloods = getNearbyFloodPoints(location);
+    const nearbyFloods = getNearbyFloodPoints(location, FLOOD_SUBSCRIPTION_RADIUS_KM);
     const currentWarningSensors = {};
     nearbyFloods.forEach((point) => {
       if (!isFloodWarningDepth(point.depthCm)) {
@@ -2267,7 +2267,7 @@ function getSelectedSubscriptionTopics() {
 function getSubscriptionFloodMessage() {
   const locationLabel = getSubscriptionLocationLabel();
   const location = getSubscriptionWeatherLocation();
-  const nearbyFloods = location ? getNearbyFloodPoints(location) : [];
+  const nearbyFloods = location ? getNearbyFloodPoints(location, FLOOD_SUBSCRIPTION_RADIUS_KM) : [];
   const warningFloods = nearbyFloods.filter((point) => isFloodWarningDepth(point.depthCm));
   if (warningFloods.length) {
     const top = warningFloods[0];
@@ -2275,9 +2275,9 @@ function getSubscriptionFloodMessage() {
   }
   if (nearbyFloods.length) {
     const top = nearbyFloods[0];
-    return `【積淹水監測】${locationLabel} 周邊 ${FLOOD_NOTIFY_RADIUS_KM} 公里內有 ${nearbyFloods.length} 處感測積水，最近 ${top.areaName} 水深 ${top.waterDepthCm} cm（未達警戒）。`;
+    return `【積淹水監測】${locationLabel} 半徑 ${FLOOD_SUBSCRIPTION_RADIUS_KM} 公里內有 ${nearbyFloods.length} 處感測積水，最近 ${top.areaName} 水深 ${top.waterDepthCm} cm（未達警戒）。`;
   }
-  return `【積淹水監測】${locationLabel} 周邊 ${FLOOD_NOTIFY_RADIUS_KM} 公里內目前無積淹水警戒。`;
+  return `【積淹水監測】${locationLabel} 半徑 ${FLOOD_SUBSCRIPTION_RADIUS_KM} 公里內目前無積淹水警戒。`;
 }
 
 function getSubscriptionWeatherMessage() {
