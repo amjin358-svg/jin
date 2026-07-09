@@ -456,8 +456,6 @@ const typhoonRiskBadge = document.querySelector("#typhoonRiskBadge");
 const typhoonAnalysisList = document.querySelector("#typhoonAnalysisList");
 const windyEmbed = document.querySelector("#windyEmbed");
 const windyExternalLink = document.querySelector("#windyExternalLink");
-const visitorCounter = document.querySelector("#visitorCounter");
-const regionVisitorCounter = document.querySelector("#regionVisitorCounter");
 const powerOutageMeta = document.querySelector("#powerOutageMeta");
 const aiAlertList = document.querySelector("#aiAlertList");
 const rainProjection = document.querySelector("#rainProjection");
@@ -518,17 +516,6 @@ const POWER_OUTAGE_NOTIFY_RADIUS_KM = 10;
 const FLOOD_NOTIFY_RADIUS_KM = 80;
 const FLOOD_SUBSCRIPTION_RADIUS_KM = 20;
 const FLOOD_SAFE_DEPTH_CM = 15;
-const VISITOR_COUNTER_NAMESPACE = "jin-weather-tw-v1";
-const VISITOR_COUNTER_KEY = "visits";
-const VISITOR_COUNTER_STORAGE_KEY = "siteVisitCountV1";
-const REGION_VISITOR_COUNTER_KEYS = {
-  北部: "region-north",
-  中部: "region-central",
-  南部: "region-south",
-  東部: "region-east",
-  離島: "region-islands"
-};
-const REGION_VISITOR_STORAGE_PREFIX = "regionVisitCountV1:";
 let jsZipModulePromise = null;
 const appState = {
   weather: null,
@@ -1056,7 +1043,6 @@ function locateByDevice() {
         return;
       }
       applyRegionSelection(getRegionForCity(nearest.city), nearest.city, nearest.town, { persist: true });
-      refreshRegionVisitorCounter(getRegionForCity(nearest.city), { increment: true });
       regionMemoryMeta.textContent = `區域偏好：定位完成，已選 ${nearest.city}${nearest.town}（距離約 ${nearest.distanceKm.toFixed(1)} km）`;
       locateBtn.disabled = false;
       locateBtn.textContent = "依設備定位選區";
@@ -1921,102 +1907,6 @@ function updateWindyTrackEmbed() {
   if (windyExternalLink) {
     windyExternalLink.href = `https://www.windy.com/?${focus.lat.toFixed(3)},${focus.lon.toFixed(3)},${focus.zoom},i:pressure`;
   }
-}
-
-function getRegionVisitorStorageKey(regionName) {
-  return `${REGION_VISITOR_STORAGE_PREFIX}${regionName}`;
-}
-
-function bumpLocalRegionVisitCount(regionName) {
-  const storageKey = getRegionVisitorStorageKey(regionName);
-  const nextCount = Number(localStorage.getItem(storageKey) || 0) + 1;
-  localStorage.setItem(storageKey, String(nextCount));
-  return nextCount;
-}
-
-function formatVisitCountLabel(prefix, count, { fallback = false } = {}) {
-  const suffix = fallback ? "（本機累計）" : "";
-  return `${prefix}：${Number(count).toLocaleString("zh-TW")}${suffix}`;
-}
-
-async function fetchCountApiValue(key, { mode = "hit" } = {}) {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 5000);
-  try {
-    const response = await fetch(
-      `https://api.countapi.xyz/${mode}/${VISITOR_COUNTER_NAMESPACE}/${key}`,
-      { signal: controller.signal }
-    );
-    clearTimeout(timeoutId);
-    if (!response.ok) {
-      return null;
-    }
-    const payload = await response.json();
-    return Number.isFinite(payload.value) ? Number(payload.value) : null;
-  } catch {
-    clearTimeout(timeoutId);
-    return null;
-  }
-}
-
-function renderVisitorCounterDisplay(globalCount, { globalFallback = false } = {}) {
-  if (!visitorCounter) {
-    return;
-  }
-  visitorCounter.textContent = formatVisitCountLabel("到訪人次", globalCount, {
-    fallback: globalFallback
-  });
-}
-
-function renderRegionVisitorCounterDisplay(regionName, regionCount, { regionFallback = false } = {}) {
-  if (!regionVisitorCounter) {
-    return;
-  }
-  const regionLabel = regionName || regionSelect?.value || REGION_GROUPS[0].name;
-  regionVisitorCounter.textContent = formatVisitCountLabel(
-    `${regionLabel}區域到訪人次`,
-    regionCount,
-    { fallback: regionFallback }
-  );
-}
-
-async function refreshRegionVisitorCounter(regionName, { increment = false } = {}) {
-  const region = regionName || regionSelect?.value || REGION_GROUPS[0].name;
-  const regionKey = REGION_VISITOR_COUNTER_KEYS[region];
-  if (!regionKey) {
-    return;
-  }
-
-  const localCount = increment
-    ? bumpLocalRegionVisitCount(region)
-    : Number(localStorage.getItem(getRegionVisitorStorageKey(region)) || 0);
-  renderRegionVisitorCounterDisplay(region, localCount);
-
-  const remoteCount = await fetchCountApiValue(regionKey, { mode: increment ? "hit" : "get" });
-  if (remoteCount !== null) {
-    renderRegionVisitorCounterDisplay(region, remoteCount);
-    return;
-  }
-  renderRegionVisitorCounterDisplay(region, localCount, { regionFallback: true });
-}
-
-async function initVisitorCounter() {
-  if (!visitorCounter) {
-    return;
-  }
-
-  const localCount = Number(localStorage.getItem(VISITOR_COUNTER_STORAGE_KEY) || 0) + 1;
-  localStorage.setItem(VISITOR_COUNTER_STORAGE_KEY, String(localCount));
-  renderVisitorCounterDisplay(localCount);
-
-  const globalCount = await fetchCountApiValue(VISITOR_COUNTER_KEY, { mode: "hit" });
-  if (globalCount !== null) {
-    renderVisitorCounterDisplay(globalCount);
-  } else {
-    renderVisitorCounterDisplay(localCount, { globalFallback: true });
-  }
-
-  await refreshRegionVisitorCounter(regionSelect?.value || REGION_GROUPS[0].name, { increment: true });
 }
 
 function calculateTyphoonRisk() {
@@ -3080,7 +2970,6 @@ regionSelect.addEventListener("change", () => {
   fillCitySelect(regionSelect.value);
   fillTownshipSelect(citySelect.value);
   saveRegionPreference();
-  refreshRegionVisitorCounter(regionSelect.value, { increment: true });
   performFullRefresh("manual");
   renderAllCameraLists();
   updateMapForCityChange();
@@ -3089,13 +2978,6 @@ regionSelect.addEventListener("change", () => {
 citySelect.addEventListener("change", () => {
   fillTownshipSelect(citySelect.value);
   saveRegionPreference();
-  const regionName = getRegionForCity(citySelect.value);
-  if (regionSelect.value !== regionName) {
-    regionSelect.value = regionName;
-    refreshRegionVisitorCounter(regionName, { increment: true });
-  } else {
-    refreshRegionVisitorCounter(regionName);
-  }
   performFullRefresh("manual");
   renderAllCameraLists();
   updateMapForCityChange();
@@ -3196,7 +3078,6 @@ initFreewayCitySelect();
 loadSubscription();
 renderSubscriptionStatus();
 updateWindyTrackEmbed();
-initVisitorCounter();
 performFullRefresh("manual");
 fetchRoadCameras();
 initWarningMap();
