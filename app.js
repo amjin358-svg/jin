@@ -454,8 +454,10 @@ const pm10Value = document.querySelector("#pm10Value");
 const ozoneValue = document.querySelector("#ozoneValue");
 const typhoonRiskBadge = document.querySelector("#typhoonRiskBadge");
 const typhoonAnalysisList = document.querySelector("#typhoonAnalysisList");
-const windyEmbed = document.querySelector("#windyEmbed");
-const windyExternalLink = document.querySelector("#windyExternalLink");
+const typhoonWindMapEl = document.querySelector("#typhoonWindMap");
+const typhoonWindMeta = document.querySelector("#typhoonWindMeta");
+const typhoonWindSourceLink = document.querySelector("#typhoonWindSourceLink");
+const visitorCounter = document.querySelector("#visitorCounter");
 const powerOutageMeta = document.querySelector("#powerOutageMeta");
 const aiAlertList = document.querySelector("#aiAlertList");
 const rainProjection = document.querySelector("#rainProjection");
@@ -497,8 +499,18 @@ const TAIPOWER_PLANNED_OUTAGE_ZIP_URL =
   "https://service.taipower.com.tw/data/opendata/apply/file/d077004/001.zip";
 const TYPHOON_NEWS_MIRROR = "https://r.jina.ai/https://www.cwa.gov.tw/V8/C/P/Typhoon/TY_NEWS.html";
 const TYPHOON_WARN_MIRROR = "https://r.jina.ai/https://www.cwa.gov.tw/V8/C/P/Typhoon/TY_WARN.html";
-const WINDY_EMBED_HEIGHT = 580;
+const TYPHOON_WIND_FRAME_MS = 2800;
+const TYPHOON_WIND_GRID = { south: 21.5, north: 26.5, west: 118, east: 123, step: 0.5 };
+const VISITOR_COUNTER_NAMESPACE = "jin-weather-tw-v1";
+const VISITOR_COUNTER_KEY = "visits";
+const VISITOR_COUNTER_STORAGE_KEY = "siteVisitCountV1";
 let jsZipModulePromise = null;
+let typhoonWindMap = null;
+let typhoonVelocityLayer = null;
+let typhoonCenterLayer = null;
+let typhoonWindFrames = [];
+let typhoonWindFrameIndex = 0;
+let typhoonWindLoopTimer = null;
 const appState = {
   weather: null,
   airQuality: null,
@@ -1710,56 +1722,290 @@ function parseTyphoonOfficialText(newsMarkdown, warnMarkdown) {
   };
 }
 
-function buildWindyEmbedUrl(lat, lon, zoom = 6) {
-  const params = new URLSearchParams({
-    lat: Number(lat).toFixed(3),
-    lon: Number(lon).toFixed(3),
-    detailLat: Number(lat).toFixed(3),
-    detailLon: Number(lon).toFixed(3),
-    width: "900",
-    height: String(WINDY_EMBED_HEIGHT),
-    zoom: String(zoom),
-    level: "surface",
-    overlay: "wind",
-    product: "ecmwf",
-    menu: "true",
-    message: "false",
-    marker: "true",
-    calendar: "6",
-    pressure: "true",
-    type: "map",
-    location: "coordinates",
-    detail: "true",
-    metricWind: "default",
-    metricTemp: "default",
-    radarRange: "-1"
-  });
-  return `https://embed.windy.com/embed2.html?${params.toString()}`;
+function windSpeedDirectionToUV(speedKmh, directionDeg) {
+  const speedMs = Number(speedKmh) / 3.6;
+  const rad = (Number(directionDeg) * Math.PI) / 180;
+  return {
+    u: -speedMs * Math.sin(rad),
+    v: -speedMs * Math.cos(rad)
+  };
 }
 
-function getWindyFocusPoint() {
+function buildWindVelocityHeader(parameterNumber, bounds) {
+  return {
+    parameterUnit: "m.s-1",
+    parameterCategory: 2,
+    parameterNumber,
+    la1: bounds.north,
+    la2: bounds.south,
+    lo1: bounds.west,
+    lo2: bounds.east,
+    nx: bounds.nx,
+    ny: bounds.ny,
+    dx: bounds.step,
+    dy: bounds.step
+  };
+}
+
+function getTyphoonWindFocusPoint() {
   const official = appState.typhoonOfficial;
   const location = getActiveWeatherLocation();
   const hasTyphoonCenter = Number.isFinite(official?.lat) && Number.isFinite(official?.lon);
   return {
     lat: hasTyphoonCenter ? official.lat : location?.lat ?? 23.7,
     lon: hasTyphoonCenter ? official.lon : location?.lon ?? 121.0,
-    zoom: hasTyphoonCenter ? 5 : 6,
+    zoom: hasTyphoonCenter ? 6 : 7,
     hasTyphoonCenter
   };
 }
 
-function updateWindyTrackEmbed() {
-  if (!windyEmbed) {
+function buildTyphoonWindGridPoints() {
+  const { south, north, west, east, step } = TYPHOON_WIND_GRID;
+  const lats = [];
+  const lons = [];
+  for (let lat = north; lat >= south - 0.001; lat -= step) {
+    lats.push(Number(lat.toFixed(2)));
+  }
+  for (let lon = west; lon <= east + 0.001; lon += step) {
+    lons.push(Number(lon.toFixed(2)));
+  }
+  const latitudeList = [];
+  const longitudeList = [];
+  lats.forEach((lat) => {
+    lons.forEach((lon) => {
+      latitudeList.push(lat);
+      longitudeList.push(lon);
+    });
+  });
+  return { lats, lons, latitudeList, longitudeList };
+}
+
+async function fetchTyphoonWindFrames() {
+  const { lats, lons, latitudeList, longitudeList } = buildTyphoonWindGridPoints();
+  const endpoint = new URL("https://api.open-meteo.com/v1/forecast");
+  endpoint.searchParams.set("latitude", latitudeList.join(","));
+  endpoint.searchParams.set("longitude", longitudeList.join(","));
+  endpoint.searchParams.set("hourly", "wind_speed_10m,wind_direction_10m");
+  endpoint.searchParams.set("timezone", "Asia/Taipei");
+  endpoint.searchParams.set("forecast_hours", "7");
+
+  const response = await fetch(endpoint.toString());
+  if (!response.ok) {
+    throw new Error(`颱風風場資料讀取失敗：${response.status}`);
+  }
+  const results = await response.json();
+  if (!Array.isArray(results) || !results.length) {
+    throw new Error("颱風風場資料格式無法解析");
+  }
+
+  const bounds = {
+    south: TYPHOON_WIND_GRID.south,
+    north: TYPHOON_WIND_GRID.north,
+    west: TYPHOON_WIND_GRID.west,
+    east: TYPHOON_WIND_GRID.east,
+    step: TYPHOON_WIND_GRID.step,
+    nx: lons.length,
+    ny: lats.length
+  };
+  const frameCount = Math.min(7, results[0].hourly?.time?.length ?? 0);
+  const frames = [];
+
+  for (let hourIndex = 0; hourIndex < frameCount; hourIndex += 1) {
+    const uData = [];
+    const vData = [];
+    results.forEach((point) => {
+      const speed = Number(point.hourly.wind_speed_10m[hourIndex] ?? 0);
+      const direction = Number(point.hourly.wind_direction_10m[hourIndex] ?? 0);
+      const { u, v } = windSpeedDirectionToUV(speed, direction);
+      uData.push(u);
+      vData.push(v);
+    });
+    frames.push({
+      label: results[0].hourly.time[hourIndex],
+      data: [
+        { header: buildWindVelocityHeader(2, bounds), data: uData },
+        { header: buildWindVelocityHeader(3, bounds), data: vData }
+      ]
+    });
+  }
+  return frames;
+}
+
+function updateTyphoonWindMeta(frameIndex = 0) {
+  if (!typhoonWindMeta) {
     return;
   }
-  const focus = getWindyFocusPoint();
-  const embedUrl = buildWindyEmbedUrl(focus.lat, focus.lon, focus.zoom);
-  if (windyEmbed.getAttribute("src") !== embedUrl) {
-    windyEmbed.src = embedUrl;
+  const frame = typhoonWindFrames[frameIndex];
+  const label = frame?.label
+    ? new Date(frame.label).toLocaleString("zh-TW", {
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false
+      })
+    : "更新中";
+  typhoonWindMeta.textContent = `6 小時颱風動態循環播放中｜目前影格 +${frameIndex} 小時（${label}）`;
+}
+
+function updateTyphoonCenterMarker() {
+  if (!typhoonWindMap) {
+    return;
   }
-  if (windyExternalLink) {
-    windyExternalLink.href = `https://www.windy.com/?${focus.lat.toFixed(3)},${focus.lon.toFixed(3)},${focus.zoom},i:pressure`;
+  if (typhoonCenterLayer) {
+    typhoonWindMap.removeLayer(typhoonCenterLayer);
+    typhoonCenterLayer = null;
+  }
+  const official = appState.typhoonOfficial;
+  if (!Number.isFinite(official?.lat) || !Number.isFinite(official?.lon)) {
+    return;
+  }
+  typhoonCenterLayer = L.circleMarker([official.lat, official.lon], {
+    radius: 9,
+    color: "#ff4d6d",
+    fillColor: "#ff758f",
+    fillOpacity: 0.92,
+    weight: 2
+  }).bindTooltip(official.name ? `颱風中心：${official.name}` : "颱風中心");
+  typhoonCenterLayer.addTo(typhoonWindMap);
+}
+
+function showTyphoonWindFrame(frameIndex) {
+  if (!typhoonVelocityLayer || !typhoonWindFrames[frameIndex]) {
+    return;
+  }
+  typhoonWindFrameIndex = frameIndex;
+  typhoonVelocityLayer.setData(typhoonWindFrames[frameIndex].data);
+  updateTyphoonWindMeta(frameIndex);
+}
+
+function stopTyphoonWindLoop() {
+  if (typhoonWindLoopTimer) {
+    clearInterval(typhoonWindLoopTimer);
+    typhoonWindLoopTimer = null;
+  }
+}
+
+function startTyphoonWindLoop() {
+  stopTyphoonWindLoop();
+  if (!typhoonWindFrames.length) {
+    return;
+  }
+  typhoonWindLoopTimer = setInterval(() => {
+    const nextIndex = (typhoonWindFrameIndex + 1) % typhoonWindFrames.length;
+    showTyphoonWindFrame(nextIndex);
+  }, TYPHOON_WIND_FRAME_MS);
+}
+
+function createTyphoonVelocityLayer(initialData) {
+  if (typeof L.velocityLayer !== "function") {
+    throw new Error("風場動畫套件尚未載入");
+  }
+  return L.velocityLayer({
+    displayValues: true,
+    displayOptions: {
+      velocityType: "颱風風場",
+      position: "bottomleft",
+      emptyString: "無風場資料",
+      angleConvention: "bearingCW",
+      showCardinal: false,
+      speedUnit: "m/s",
+      directionString: "風向",
+      speedString: "風速"
+    },
+    data: initialData,
+    minVelocity: 0,
+    maxVelocity: 18,
+    velocityScale: 0.012,
+    colorScale: ["#9ad5ff", "#4ea8de", "#2a9d8f", "#f4a261", "#e76f51", "#d62828"],
+    opacity: 0.92
+  });
+}
+
+async function refreshTyphoonWindAnimation() {
+  if (!typhoonWindMap) {
+    return;
+  }
+  try {
+    if (typhoonWindMeta) {
+      typhoonWindMeta.textContent = "6 小時颱風動態讀取中...";
+    }
+    typhoonWindFrames = await fetchTyphoonWindFrames();
+    if (!typhoonWindFrames.length) {
+      throw new Error("未取得 6 小時內風場影格");
+    }
+    if (typhoonVelocityLayer) {
+      typhoonWindMap.removeLayer(typhoonVelocityLayer);
+    }
+    typhoonVelocityLayer = createTyphoonVelocityLayer(typhoonWindFrames[0].data);
+    typhoonVelocityLayer.addTo(typhoonWindMap);
+    showTyphoonWindFrame(0);
+    updateTyphoonCenterMarker();
+    startTyphoonWindLoop();
+  } catch (error) {
+    if (typhoonWindMeta) {
+      typhoonWindMeta.textContent = `颱風動態圖暫時無法更新：${error.message}`;
+    }
+    stopTyphoonWindLoop();
+  }
+}
+
+function updateTyphoonWindMapView() {
+  if (!typhoonWindMap) {
+    return;
+  }
+  const focus = getTyphoonWindFocusPoint();
+  typhoonWindMap.setView([focus.lat, focus.lon], focus.zoom, { animate: false });
+  updateTyphoonCenterMarker();
+  if (typhoonWindSourceLink) {
+    typhoonWindSourceLink.href = `https://open-meteo.com/en/docs`;
+  }
+}
+
+function initTyphoonWindMap() {
+  if (!typhoonWindMapEl || typeof L === "undefined") {
+    if (typhoonWindMeta) {
+      typhoonWindMeta.textContent = "颱風動態圖載入失敗，請檢查地圖套件。";
+    }
+    return;
+  }
+  const focus = getTyphoonWindFocusPoint();
+  typhoonWindMap = L.map(typhoonWindMapEl, {
+    zoomControl: true,
+    attributionControl: true
+  }).setView([focus.lat, focus.lon], focus.zoom);
+
+  L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+    maxZoom: 19,
+    attribution: "&copy; OpenStreetMap &copy; CARTO"
+  }).addTo(typhoonWindMap);
+}
+
+async function initVisitorCounter() {
+  if (!visitorCounter) {
+    return;
+  }
+  const localCount = Number(localStorage.getItem(VISITOR_COUNTER_STORAGE_KEY) || 0) + 1;
+  localStorage.setItem(VISITOR_COUNTER_STORAGE_KEY, String(localCount));
+  visitorCounter.textContent = `拜訪人次：${localCount.toLocaleString("zh-TW")}`;
+
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    const response = await fetch(
+      `https://api.countapi.xyz/hit/${VISITOR_COUNTER_NAMESPACE}/${VISITOR_COUNTER_KEY}`,
+      { signal: controller.signal }
+    );
+    clearTimeout(timeoutId);
+    if (!response.ok) {
+      return;
+    }
+    const payload = await response.json();
+    if (Number.isFinite(payload.value)) {
+      visitorCounter.textContent = `拜訪人次：${Number(payload.value).toLocaleString("zh-TW")}`;
+    }
+  } catch {
+    visitorCounter.textContent = `拜訪人次：${localCount.toLocaleString("zh-TW")}（本機累計）`;
   }
 }
 
@@ -1814,7 +2060,8 @@ function renderTyphoonAnalysis() {
     typhoonRiskBadge.textContent = "風險等級：資料不足";
     typhoonRiskBadge.className = "risk-badge risk-low";
     typhoonAnalysisList.innerHTML = "<li>等待氣象資料。</li>";
-    updateWindyTrackEmbed();
+    updateTyphoonWindMapView();
+    refreshTyphoonWindAnimation();
     return;
   }
   appState.typhoon = result;
@@ -1827,7 +2074,8 @@ function renderTyphoonAnalysis() {
     item.textContent = message;
     typhoonAnalysisList.append(item);
   });
-  updateWindyTrackEmbed();
+  updateTyphoonWindMapView();
+  refreshTyphoonWindAnimation();
 }
 
 function getNearbyFloodWarnings() {
@@ -2669,7 +2917,8 @@ initFreewayRegionSelect();
 initFreewayCitySelect();
 loadSubscription();
 renderSubscriptionStatus();
-updateWindyTrackEmbed();
+initTyphoonWindMap();
+initVisitorCounter();
 performFullRefresh("manual");
 fetchRoadCameras();
 initWarningMap();
