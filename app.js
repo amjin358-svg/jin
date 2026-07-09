@@ -1607,7 +1607,7 @@ function renderClosure(data, sourceLabel, { cacheSuffix = false } = {}) {
   if (!sorted.length) {
     const okText = data.noClosure
       ? "目前全台無停班停課訊息。"
-      : "目前未讀取到停班停課區域，請點擊「立即更新資料」重試。";
+      : "目前未讀取到停班停課區域，請點擊最上方按鍵「立即更新資料」重試。";
     closureList.innerHTML = `<p class="status-ok">${okText}</p>`;
     appState.closureRows = [];
     renderClosureMeta(data.updateAt, sourceLabel, { cacheSuffix });
