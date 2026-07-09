@@ -340,17 +340,8 @@ label {
   width: 100%;
 }
 
-.freeway-details {
-  margin-top: 16px;
-  border-top: 1px solid var(--border);
-  padding-top: 12px;
-}
-
-.freeway-details summary {
-  cursor: pointer;
-  color: #35538f;
-  font-weight: 700;
-  margin-bottom: 10px;
+.freeway-camera-card {
+  margin-top: 0;
 }
 
 .closure-list {

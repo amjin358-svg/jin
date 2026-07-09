@@ -215,8 +215,8 @@
             <select id="cameraCitySelect" aria-label="選擇 CCTV 縣市範圍"></select>
           </div>
           <div>
-            <label for="cameraRegionSelect">地區／國道範圍（輔助）</label>
-            <select id="cameraRegionSelect" aria-label="選擇監控地區範圍"></select>
+            <label for="cameraRegionSelect">地區範圍</label>
+            <select id="cameraRegionSelect" aria-label="選擇市區 CCTV 地區範圍"></select>
           </div>
           <div>
             <label for="cameraKeyword">關鍵字篩選（路口/路名/代碼）</label>
@@ -229,11 +229,39 @@
           </div>
         </div>
         <div id="cameraList" class="camera-list"></div>
-        <details class="freeway-details">
-          <summary>同時顯示國道 CCTV（公路局）</summary>
-          <p id="freewayCameraMeta" class="timestamp">國道資料讀取中...</p>
-          <div id="freewayCameraList" class="camera-list"></div>
-        </details>
+      </section>
+
+      <section class="card camera-card freeway-camera-card">
+        <div class="section-head">
+          <h2>國道CCTV監控</h2>
+          <a
+            href="https://thbapp.thb.gov.tw/"
+            target="_blank"
+            rel="noopener noreferrer"
+            >開啟公路局來源</a
+          >
+        </div>
+        <p id="freewayCameraMeta" class="timestamp">國道資料讀取中...</p>
+        <div class="camera-controls camera-controls-grid freeway-camera-controls">
+          <div>
+            <label for="freewayCitySelect">縣市範圍</label>
+            <select id="freewayCitySelect" aria-label="選擇國道 CCTV 縣市範圍"></select>
+          </div>
+          <div>
+            <label for="freewayRegionSelect">地區／國道範圍</label>
+            <select id="freewayRegionSelect" aria-label="選擇國道 CCTV 範圍"></select>
+          </div>
+          <div>
+            <label for="freewayKeyword">關鍵字篩選（路段/代碼）</label>
+            <input
+              id="freewayKeyword"
+              type="text"
+              placeholder="例如：國道1號、基隆、CCTV-N1"
+              autocomplete="off"
+            />
+          </div>
+        </div>
+        <div id="freewayCameraList" class="camera-list"></div>
       </section>
 
       <section class="card map-card">
@@ -294,7 +322,7 @@
           <li>區域記憶：瀏覽器 localStorage 保留上次選取的區域／縣市／鄉鎮。</li>
           <li>停班停課資料：行政院人事行政總處公告頁面（經公開鏡像讀取）。</li>
           <li>縣市路口監控：交通部運輸資料流通服務（各縣市 CCTV 公開資料快照）。</li>
-          <li>國道監控：交通部公路局即時 CCTV 公開資料（部署時快照）。</li>
+          <li>國道CCTV監控：交通部公路局即時 CCTV 公開資料（部署時快照）。</li>
           <li>積淹水警示：經濟部水利署 IoW 即時淹水深度感測（公開 API）。</li>
           <li>颱風分析：中央氣象署颱風消息／警報頁面即時解析 + Windy 6 小時動態圖嵌入。</li>
           <li>停電區域：台電災害停電通報（XML）與計畫性工作停電公開資料（ZIP）。</li>

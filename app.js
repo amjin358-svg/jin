@@ -360,18 +360,23 @@ const REGION_GROUPS = [
   { name: "離島", cities: ["澎湖縣", "金門縣", "連江縣"] }
 ];
 
-const CAMERA_REGIONS = [
-  { id: "all", label: "全台", lat: 23.7, lon: 120.96, radiusKm: 9999, routes: null },
-  { id: "north", label: "北部地區", lat: 25.05, lon: 121.5, radiusKm: 55, routes: null },
-  { id: "taoyuan-hsinchu", label: "桃竹苗地區", lat: 24.8, lon: 121.0, radiusKm: 55, routes: null },
-  { id: "central", label: "中部地區", lat: 24.15, lon: 120.67, radiusKm: 60, routes: null },
-  { id: "south", label: "南部地區", lat: 22.9, lon: 120.4, radiusKm: 70, routes: null },
-  { id: "east", label: "東部地區", lat: 23.8, lon: 121.5, radiusKm: 90, routes: null },
-  { id: "n1", label: "國道1號沿線", lat: 24.5, lon: 120.9, radiusKm: 9999, routes: ["N1", "N1H", "N1K"] },
-  { id: "n3", label: "國道3號沿線", lat: 24.5, lon: 120.9, radiusKm: 9999, routes: ["N3", "N3A", "N3K", "N3N"] },
-  { id: "n5", label: "國道5號沿線", lat: 24.8, lon: 121.8, radiusKm: 9999, routes: ["N5"] },
-  { id: "n2-n4", label: "國道2／4號沿線", lat: 24.9, lon: 121.2, radiusKm: 9999, routes: ["N2", "N2A", "N4"] },
-  { id: "n6-n8-n10", label: "國道6／8／10號沿線", lat: 23.8, lon: 120.6, radiusKm: 9999, routes: ["N6", "N8", "N10"] },
+const CITY_CAMERA_REGIONS = [
+  { id: "all", label: "全台", lat: 23.7, lon: 120.96, radiusKm: 9999 },
+  { id: "north", label: "北部地區", lat: 25.05, lon: 121.5, radiusKm: 55 },
+  { id: "taoyuan-hsinchu", label: "桃竹苗地區", lat: 24.8, lon: 121.0, radiusKm: 55 },
+  { id: "central", label: "中部地區", lat: 24.15, lon: 120.67, radiusKm: 60 },
+  { id: "south", label: "南部地區", lat: 22.9, lon: 120.4, radiusKm: 70 },
+  { id: "east", label: "東部地區", lat: 23.8, lon: 121.5, radiusKm: 90 },
+  { id: "near-city", label: "靠近所選縣市（80km）", lat: null, lon: null, radiusKm: 80 }
+];
+
+const FREEWAY_CAMERA_REGIONS = [
+  { id: "all-freeway", label: "全部國道", lat: 23.7, lon: 120.96, radiusKm: 9999, routes: null },
+  { id: "n1", label: "國道1號", lat: 24.5, lon: 120.9, radiusKm: 9999, routes: ["N1", "N1H", "N1K"] },
+  { id: "n3", label: "國道3號", lat: 24.5, lon: 120.9, radiusKm: 9999, routes: ["N3", "N3A", "N3K", "N3N"] },
+  { id: "n5", label: "國道5號", lat: 24.8, lon: 121.8, radiusKm: 9999, routes: ["N5"] },
+  { id: "n2-n4", label: "國道2／4號", lat: 24.9, lon: 121.2, radiusKm: 9999, routes: ["N2", "N2A", "N4"] },
+  { id: "n6-n8-n10", label: "國道6／8／10號", lat: 23.8, lon: 120.6, radiusKm: 9999, routes: ["N6", "N8", "N10"] },
   { id: "near-city", label: "靠近所選縣市（80km）", lat: null, lon: null, radiusKm: 80, routes: null }
 ];
 
@@ -434,6 +439,9 @@ const cameraRegionSelect = document.querySelector("#cameraRegionSelect");
 const cameraCitySelect = document.querySelector("#cameraCitySelect");
 const freewayCameraMeta = document.querySelector("#freewayCameraMeta");
 const freewayCameraList = document.querySelector("#freewayCameraList");
+const freewayCitySelect = document.querySelector("#freewayCitySelect");
+const freewayRegionSelect = document.querySelector("#freewayRegionSelect");
+const freewayKeyword = document.querySelector("#freewayKeyword");
 const mapLayerList = document.querySelector("#mapLayerList");
 const airSummary = document.querySelector("#airSummary");
 const aqiMetric = document.querySelector("#aqiMetric");
@@ -893,7 +901,7 @@ function initRegionSelectors() {
 
 function initCameraRegionSelect() {
   cameraRegionSelect.innerHTML = "";
-  CAMERA_REGIONS.forEach((region) => {
+  CITY_CAMERA_REGIONS.forEach((region) => {
     const option = document.createElement("option");
     option.value = region.id;
     option.textContent = region.label;
@@ -902,41 +910,71 @@ function initCameraRegionSelect() {
   cameraRegionSelect.value = "near-city";
 }
 
-function initCameraCitySelect() {
-  if (!cameraCitySelect) {
+function fillCameraCitySelectOptions(selectElement, defaultValue = "follow") {
+  if (!selectElement) {
     return;
   }
-  cameraCitySelect.innerHTML = "";
+  selectElement.innerHTML = "";
   const allOption = document.createElement("option");
   allOption.value = "all";
   allOption.textContent = "全部縣市";
-  cameraCitySelect.append(allOption);
+  selectElement.append(allOption);
 
   const followOption = document.createElement("option");
   followOption.value = "follow";
   followOption.textContent = "跟隨上方所選縣市";
-  cameraCitySelect.append(followOption);
+  selectElement.append(followOption);
 
   CITY_LOCATIONS.forEach((city) => {
     const option = document.createElement("option");
     option.value = city.name;
     option.textContent = city.name;
-    cameraCitySelect.append(option);
+    selectElement.append(option);
   });
-  cameraCitySelect.value = "follow";
+  selectElement.value = defaultValue;
+}
+
+function initCameraCitySelect() {
+  fillCameraCitySelectOptions(cameraCitySelect, "follow");
+}
+
+function initFreewayRegionSelect() {
+  if (!freewayRegionSelect) {
+    return;
+  }
+  freewayRegionSelect.innerHTML = "";
+  FREEWAY_CAMERA_REGIONS.forEach((region) => {
+    const option = document.createElement("option");
+    option.value = region.id;
+    option.textContent = region.label;
+    freewayRegionSelect.append(option);
+  });
+  freewayRegionSelect.value = "all-freeway";
+}
+
+function initFreewayCitySelect() {
+  fillCameraCitySelectOptions(freewayCitySelect, "follow");
+}
+
+function getSelectedCameraCityNameFrom(selectElement) {
+  if (!selectElement) {
+    return citySelect.value;
+  }
+  if (selectElement.value === "all") {
+    return null;
+  }
+  if (selectElement.value === "follow") {
+    return citySelect.value;
+  }
+  return selectElement.value;
 }
 
 function getSelectedCameraCityName() {
-  if (!cameraCitySelect) {
-    return citySelect.value;
-  }
-  if (cameraCitySelect.value === "all") {
-    return null;
-  }
-  if (cameraCitySelect.value === "follow") {
-    return citySelect.value;
-  }
-  return cameraCitySelect.value;
+  return getSelectedCameraCityNameFrom(cameraCitySelect);
+}
+
+function getSelectedFreewayCityName() {
+  return getSelectedCameraCityNameFrom(freewayCitySelect);
 }
 
 function findNearestTownship(lat, lon) {
@@ -992,7 +1030,36 @@ function getCameraRouteCode(cameraId = "") {
 }
 
 function getSelectedCameraRegion() {
-  return CAMERA_REGIONS.find((item) => item.id === cameraRegionSelect.value) ?? CAMERA_REGIONS[0];
+  return CITY_CAMERA_REGIONS.find((item) => item.id === cameraRegionSelect.value) ?? CITY_CAMERA_REGIONS[0];
+}
+
+function getSelectedFreewayRegion() {
+  return (
+    FREEWAY_CAMERA_REGIONS.find((item) => item.id === freewayRegionSelect?.value) ?? FREEWAY_CAMERA_REGIONS[0]
+  );
+}
+
+function getCameraFocusPoint(region, selectedCityName) {
+  const city = CITY_LOCATIONS.find((item) => item.name === selectedCityName);
+  const location = getActiveWeatherLocation();
+  if (region.id === "near-city") {
+    return {
+      lat: location?.lat ?? city?.lat,
+      lon: location?.lon ?? city?.lon
+    };
+  }
+  return {
+    lat: region.lat ?? location?.lat ?? city?.lat,
+    lon: region.lon ?? location?.lon ?? city?.lon
+  };
+}
+
+function getCityCameraFocusPoint() {
+  return getCameraFocusPoint(getSelectedCameraRegion(), getSelectedCameraCityName() || citySelect.value);
+}
+
+function getFreewayCameraFocusPoint() {
+  return getCameraFocusPoint(getSelectedFreewayRegion(), getSelectedFreewayCityName() || citySelect.value);
 }
 
 function isCameraUrlUsable(url) {
@@ -1007,23 +1074,6 @@ function isCameraUrlUsable(url) {
   }
 }
 
-function getCameraFocusPoint() {
-  const cameraRegion = getSelectedCameraRegion();
-  const selectedCityName = getSelectedCameraCityName() || citySelect.value;
-  const city = CITY_LOCATIONS.find((item) => item.name === selectedCityName);
-  const location = getActiveWeatherLocation();
-  if (cameraRegion.id === "near-city") {
-    return {
-      lat: location?.lat ?? city?.lat,
-      lon: location?.lon ?? city?.lon
-    };
-  }
-  return {
-    lat: cameraRegion.lat ?? location?.lat ?? city?.lat,
-    lon: cameraRegion.lon ?? location?.lon ?? city?.lon
-  };
-}
-
 function getFilteredSortedCityCameras() {
   if (!cityCameraDataset || !Array.isArray(cityCameraDataset.cameras)) {
     return [];
@@ -1032,7 +1082,7 @@ function getFilteredSortedCityCameras() {
   const cameraRegion = getSelectedCameraRegion();
   const keyword = cameraKeyword.value.trim().toLowerCase();
   const normalize = (text) => text.toLowerCase().replaceAll("臺", "台");
-  const focus = getCameraFocusPoint();
+  const focus = getCityCameraFocusPoint();
 
   return cityCameraDataset.cameras
     .filter((camera) => isCameraUrlUsable(camera.html))
@@ -1052,9 +1102,6 @@ function getFilteredSortedCityCameras() {
       return haystack.includes(normalize(keyword));
     })
     .filter((camera) => {
-      if (cameraRegion.routes?.length) {
-        return true;
-      }
       if (cameraRegion.id === "all" || selectedCity) {
         return true;
       }
@@ -1078,30 +1125,46 @@ function getFilteredSortedFreewayCameras() {
   if (!freewayCameraDataset || !Array.isArray(freewayCameraDataset.cameras)) {
     return [];
   }
-  const cameraRegion = getSelectedCameraRegion();
-  const keyword = cameraKeyword.value.trim().toLowerCase();
+  const selectedCity = getSelectedFreewayCityName();
+  const freewayRegion = getSelectedFreewayRegion();
+  const keyword = (freewayKeyword?.value ?? "").trim().toLowerCase();
   const normalize = (text) => text.toLowerCase().replaceAll("臺", "台");
-  const focus = getCameraFocusPoint();
+  const focus = getFreewayCameraFocusPoint();
+  const cityFocus = selectedCity
+    ? CITY_LOCATIONS.find((item) => item.name === selectedCity)
+    : null;
 
   return freewayCameraDataset.cameras
     .filter((camera) => isCameraUrlUsable(camera.html))
     .filter((camera) => {
+      if (!selectedCity || !cityFocus) {
+        return true;
+      }
+      const distanceKm = getDistanceKm(cityFocus.lat, cityFocus.lon, Number(camera.gisy), Number(camera.gisx));
+      return distanceKm <= 80;
+    })
+    .filter((camera) => {
       if (!keyword) {
         return true;
       }
-      const haystack = normalize(`${camera.id ?? ""} ${camera.stakenumber ?? ""}`);
+      const haystack = normalize(
+        `${camera.id ?? ""} ${camera.stakenumber ?? ""} ${camera.routeCode ?? getCameraRouteCode(camera.id)}`
+      );
       return haystack.includes(normalize(keyword));
     })
     .filter((camera) => {
       const routeCode = getCameraRouteCode(camera.id);
-      if (cameraRegion.routes?.length) {
-        return cameraRegion.routes.includes(routeCode);
+      if (freewayRegion.routes?.length) {
+        return freewayRegion.routes.includes(routeCode);
+      }
+      if (freewayRegion.id === "all-freeway") {
+        return true;
       }
       if (!Number.isFinite(focus.lat) || !Number.isFinite(focus.lon)) {
         return true;
       }
       const distanceKm = getDistanceKm(focus.lat, focus.lon, Number(camera.gisy), Number(camera.gisx));
-      return distanceKm <= cameraRegion.radiusKm;
+      return distanceKm <= freewayRegion.radiusKm;
     })
     .map((camera) => {
       const distanceKm =
@@ -1203,6 +1266,20 @@ function renderCameraList() {
   });
 }
 
+function updateFreewayCameraMetaText() {
+  if (!freewayCameraMeta || !freewayCameraDataset) {
+    return;
+  }
+  const freewayFetchedAt = freewayCameraDataset.fetchedAt
+    ? formatDateTime(freewayCameraDataset.fetchedAt)
+    : "未提供";
+  const totalCount = freewayCameraDataset.count ?? freewayCameraDataset.cameras?.length ?? 0;
+  const matchedCount = getFilteredSortedFreewayCameras().length;
+  const cityLabel = getSelectedFreewayCityName() || "全部縣市";
+  const regionLabel = getSelectedFreewayRegion().label;
+  freewayCameraMeta.textContent = `資料來源：交通部公路局（國道 CCTV）｜全台 ${totalCount} 支｜${cityLabel}｜${regionLabel}｜符合 ${matchedCount} 支｜快照時間：${freewayFetchedAt}`;
+}
+
 function renderFreewayCameraList() {
   if (!freewayCameraList) {
     return;
@@ -1212,14 +1289,15 @@ function renderFreewayCameraList() {
     freewayCameraList.innerHTML = `<p class="status-warn">目前無法載入國道監控資料。</p>`;
     return;
   }
-  const rows = getFilteredSortedFreewayCameras().slice(0, 8);
+  const rows = getFilteredSortedFreewayCameras().slice(0, 16);
+  updateFreewayCameraMetaText();
   if (!rows.length) {
-    freewayCameraList.innerHTML = `<p class="status-warn">查無符合條件的國道監控點。</p>`;
+    freewayCameraList.innerHTML = `<p class="status-warn">查無符合條件的國道監控點，請更換縣市、國道或關鍵字。</p>`;
     return;
   }
-  const cameraRegion = getSelectedCameraRegion();
+  const freewayRegion = getSelectedFreewayRegion();
   rows.forEach((camera) => {
-    freewayCameraList.append(createCameraCard(camera, cameraRegion.label));
+    freewayCameraList.append(createCameraCard(camera, freewayRegion.label));
   });
 }
 
@@ -2400,12 +2478,6 @@ async function fetchRoadCameras() {
 
     if (freewayResponse.ok) {
       freewayCameraDataset = await freewayResponse.json();
-      const freewayFetchedAt = freewayCameraDataset.fetchedAt
-        ? formatDateTime(freewayCameraDataset.fetchedAt)
-        : "未提供";
-      if (freewayCameraMeta) {
-        freewayCameraMeta.textContent = `資料來源：交通部公路局（國道 CCTV）｜鏡頭數：${freewayCameraDataset.count ?? 0}｜快照時間：${freewayFetchedAt}`;
-      }
     } else if (freewayCameraMeta) {
       freewayCameraMeta.textContent = `國道監控資料暫時無法更新：HTTP ${freewayResponse.status}`;
     }
@@ -2548,6 +2620,18 @@ cameraCitySelect?.addEventListener("change", () => {
   updateCameraMapLayer();
 });
 
+freewayKeyword?.addEventListener("input", () => {
+  renderFreewayCameraList();
+});
+
+freewayRegionSelect?.addEventListener("change", () => {
+  renderFreewayCameraList();
+});
+
+freewayCitySelect?.addEventListener("change", () => {
+  renderFreewayCameraList();
+});
+
 subscriptionForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   const topics = [...subscriptionForm.querySelectorAll("input[name='topic']:checked")].map((item) => item.value);
@@ -2581,6 +2665,8 @@ autoRefreshToggle.addEventListener("click", () => {
 initRegionSelectors();
 initCameraRegionSelect();
 initCameraCitySelect();
+initFreewayRegionSelect();
+initFreewayCitySelect();
 loadSubscription();
 renderSubscriptionStatus();
 updateWindyTrackEmbed();
