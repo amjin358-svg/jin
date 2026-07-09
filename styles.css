@@ -296,6 +296,19 @@ label {
   gap: 8px;
 }
 
+.windy-wrap {
+  display: grid;
+  gap: 8px;
+}
+
+.windy-embed {
+  width: 100%;
+  min-height: 580px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #0f1622;
+}
+
 .typhoon-wind-map {
   width: 100%;
   min-height: 580px;
@@ -340,6 +353,19 @@ label {
 .camera-controls-grid select,
 .camera-controls-grid input {
   width: 100%;
+}
+
+.freeway-details {
+  margin-top: 16px;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+
+.freeway-details summary {
+  cursor: pointer;
+  color: #35538f;
+  font-weight: 700;
+  margin-bottom: 10px;
 }
 
 .freeway-camera-card {
@@ -808,6 +834,7 @@ select {
   }
 
   .warning-map,
+  .windy-embed,
   .typhoon-wind-map {
     min-height: 400px;
   }

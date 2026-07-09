@@ -10,10 +10,6 @@
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
       crossorigin=""
     />
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/leaflet-velocity@2.1.4/dist/leaflet-velocity.min.css"
-    />
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
@@ -145,11 +141,11 @@
         <div class="section-head">
           <h2>颱風分析</h2>
           <a
-            id="typhoonWindSourceLink"
-            href="https://open-meteo.com/"
+            id="windyExternalLink"
+            href="https://www.windy.com/?23.700,121.000,6"
             target="_blank"
             rel="noopener noreferrer"
-            >風場資料：Open-Meteo</a
+            >開啟 Windy 完整版</a
           >
         </div>
         <div class="typhoon-layout">
@@ -157,9 +153,15 @@
             <p id="typhoonRiskBadge" class="risk-badge risk-low">風險等級：資料讀取中</p>
             <ul id="typhoonAnalysisList" class="analysis-list"></ul>
           </div>
-          <div class="typhoon-wind-wrap">
-            <div id="typhoonWindMap" class="typhoon-wind-map" aria-label="6 小時颱風風場動態圖"></div>
-            <p id="typhoonWindMeta" class="typhoon-wind-meta timestamp">6 小時颱風動態循環播放中</p>
+          <div class="windy-wrap">
+            <iframe
+              id="windyEmbed"
+              class="windy-embed"
+              title="Windy 颱風 6 小時走勢圖"
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade"
+              allowfullscreen
+            ></iframe>
           </div>
         </div>
       </section>
@@ -227,39 +229,30 @@
           </div>
         </div>
         <div id="cameraList" class="camera-list"></div>
-      </section>
-
-      <section class="card camera-card freeway-camera-card">
-        <div class="section-head">
-          <h2>國道CCTV監控</h2>
-          <a
-            href="https://thbapp.thb.gov.tw/"
-            target="_blank"
-            rel="noopener noreferrer"
-            >開啟公路局來源</a
-          >
-        </div>
-        <p id="freewayCameraMeta" class="timestamp">國道資料讀取中...</p>
-        <div class="camera-controls camera-controls-grid freeway-camera-controls">
-          <div>
-            <label for="freewayCitySelect">縣市範圍</label>
-            <select id="freewayCitySelect" aria-label="選擇國道 CCTV 縣市範圍"></select>
+        <details class="freeway-details">
+          <summary>國道CCTV監控</summary>
+          <p id="freewayCameraMeta" class="timestamp">國道資料讀取中...</p>
+          <div class="camera-controls camera-controls-grid freeway-camera-controls">
+            <div>
+              <label for="freewayCitySelect">縣市範圍</label>
+              <select id="freewayCitySelect" aria-label="選擇國道 CCTV 縣市範圍"></select>
+            </div>
+            <div>
+              <label for="freewayRegionSelect">地區／國道範圍</label>
+              <select id="freewayRegionSelect" aria-label="選擇國道 CCTV 範圍"></select>
+            </div>
+            <div>
+              <label for="freewayKeyword">關鍵字篩選（路段/代碼）</label>
+              <input
+                id="freewayKeyword"
+                type="text"
+                placeholder="例如：國道1號、基隆、CCTV-N1"
+                autocomplete="off"
+              />
+            </div>
           </div>
-          <div>
-            <label for="freewayRegionSelect">地區／國道範圍</label>
-            <select id="freewayRegionSelect" aria-label="選擇國道 CCTV 範圍"></select>
-          </div>
-          <div>
-            <label for="freewayKeyword">關鍵字篩選（路段/代碼）</label>
-            <input
-              id="freewayKeyword"
-              type="text"
-              placeholder="例如：國道1號、基隆、CCTV-N1"
-              autocomplete="off"
-            />
-          </div>
-        </div>
-        <div id="freewayCameraList" class="camera-list"></div>
+          <div id="freewayCameraList" class="camera-list"></div>
+        </details>
       </section>
 
       <section class="card map-card">
@@ -322,7 +315,7 @@
           <li>縣市路口監控：交通部運輸資料流通服務（各縣市 CCTV 公開資料快照）。</li>
           <li>國道CCTV監控：交通部公路局即時 CCTV 公開資料（部署時快照）。</li>
           <li>積淹水警示：經濟部水利署 IoW 即時淹水深度感測（公開 API）。</li>
-          <li>颱風分析：中央氣象署颱風消息／警報頁面即時解析 + Open-Meteo 6 小時風場動態循環播放。</li>
+          <li>颱風分析：中央氣象署颱風消息／警報頁面即時解析 + Windy 6 小時動態圖嵌入。</li>
           <li>停電區域：台電災害停電通報（XML）與計畫性工作停電公開資料（ZIP）。</li>
           <li>若公告暫無資料或來源暫時無法連線，頁面會顯示提示並保留上一筆成功結果。</li>
         </ul>
@@ -338,7 +331,6 @@
       integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
       crossorigin=""
     ></script>
-    <script src="https://unpkg.com/leaflet-velocity@2.1.4/dist/leaflet-velocity.min.js"></script>
     <script src="./app.js" defer></script>
   </body>
 </html>

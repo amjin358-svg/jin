@@ -367,7 +367,7 @@ const CITY_CAMERA_REGIONS = [
   { id: "central", label: "中部地區", lat: 24.15, lon: 120.67, radiusKm: 60 },
   { id: "south", label: "南部地區", lat: 22.9, lon: 120.4, radiusKm: 70 },
   { id: "east", label: "東部地區", lat: 23.8, lon: 121.5, radiusKm: 90 },
-  { id: "near-city", label: "靠近所選縣市（80km）", lat: null, lon: null, radiusKm: 80 }
+  { id: "near-city", label: "靠近所選位置（5km）", lat: null, lon: null, radiusKm: 5 }
 ];
 
 const FREEWAY_CAMERA_REGIONS = [
@@ -377,7 +377,7 @@ const FREEWAY_CAMERA_REGIONS = [
   { id: "n5", label: "國道5號", lat: 24.8, lon: 121.8, radiusKm: 9999, routes: ["N5"] },
   { id: "n2-n4", label: "國道2／4號", lat: 24.9, lon: 121.2, radiusKm: 9999, routes: ["N2", "N2A", "N4"] },
   { id: "n6-n8-n10", label: "國道6／8／10號", lat: 23.8, lon: 120.6, radiusKm: 9999, routes: ["N6", "N8", "N10"] },
-  { id: "near-city", label: "靠近所選縣市（80km）", lat: null, lon: null, radiusKm: 80, routes: null }
+  { id: "near-city", label: "靠近所選位置（50km）", lat: null, lon: null, radiusKm: 50, routes: null }
 ];
 
 const REGION_STORAGE_KEY = "weatherRegionPreferenceV1";
@@ -454,9 +454,8 @@ const pm10Value = document.querySelector("#pm10Value");
 const ozoneValue = document.querySelector("#ozoneValue");
 const typhoonRiskBadge = document.querySelector("#typhoonRiskBadge");
 const typhoonAnalysisList = document.querySelector("#typhoonAnalysisList");
-const typhoonWindMapEl = document.querySelector("#typhoonWindMap");
-const typhoonWindMeta = document.querySelector("#typhoonWindMeta");
-const typhoonWindSourceLink = document.querySelector("#typhoonWindSourceLink");
+const windyEmbed = document.querySelector("#windyEmbed");
+const windyExternalLink = document.querySelector("#windyExternalLink");
 const visitorCounter = document.querySelector("#visitorCounter");
 const powerOutageMeta = document.querySelector("#powerOutageMeta");
 const aiAlertList = document.querySelector("#aiAlertList");
@@ -499,18 +498,13 @@ const TAIPOWER_PLANNED_OUTAGE_ZIP_URL =
   "https://service.taipower.com.tw/data/opendata/apply/file/d077004/001.zip";
 const TYPHOON_NEWS_MIRROR = "https://r.jina.ai/https://www.cwa.gov.tw/V8/C/P/Typhoon/TY_NEWS.html";
 const TYPHOON_WARN_MIRROR = "https://r.jina.ai/https://www.cwa.gov.tw/V8/C/P/Typhoon/TY_WARN.html";
-const TYPHOON_WIND_FRAME_MS = 2800;
-const TYPHOON_WIND_GRID = { south: 21.5, north: 26.5, west: 118, east: 123, step: 0.5 };
+const WINDY_EMBED_HEIGHT = 580;
+const CITY_CCTV_RADIUS_KM = 5;
+const FREEWAY_CCTV_RADIUS_KM = 50;
 const VISITOR_COUNTER_NAMESPACE = "jin-weather-tw-v1";
 const VISITOR_COUNTER_KEY = "visits";
 const VISITOR_COUNTER_STORAGE_KEY = "siteVisitCountV1";
 let jsZipModulePromise = null;
-let typhoonWindMap = null;
-let typhoonVelocityLayer = null;
-let typhoonCenterLayer = null;
-let typhoonWindFrames = [];
-let typhoonWindFrameIndex = 0;
-let typhoonWindLoopTimer = null;
 const appState = {
   weather: null,
   airQuality: null,
@@ -557,6 +551,22 @@ function getActiveWeatherLocation() {
   return city
     ? { label: city.name, cityName: city.name, townName: "", lat: city.lat, lon: city.lon }
     : null;
+}
+
+function getCctvLocationFocus() {
+  const location = getActiveWeatherLocation();
+  if (location && Number.isFinite(location.lat) && Number.isFinite(location.lon)) {
+    return {
+      lat: location.lat,
+      lon: location.lon,
+      label: location.label
+    };
+  }
+  const city = CITY_LOCATIONS.find((item) => item.name === citySelect.value);
+  if (city) {
+    return { lat: city.lat, lon: city.lon, label: city.name };
+  }
+  return { lat: 23.7, lon: 121.0, label: "台灣中部" };
 }
 
 function normalizeTaiwanPlaceText(text) {
@@ -1091,10 +1101,9 @@ function getFilteredSortedCityCameras() {
     return [];
   }
   const selectedCity = getSelectedCameraCityName();
-  const cameraRegion = getSelectedCameraRegion();
   const keyword = cameraKeyword.value.trim().toLowerCase();
   const normalize = (text) => text.toLowerCase().replaceAll("臺", "台");
-  const focus = getCityCameraFocusPoint();
+  const focus = getCctvLocationFocus();
 
   return cityCameraDataset.cameras
     .filter((camera) => isCameraUrlUsable(camera.html))
@@ -1114,14 +1123,11 @@ function getFilteredSortedCityCameras() {
       return haystack.includes(normalize(keyword));
     })
     .filter((camera) => {
-      if (cameraRegion.id === "all" || selectedCity) {
-        return true;
-      }
       if (!Number.isFinite(focus.lat) || !Number.isFinite(focus.lon)) {
         return true;
       }
       const distanceKm = getDistanceKm(focus.lat, focus.lon, Number(camera.gisy), Number(camera.gisx));
-      return distanceKm <= cameraRegion.radiusKm;
+      return distanceKm <= CITY_CCTV_RADIUS_KM;
     })
     .map((camera) => {
       const distanceKm =
@@ -1137,24 +1143,13 @@ function getFilteredSortedFreewayCameras() {
   if (!freewayCameraDataset || !Array.isArray(freewayCameraDataset.cameras)) {
     return [];
   }
-  const selectedCity = getSelectedFreewayCityName();
   const freewayRegion = getSelectedFreewayRegion();
   const keyword = (freewayKeyword?.value ?? "").trim().toLowerCase();
   const normalize = (text) => text.toLowerCase().replaceAll("臺", "台");
-  const focus = getFreewayCameraFocusPoint();
-  const cityFocus = selectedCity
-    ? CITY_LOCATIONS.find((item) => item.name === selectedCity)
-    : null;
+  const focus = getCctvLocationFocus();
 
   return freewayCameraDataset.cameras
     .filter((camera) => isCameraUrlUsable(camera.html))
-    .filter((camera) => {
-      if (!selectedCity || !cityFocus) {
-        return true;
-      }
-      const distanceKm = getDistanceKm(cityFocus.lat, cityFocus.lon, Number(camera.gisy), Number(camera.gisx));
-      return distanceKm <= 80;
-    })
     .filter((camera) => {
       if (!keyword) {
         return true;
@@ -1169,14 +1164,14 @@ function getFilteredSortedFreewayCameras() {
       if (freewayRegion.routes?.length) {
         return freewayRegion.routes.includes(routeCode);
       }
-      if (freewayRegion.id === "all-freeway") {
-        return true;
-      }
+      return true;
+    })
+    .filter((camera) => {
       if (!Number.isFinite(focus.lat) || !Number.isFinite(focus.lon)) {
         return true;
       }
       const distanceKm = getDistanceKm(focus.lat, focus.lon, Number(camera.gisy), Number(camera.gisx));
-      return distanceKm <= freewayRegion.radiusKm;
+      return distanceKm <= FREEWAY_CCTV_RADIUS_KM;
     })
     .map((camera) => {
       const distanceKm =
@@ -1257,6 +1252,17 @@ function createCameraCard(camera, scopeLabel) {
   return card;
 }
 
+function updateCameraMetaText() {
+  if (!cameraMeta || !cityCameraDataset) {
+    return;
+  }
+  const cityFetchedAt = cityCameraDataset.fetchedAt ? formatDateTime(cityCameraDataset.fetchedAt) : "未提供";
+  const cityCount = Array.isArray(cityCameraDataset.cameras) ? cityCameraDataset.cameras.length : 0;
+  const matchedCount = getFilteredSortedCityCameras().length;
+  const focus = getCctvLocationFocus();
+  cameraMeta.textContent = `資料來源：各縣市市區路口 CCTV（運輸資料流通服務）｜全台 ${cityCount} 支｜${focus.label} 半徑 ${CITY_CCTV_RADIUS_KM} 公里內 ${matchedCount} 支｜快照時間：${cityFetchedAt}`;
+}
+
 function renderCameraList() {
   cameraList.innerHTML = "";
 
@@ -1265,9 +1271,10 @@ function renderCameraList() {
     return;
   }
 
+  updateCameraMetaText();
   const rows = getFilteredSortedCityCameras().slice(0, 16);
   if (!rows.length) {
-    cameraList.innerHTML = `<p class="status-warn">查無符合條件的市區路口監控點，請更換縣市或關鍵字。</p>`;
+    cameraList.innerHTML = `<p class="status-warn">所選位置半徑 ${CITY_CCTV_RADIUS_KM} 公里內查無市區路口監控點，請更換鄉鎮或關鍵字。</p>`;
     return;
   }
 
@@ -1287,9 +1294,9 @@ function updateFreewayCameraMetaText() {
     : "未提供";
   const totalCount = freewayCameraDataset.count ?? freewayCameraDataset.cameras?.length ?? 0;
   const matchedCount = getFilteredSortedFreewayCameras().length;
-  const cityLabel = getSelectedFreewayCityName() || "全部縣市";
+  const focus = getCctvLocationFocus();
   const regionLabel = getSelectedFreewayRegion().label;
-  freewayCameraMeta.textContent = `資料來源：交通部公路局（國道 CCTV）｜全台 ${totalCount} 支｜${cityLabel}｜${regionLabel}｜符合 ${matchedCount} 支｜快照時間：${freewayFetchedAt}`;
+  freewayCameraMeta.textContent = `資料來源：交通部公路局（國道 CCTV）｜全台 ${totalCount} 支｜${focus.label} 半徑 ${FREEWAY_CCTV_RADIUS_KM} 公里內 ${matchedCount} 支｜${regionLabel}｜快照時間：${freewayFetchedAt}`;
 }
 
 function renderFreewayCameraList() {
@@ -1304,7 +1311,7 @@ function renderFreewayCameraList() {
   const rows = getFilteredSortedFreewayCameras().slice(0, 16);
   updateFreewayCameraMetaText();
   if (!rows.length) {
-    freewayCameraList.innerHTML = `<p class="status-warn">查無符合條件的國道監控點，請更換縣市、國道或關鍵字。</p>`;
+    freewayCameraList.innerHTML = `<p class="status-warn">所選位置半徑 ${FREEWAY_CCTV_RADIUS_KM} 公里內查無國道監控點，請更換鄉鎮、國道或關鍵字。</p>`;
     return;
   }
   const freewayRegion = getSelectedFreewayRegion();
@@ -1722,263 +1729,67 @@ function parseTyphoonOfficialText(newsMarkdown, warnMarkdown) {
   };
 }
 
-function windSpeedDirectionToUV(speedKmh, directionDeg) {
-  const speedMs = Number(speedKmh) / 3.6;
-  const rad = (Number(directionDeg) * Math.PI) / 180;
-  return {
-    u: -speedMs * Math.sin(rad),
-    v: -speedMs * Math.cos(rad)
-  };
+function buildWindyEmbedUrl(lat, lon, zoom = 6) {
+  const params = new URLSearchParams({
+    lat: Number(lat).toFixed(3),
+    lon: Number(lon).toFixed(3),
+    detailLat: Number(lat).toFixed(3),
+    detailLon: Number(lon).toFixed(3),
+    width: "900",
+    height: String(WINDY_EMBED_HEIGHT),
+    zoom: String(zoom),
+    level: "surface",
+    overlay: "wind",
+    product: "ecmwf",
+    menu: "true",
+    message: "false",
+    marker: "true",
+    calendar: "6",
+    pressure: "true",
+    type: "map",
+    location: "coordinates",
+    detail: "true",
+    metricWind: "default",
+    metricTemp: "default",
+    radarRange: "-1"
+  });
+  return `https://embed.windy.com/embed2.html?${params.toString()}`;
 }
 
-function buildWindVelocityHeader(parameterNumber, bounds) {
-  return {
-    parameterUnit: "m.s-1",
-    parameterCategory: 2,
-    parameterNumber,
-    la1: bounds.north,
-    la2: bounds.south,
-    lo1: bounds.west,
-    lo2: bounds.east,
-    nx: bounds.nx,
-    ny: bounds.ny,
-    dx: bounds.step,
-    dy: bounds.step
-  };
-}
-
-function getTyphoonWindFocusPoint() {
+function getWindyFocusPoint() {
   const official = appState.typhoonOfficial;
   const location = getActiveWeatherLocation();
   const hasTyphoonCenter = Number.isFinite(official?.lat) && Number.isFinite(official?.lon);
   return {
     lat: hasTyphoonCenter ? official.lat : location?.lat ?? 23.7,
     lon: hasTyphoonCenter ? official.lon : location?.lon ?? 121.0,
-    zoom: hasTyphoonCenter ? 6 : 7,
+    zoom: hasTyphoonCenter ? 5 : 6,
     hasTyphoonCenter
   };
 }
 
-function buildTyphoonWindGridPoints() {
-  const { south, north, west, east, step } = TYPHOON_WIND_GRID;
-  const lats = [];
-  const lons = [];
-  for (let lat = north; lat >= south - 0.001; lat -= step) {
-    lats.push(Number(lat.toFixed(2)));
+function updateWindyTrackEmbed() {
+  if (!windyEmbed) {
+    return;
   }
-  for (let lon = west; lon <= east + 0.001; lon += step) {
-    lons.push(Number(lon.toFixed(2)));
-  }
-  const latitudeList = [];
-  const longitudeList = [];
-  lats.forEach((lat) => {
-    lons.forEach((lon) => {
-      latitudeList.push(lat);
-      longitudeList.push(lon);
-    });
-  });
-  return { lats, lons, latitudeList, longitudeList };
-}
-
-async function fetchTyphoonWindFrames() {
-  const { lats, lons, latitudeList, longitudeList } = buildTyphoonWindGridPoints();
-  const endpoint = new URL("https://api.open-meteo.com/v1/forecast");
-  endpoint.searchParams.set("latitude", latitudeList.join(","));
-  endpoint.searchParams.set("longitude", longitudeList.join(","));
-  endpoint.searchParams.set("hourly", "wind_speed_10m,wind_direction_10m");
-  endpoint.searchParams.set("timezone", "Asia/Taipei");
-  endpoint.searchParams.set("forecast_hours", "7");
-
-  const response = await fetch(endpoint.toString());
-  if (!response.ok) {
-    throw new Error(`颱風風場資料讀取失敗：${response.status}`);
-  }
-  const results = await response.json();
-  if (!Array.isArray(results) || !results.length) {
-    throw new Error("颱風風場資料格式無法解析");
-  }
-
-  const bounds = {
-    south: TYPHOON_WIND_GRID.south,
-    north: TYPHOON_WIND_GRID.north,
-    west: TYPHOON_WIND_GRID.west,
-    east: TYPHOON_WIND_GRID.east,
-    step: TYPHOON_WIND_GRID.step,
-    nx: lons.length,
-    ny: lats.length
+  const focus = getWindyFocusPoint();
+  const embedUrl = buildWindyEmbedUrl(focus.lat, focus.lon, focus.zoom);
+  const normalizeSrc = (src) => {
+    try {
+      const url = new URL(src);
+      url.searchParams.delete("_replay");
+      return url.toString();
+    } catch {
+      return src;
+    }
   };
-  const frameCount = Math.min(7, results[0].hourly?.time?.length ?? 0);
-  const frames = [];
-
-  for (let hourIndex = 0; hourIndex < frameCount; hourIndex += 1) {
-    const uData = [];
-    const vData = [];
-    results.forEach((point) => {
-      const speed = Number(point.hourly.wind_speed_10m[hourIndex] ?? 0);
-      const direction = Number(point.hourly.wind_direction_10m[hourIndex] ?? 0);
-      const { u, v } = windSpeedDirectionToUV(speed, direction);
-      uData.push(u);
-      vData.push(v);
-    });
-    frames.push({
-      label: results[0].hourly.time[hourIndex],
-      data: [
-        { header: buildWindVelocityHeader(2, bounds), data: uData },
-        { header: buildWindVelocityHeader(3, bounds), data: vData }
-      ]
-    });
+  const currentSrc = windyEmbed.getAttribute("src") || "";
+  if (!currentSrc || normalizeSrc(currentSrc) !== normalizeSrc(embedUrl)) {
+    windyEmbed.src = embedUrl;
   }
-  return frames;
-}
-
-function updateTyphoonWindMeta(frameIndex = 0) {
-  if (!typhoonWindMeta) {
-    return;
+  if (windyExternalLink) {
+    windyExternalLink.href = `https://www.windy.com/?${focus.lat.toFixed(3)},${focus.lon.toFixed(3)},${focus.zoom},i:pressure`;
   }
-  const frame = typhoonWindFrames[frameIndex];
-  const label = frame?.label
-    ? new Date(frame.label).toLocaleString("zh-TW", {
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false
-      })
-    : "更新中";
-  typhoonWindMeta.textContent = `6 小時颱風動態循環播放中｜目前影格 +${frameIndex} 小時（${label}）`;
-}
-
-function updateTyphoonCenterMarker() {
-  if (!typhoonWindMap) {
-    return;
-  }
-  if (typhoonCenterLayer) {
-    typhoonWindMap.removeLayer(typhoonCenterLayer);
-    typhoonCenterLayer = null;
-  }
-  const official = appState.typhoonOfficial;
-  if (!Number.isFinite(official?.lat) || !Number.isFinite(official?.lon)) {
-    return;
-  }
-  typhoonCenterLayer = L.circleMarker([official.lat, official.lon], {
-    radius: 9,
-    color: "#ff4d6d",
-    fillColor: "#ff758f",
-    fillOpacity: 0.92,
-    weight: 2
-  }).bindTooltip(official.name ? `颱風中心：${official.name}` : "颱風中心");
-  typhoonCenterLayer.addTo(typhoonWindMap);
-}
-
-function showTyphoonWindFrame(frameIndex) {
-  if (!typhoonVelocityLayer || !typhoonWindFrames[frameIndex]) {
-    return;
-  }
-  typhoonWindFrameIndex = frameIndex;
-  typhoonVelocityLayer.setData(typhoonWindFrames[frameIndex].data);
-  updateTyphoonWindMeta(frameIndex);
-}
-
-function stopTyphoonWindLoop() {
-  if (typhoonWindLoopTimer) {
-    clearInterval(typhoonWindLoopTimer);
-    typhoonWindLoopTimer = null;
-  }
-}
-
-function startTyphoonWindLoop() {
-  stopTyphoonWindLoop();
-  if (!typhoonWindFrames.length) {
-    return;
-  }
-  typhoonWindLoopTimer = setInterval(() => {
-    const nextIndex = (typhoonWindFrameIndex + 1) % typhoonWindFrames.length;
-    showTyphoonWindFrame(nextIndex);
-  }, TYPHOON_WIND_FRAME_MS);
-}
-
-function createTyphoonVelocityLayer(initialData) {
-  if (typeof L.velocityLayer !== "function") {
-    throw new Error("風場動畫套件尚未載入");
-  }
-  return L.velocityLayer({
-    displayValues: true,
-    displayOptions: {
-      velocityType: "颱風風場",
-      position: "bottomleft",
-      emptyString: "無風場資料",
-      angleConvention: "bearingCW",
-      showCardinal: false,
-      speedUnit: "m/s",
-      directionString: "風向",
-      speedString: "風速"
-    },
-    data: initialData,
-    minVelocity: 0,
-    maxVelocity: 18,
-    velocityScale: 0.012,
-    colorScale: ["#9ad5ff", "#4ea8de", "#2a9d8f", "#f4a261", "#e76f51", "#d62828"],
-    opacity: 0.92
-  });
-}
-
-async function refreshTyphoonWindAnimation() {
-  if (!typhoonWindMap) {
-    return;
-  }
-  try {
-    if (typhoonWindMeta) {
-      typhoonWindMeta.textContent = "6 小時颱風動態讀取中...";
-    }
-    typhoonWindFrames = await fetchTyphoonWindFrames();
-    if (!typhoonWindFrames.length) {
-      throw new Error("未取得 6 小時內風場影格");
-    }
-    if (typhoonVelocityLayer) {
-      typhoonWindMap.removeLayer(typhoonVelocityLayer);
-    }
-    typhoonVelocityLayer = createTyphoonVelocityLayer(typhoonWindFrames[0].data);
-    typhoonVelocityLayer.addTo(typhoonWindMap);
-    showTyphoonWindFrame(0);
-    updateTyphoonCenterMarker();
-    startTyphoonWindLoop();
-  } catch (error) {
-    if (typhoonWindMeta) {
-      typhoonWindMeta.textContent = `颱風動態圖暫時無法更新：${error.message}`;
-    }
-    stopTyphoonWindLoop();
-  }
-}
-
-function updateTyphoonWindMapView() {
-  if (!typhoonWindMap) {
-    return;
-  }
-  const focus = getTyphoonWindFocusPoint();
-  typhoonWindMap.setView([focus.lat, focus.lon], focus.zoom, { animate: false });
-  updateTyphoonCenterMarker();
-  if (typhoonWindSourceLink) {
-    typhoonWindSourceLink.href = `https://open-meteo.com/en/docs`;
-  }
-}
-
-function initTyphoonWindMap() {
-  if (!typhoonWindMapEl || typeof L === "undefined") {
-    if (typhoonWindMeta) {
-      typhoonWindMeta.textContent = "颱風動態圖載入失敗，請檢查地圖套件。";
-    }
-    return;
-  }
-  const focus = getTyphoonWindFocusPoint();
-  typhoonWindMap = L.map(typhoonWindMapEl, {
-    zoomControl: true,
-    attributionControl: true
-  }).setView([focus.lat, focus.lon], focus.zoom);
-
-  L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
-    maxZoom: 19,
-    attribution: "&copy; OpenStreetMap &copy; CARTO"
-  }).addTo(typhoonWindMap);
 }
 
 async function initVisitorCounter() {
@@ -2060,8 +1871,7 @@ function renderTyphoonAnalysis() {
     typhoonRiskBadge.textContent = "風險等級：資料不足";
     typhoonRiskBadge.className = "risk-badge risk-low";
     typhoonAnalysisList.innerHTML = "<li>等待氣象資料。</li>";
-    updateTyphoonWindMapView();
-    refreshTyphoonWindAnimation();
+    updateWindyTrackEmbed();
     return;
   }
   appState.typhoon = result;
@@ -2074,8 +1884,7 @@ function renderTyphoonAnalysis() {
     item.textContent = message;
     typhoonAnalysisList.append(item);
   });
-  updateTyphoonWindMapView();
-  refreshTyphoonWindAnimation();
+  updateWindyTrackEmbed();
 }
 
 function getNearbyFloodWarnings() {
@@ -2716,13 +2525,6 @@ async function fetchRoadCameras() {
       throw new Error(`市區監控資料讀取失敗：${cityResponse.status}`);
     }
     cityCameraDataset = await cityResponse.json();
-    const cityFetchedAt = cityCameraDataset.fetchedAt ? formatDateTime(cityCameraDataset.fetchedAt) : "未提供";
-    const cityCount = Array.isArray(cityCameraDataset.cameras) ? cityCameraDataset.cameras.length : 0;
-    const selectedCity = getSelectedCameraCityName();
-    const matchedCount = selectedCity
-      ? cityCameraDataset.cameras.filter((camera) => camera.city === selectedCity).length
-      : cityCount;
-    cameraMeta.textContent = `資料來源：各縣市市區路口 CCTV（運輸資料流通服務）｜全台 ${cityCount} 支｜目前範圍 ${matchedCount} 支｜快照時間：${cityFetchedAt}`;
 
     if (freewayResponse.ok) {
       freewayCameraDataset = await freewayResponse.json();
@@ -2833,6 +2635,7 @@ citySelect.addEventListener("change", () => {
 townshipSelect.addEventListener("change", () => {
   saveRegionPreference();
   performFullRefresh("manual");
+  renderAllCameraLists();
   updateMapForCityChange();
 });
 
@@ -2855,15 +2658,6 @@ cameraRegionSelect.addEventListener("change", () => {
 });
 
 cameraCitySelect?.addEventListener("change", () => {
-  if (cityCameraDataset) {
-    const selectedCity = getSelectedCameraCityName();
-    const cityCount = cityCameraDataset.cameras.length;
-    const matchedCount = selectedCity
-      ? cityCameraDataset.cameras.filter((camera) => camera.city === selectedCity).length
-      : cityCount;
-    const cityFetchedAt = cityCameraDataset.fetchedAt ? formatDateTime(cityCameraDataset.fetchedAt) : "未提供";
-    cameraMeta.textContent = `資料來源：各縣市市區路口 CCTV（運輸資料流通服務）｜全台 ${cityCount} 支｜目前範圍 ${matchedCount} 支｜快照時間：${cityFetchedAt}`;
-  }
   renderAllCameraLists();
   updateCameraMapLayer();
 });
@@ -2917,7 +2711,7 @@ initFreewayRegionSelect();
 initFreewayCitySelect();
 loadSubscription();
 renderSubscriptionStatus();
-initTyphoonWindMap();
+updateWindyTrackEmbed();
 initVisitorCounter();
 performFullRefresh("manual");
 fetchRoadCameras();
