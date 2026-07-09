@@ -501,6 +501,7 @@ const TYPHOON_WARN_MIRROR = "https://r.jina.ai/https://www.cwa.gov.tw/V8/C/P/Typ
 const WINDY_EMBED_HEIGHT = 580;
 const CITY_CCTV_RADIUS_KM = 5;
 const FREEWAY_CCTV_RADIUS_KM = 50;
+const POWER_OUTAGE_NOTIFY_RADIUS_KM = 10;
 const VISITOR_COUNTER_NAMESPACE = "jin-weather-tw-v1";
 const VISITOR_COUNTER_KEY = "visits";
 const VISITOR_COUNTER_STORAGE_KEY = "siteVisitCountV1";
@@ -2013,16 +2014,85 @@ function getSubscriptionCityName() {
   return appState.subscription?.city || citySelect.value || "";
 }
 
+function getSubscriptionWeatherLocation() {
+  const city = appState.subscription?.city || citySelect.value;
+  const township = appState.subscription?.township || townshipSelect.value;
+  if (city && township) {
+    const townshipRecord = TOWNSHIP_LOCATIONS.find((item) => item.city === city && item.town === township);
+    if (townshipRecord) {
+      return {
+        label: `${townshipRecord.city}${townshipRecord.town}`,
+        cityName: townshipRecord.city,
+        townName: townshipRecord.town,
+        lat: townshipRecord.lat,
+        lon: townshipRecord.lon
+      };
+    }
+  }
+  const cityRecord = CITY_LOCATIONS.find((item) => item.name === city);
+  if (cityRecord) {
+    return {
+      label: cityRecord.name,
+      cityName: cityRecord.name,
+      townName: "",
+      lat: cityRecord.lat,
+      lon: cityRecord.lon
+    };
+  }
+  return getActiveWeatherLocation();
+}
+
+function getSubscriptionLocationLabel() {
+  return getSubscriptionWeatherLocation()?.label || "查詢區域";
+}
+
+function getNearbyPowerOutages(radiusKm = POWER_OUTAGE_NOTIFY_RADIUS_KM) {
+  const location = getSubscriptionWeatherLocation();
+  if (!location || !Number.isFinite(location.lat) || !Number.isFinite(location.lon)) {
+    return [];
+  }
+  if (!appState.powerOutagePoints.length) {
+    return [];
+  }
+  return appState.powerOutagePoints
+    .map((point) => ({
+      ...point,
+      distanceKm: getDistanceKm(location.lat, location.lon, point.lat, point.lon)
+    }))
+    .filter((row) => row.distanceKm <= radiusKm)
+    .sort((a, b) => {
+      const typeOrder = { disaster: 0, planned: 1 };
+      return (typeOrder[a.type] ?? 2) - (typeOrder[b.type] ?? 2) || a.distanceKm - b.distanceKm;
+    });
+}
+
 function getSubscriptionClosureMessage() {
   const cityName = getSubscriptionCityName();
-  if (!cityName) {
-    return null;
-  }
-  const closure = appState.closureRows.find((row) => row.city === cityName);
+  const locationLabel = getSubscriptionLocationLabel();
+  const closure = cityName ? appState.closureRows.find((row) => row.city === cityName) : null;
   if (!closure) {
-    return null;
+    return `【停班停課】${locationLabel}：目前無停班停課狀態`;
   }
-  return `【停班停課】${closure.city}：${closure.message}`;
+  return `【停班停課】${locationLabel}：${closure.message}`;
+}
+
+function isClosureAlertMessage(message) {
+  return message.includes("停止上班") || message.includes("停止上課");
+}
+
+function getSubscriptionPowerOutageMessage() {
+  const locationLabel = getSubscriptionLocationLabel();
+  const nearby = getNearbyPowerOutages();
+  if (!nearby.length) {
+    return `【停電區域】${locationLabel} 半徑 ${POWER_OUTAGE_NOTIFY_RADIUS_KM} 公里內目前無停電通報。`;
+  }
+  const summaries = nearby.slice(0, 3).map((point) => {
+    const typeLabel = point.type === "disaster" ? "災害性停電" : "計畫性停電";
+    const place = point.label || point.area || "未提供區域";
+    return `${place}（${typeLabel}，約 ${point.distanceKm.toFixed(1)} km）`;
+  });
+  const suffix = nearby.length > 3 ? `等共 ${nearby.length} 處` : `共 ${nearby.length} 處`;
+  return `【停電區域】${locationLabel} 半徑 ${POWER_OUTAGE_NOTIFY_RADIUS_KM} 公里內${suffix}：${summaries.join("；")}`;
 }
 
 function sleep(ms) {
@@ -2034,11 +2104,15 @@ function sleep(ms) {
 function buildSubscriptionNotificationMessages() {
   const topics = new Set(appState.subscription?.topics ?? []);
   const messages = [];
+
+  if (topics.has("closure")) {
+    messages.push(getSubscriptionClosureMessage());
+  }
+  if (topics.has("power-outage")) {
+    messages.push(getSubscriptionPowerOutageMessage());
+  }
   if (topics.has("weather") && appState.weather) {
     messages.push(`【即時天氣】${appState.weather.label} ${Math.round(appState.weather.current.temperature_2m)}°C，降雨機率 ${Math.round(appState.weather.rainProb ?? 0)}%。`);
-  }
-  if (topics.has("air") && appState.airQuality) {
-    messages.push(`【空氣品質】AQI ${Math.round(appState.airQuality.aqi)}，${getAqiLabel(appState.airQuality.aqi)}。`);
   }
   if (topics.has("flood")) {
     const floodAlert = appState.aiAlerts.find((text) => text.includes("積淹水警示"));
@@ -2048,11 +2122,8 @@ function buildSubscriptionNotificationMessages() {
       messages.push(`【積淹水監測】${appState.floodMetaText}`);
     }
   }
-  if (topics.has("closure")) {
-    const closureMessage = getSubscriptionClosureMessage();
-    if (closureMessage) {
-      messages.push(closureMessage);
-    }
+  if (topics.has("air") && appState.airQuality) {
+    messages.push(`【空氣品質】AQI ${Math.round(appState.airQuality.aqi)}，${getAqiLabel(appState.airQuality.aqi)}。`);
   }
   return messages;
 }
@@ -2079,12 +2150,14 @@ async function sendSubscriptionNotification({ force = false } = {}) {
   const otherMessages = messages.filter((message) => !message.includes("停班停課"));
 
   for (const closureMessage of closureMessages) {
-    for (let repeat = 0; repeat < 3; repeat += 1) {
+    const repeatCount = isClosureAlertMessage(closureMessage) ? 3 : 1;
+    for (let repeat = 0; repeat < repeatCount; repeat += 1) {
+      const suffix = repeatCount > 1 ? `（第 ${repeat + 1}/${repeatCount} 次提醒）` : "";
       new Notification("預報訂閱通知", {
-        body: `${closureMessage}（第 ${repeat + 1}/3 次提醒）`,
+        body: `${closureMessage}${suffix}`,
         tag: `closure-alert-${repeat}-${Date.now()}`
       });
-      if (repeat < 2) {
+      if (repeat < repeatCount - 1) {
         await sleep(1800);
       }
     }
@@ -2097,7 +2170,9 @@ async function sendSubscriptionNotification({ force = false } = {}) {
 
   appState.lastNotifiedAt = Date.now();
   const statusHint = closureMessages.length
-    ? `已送出停班停課通知 3 次：${closureMessages[0]}`
+    ? isClosureAlertMessage(closureMessages[0])
+      ? `已送出停班停課通知 3 次：${closureMessages[0]}`
+      : `已送出停班停課狀態：${closureMessages[0]}`
     : `已送出通知：${messages[0]}`;
   renderSubscriptionStatus(statusHint);
   return true;
@@ -2596,6 +2671,12 @@ async function performFullRefresh(triggerSource) {
       }),
       fetchLiveFloodData().catch((error) => {
         appState.floodMetaText = `即時淹水資料暫時無法更新：${error.message}`;
+      }),
+      fetchPowerOutageData().catch((error) => {
+        appState.powerOutageMetaText = `停電區域資料暫時無法更新：${error.message}`;
+        if (powerOutageMeta) {
+          powerOutageMeta.textContent = appState.powerOutageMetaText;
+        }
       })
     ]);
     renderTyphoonAnalysis();
