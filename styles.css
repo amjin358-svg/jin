@@ -541,6 +541,18 @@ select {
   gap: 8px;
 }
 
+.subscription-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.subscription-actions .refresh-btn,
+.subscription-actions .ghost-btn {
+  min-height: 40px;
+}
+
 .subscription-form input[type="email"] {
   border: 1px solid var(--border);
   border-radius: 10px;

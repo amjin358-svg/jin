@@ -68,7 +68,7 @@
 
       <section class="grid weather-air-grid">
         <article class="card weather-card weather-air-card">
-          <h2>即時天氣與空氣品質（鄉鎮級）</h2>
+          <h2>即時天氣（鄉鎮級）</h2>
           <p id="weatherSummary" class="big-text">資料讀取中...</p>
           <dl class="metrics weather-metrics">
             <div>
@@ -193,7 +193,10 @@
             <label class="topic-option"
               ><input type="checkbox" name="topic" value="air" checked /> 空氣品質異常</label
             >
-            <button type="submit" class="refresh-btn">儲存訂閱</button>
+            <div class="subscription-actions">
+              <button type="submit" class="refresh-btn">儲存訂閱</button>
+              <button id="testNotificationBtn" type="button" class="ghost-btn">測試通知</button>
+            </div>
           </form>
           <p id="subscriptionStatus" class="timestamp">尚未設定訂閱。</p>
         </article>
@@ -201,7 +204,7 @@
 
       <section class="card camera-card">
         <div class="section-head">
-          <h2>各縣市市區路口 CCTV 監控系統</h2>
+          <h2>路口cctv監控系統</h2>
           <a
             href="https://traffic.transportdata.tw/"
             target="_blank"

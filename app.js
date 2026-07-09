@@ -452,6 +452,7 @@ const rainProjection = document.querySelector("#rainProjection");
 const subscriptionForm = document.querySelector("#subscriptionForm");
 const subscriberEmail = document.querySelector("#subscriberEmail");
 const subscriptionStatus = document.querySelector("#subscriptionStatus");
+const testNotificationBtn = document.querySelector("#testNotificationBtn");
 const autoRefreshMeta = document.querySelector("#autoRefreshMeta");
 const autoRefreshToggle = document.querySelector("#autoRefreshToggle");
 
@@ -1225,7 +1226,7 @@ async function fetchAirQuality() {
   const pm10 = Number(payload.hourly.pm10[index] ?? 0);
   const ozone = Number(payload.hourly.ozone[index] ?? 0);
 
-  airSummary.textContent = `${getAqiLabel(aqi)}`;
+  airSummary.textContent = `當地空氣品質：${getAqiLabel(aqi)}`;
   aqiValue.textContent = `${Math.round(aqi)}`;
   pm25Value.textContent = `${pm25.toFixed(1)} μg/m³`;
   pm10Value.textContent = `${pm10.toFixed(1)} μg/m³`;
@@ -1581,32 +1582,86 @@ function renderSubscriptionStatus(message) {
     subscriptionStatus.textContent = "尚未設定訂閱。";
     return;
   }
-  subscriptionStatus.textContent = `已訂閱 ${appState.subscription.email}（主題：${appState.subscription.topics.join("、")}）`;
+  const permissionLabel =
+    !("Notification" in window)
+      ? "此瀏覽器不支援通知"
+      : Notification.permission === "granted"
+        ? "已允許瀏覽器通知"
+        : Notification.permission === "denied"
+          ? "通知權限已封鎖"
+          : "尚未允許瀏覽器通知";
+  subscriptionStatus.textContent = `已訂閱 ${appState.subscription.email}（主題：${appState.subscription.topics.join("、")}｜${permissionLabel}）`;
+}
+
+async function ensureNotificationPermission() {
+  if (!("Notification" in window)) {
+    renderSubscriptionStatus("此瀏覽器不支援通知，無法啟用即時提醒。");
+    return false;
+  }
+  if (Notification.permission === "granted") {
+    return true;
+  }
+  if (Notification.permission === "denied") {
+    renderSubscriptionStatus("通知權限已封鎖，請在瀏覽器設定中允許本站通知。");
+    return false;
+  }
+  const permission = await Notification.requestPermission();
+  if (permission !== "granted") {
+    renderSubscriptionStatus("尚未取得通知權限，因此無法推送提醒。");
+    return false;
+  }
+  return true;
+}
+
+function buildSubscriptionNotificationMessages() {
+  const topics = new Set(appState.subscription?.topics ?? []);
+  const messages = [];
+  if (topics.has("weather") && appState.weather) {
+    messages.push(`【即時天氣】${appState.weather.label} ${Math.round(appState.weather.current.temperature_2m)}°C，降雨機率 ${Math.round(appState.weather.rainProb ?? 0)}%。`);
+  }
+  if (topics.has("air") && appState.airQuality) {
+    messages.push(`【空氣品質】AQI ${Math.round(appState.airQuality.aqi)}，${getAqiLabel(appState.airQuality.aqi)}。`);
+  }
+  if (topics.has("flood")) {
+    const floodAlert = appState.aiAlerts.find((text) => text.includes("積淹水警示") || text.includes("停班停課"));
+    if (floodAlert) {
+      messages.push(floodAlert);
+    } else if (appState.floodMetaText) {
+      messages.push(`【積淹水監測】${appState.floodMetaText}`);
+    }
+  }
+  return messages;
+}
+
+async function sendSubscriptionNotification({ force = false } = {}) {
+  if (!appState.subscription?.email) {
+    renderSubscriptionStatus("請先輸入 Email 並儲存訂閱。");
+    return false;
+  }
+  const permissionGranted = await ensureNotificationPermission();
+  if (!permissionGranted) {
+    return false;
+  }
+  const messages = buildSubscriptionNotificationMessages();
+  if (!messages.length) {
+    renderSubscriptionStatus("目前沒有符合所選主題的可推播內容。");
+    return false;
+  }
+  if (!force && Date.now() - appState.lastNotifiedAt < AUTO_REFRESH_MS - 5000) {
+    return false;
+  }
+  const body = messages.slice(0, 3).join("\n");
+  new Notification("台灣即時提醒", { body });
+  appState.lastNotifiedAt = Date.now();
+  renderSubscriptionStatus(`已送出通知：${messages[0]}`);
+  return true;
 }
 
 async function maybeNotifySubscribers(triggerSource) {
   if (triggerSource !== "auto" || !appState.subscription?.email) {
     return;
   }
-  const important = appState.aiAlerts.find(
-    (text) => text.includes("高風險") || text.includes("積淹水警示") || text.includes("停班停課")
-  );
-  if (!important) {
-    return;
-  }
-  if (Date.now() - appState.lastNotifiedAt < AUTO_REFRESH_MS - 5000) {
-    return;
-  }
-  if ("Notification" in window) {
-    if (Notification.permission === "default") {
-      await Notification.requestPermission();
-    }
-    if (Notification.permission === "granted") {
-      new Notification("台灣災害提醒", { body: important });
-      appState.lastNotifiedAt = Date.now();
-      renderSubscriptionStatus(`已送出通知：${important}`);
-    }
-  }
+  await sendSubscriptionNotification();
 }
 
 function getMapLayerInstance(layerKey) {
@@ -2187,10 +2242,16 @@ subscriptionForm.addEventListener("submit", async (event) => {
     topics
   };
   localStorage.setItem(SUBSCRIPTION_STORAGE_KEY, JSON.stringify(appState.subscription));
-  if ("Notification" in window && Notification.permission === "default") {
-    await Notification.requestPermission();
-  }
-  renderSubscriptionStatus("訂閱設定已儲存，將於每次自動更新推送警示。");
+  const permissionGranted = await ensureNotificationPermission();
+  renderSubscriptionStatus(
+    permissionGranted
+      ? "訂閱設定已儲存，瀏覽器通知已啟用，可使用「測試通知」立即驗證。"
+      : "訂閱設定已儲存，但尚未取得通知權限。"
+  );
+});
+
+testNotificationBtn?.addEventListener("click", async () => {
+  await sendSubscriptionNotification({ force: true });
 });
 
 autoRefreshToggle.addEventListener("click", () => {
