@@ -50,7 +50,15 @@
         <p id="regionMemoryMeta" class="timestamp">區域偏好：尚未儲存</p>
         <p id="lastUpdated" class="timestamp">尚未更新資料</p>
         <div class="auto-refresh-row">
-          <p id="autoRefreshMeta" class="timestamp">每 15 分鐘自動更新：啟用中</p>
+          <div class="auto-refresh-controls">
+            <label for="autoRefreshInterval">自動更新間隔</label>
+            <select id="autoRefreshInterval" aria-label="選擇自動更新間隔">
+              <option value="15">每 15 分鐘</option>
+              <option value="30">每 30 分鐘</option>
+              <option value="60">每 1 小時</option>
+            </select>
+            <p id="autoRefreshMeta" class="auto-refresh-countdown">每 15 分鐘自動更新：啟用中</p>
+          </div>
           <button id="autoRefreshToggle" type="button" class="ghost-btn">暫停自動更新</button>
         </div>
       </section>

@@ -466,6 +466,7 @@ const subscriptionStatus = document.querySelector("#subscriptionStatus");
 const testNotificationBtn = document.querySelector("#testNotificationBtn");
 const autoRefreshMeta = document.querySelector("#autoRefreshMeta");
 const autoRefreshToggle = document.querySelector("#autoRefreshToggle");
+const autoRefreshIntervalSelect = document.querySelector("#autoRefreshInterval");
 
 let cityCameraDataset = null;
 let freewayCameraDataset = null;
@@ -488,7 +489,13 @@ const mapLayerConfig = {
   "cctv-points": { label: "縣市路口 CCTV", pane: "cameraPane" },
   "city-focus": { label: "縣市焦點圈", pane: "focusPane", hiddenInControl: true }
 };
-const AUTO_REFRESH_MS = 15 * 60 * 1000;
+const AUTO_REFRESH_OPTIONS = {
+  15: { ms: 15 * 60 * 1000, label: "15 分鐘" },
+  30: { ms: 30 * 60 * 1000, label: "30 分鐘" },
+  60: { ms: 60 * 60 * 1000, label: "1 小時" }
+};
+const AUTO_REFRESH_STORAGE_KEY = "autoRefreshIntervalMinutesV1";
+const DEFAULT_AUTO_REFRESH_MINUTES = 15;
 const SUBSCRIPTION_STORAGE_KEY = "weatherMemberSubscriptionV1";
 const RECOVERY_STATE_STORAGE_KEY = "subscriptionRecoveryStateV1";
 const FLOOD_LATEST_API =
@@ -523,7 +530,8 @@ const appState = {
   typhoonOfficial: null,
   aiAlerts: [],
   autoRefreshEnabled: true,
-  nextAutoRefreshAt: Date.now() + AUTO_REFRESH_MS,
+  autoRefreshIntervalMinutes: DEFAULT_AUTO_REFRESH_MINUTES,
+  nextAutoRefreshAt: Date.now() + AUTO_REFRESH_OPTIONS[DEFAULT_AUTO_REFRESH_MINUTES].ms,
   subscription: null,
   lastNotifiedAt: 0
 };
@@ -2295,7 +2303,7 @@ async function sendSubscriptionNotification({ force = false } = {}) {
     renderSubscriptionStatus("目前沒有符合所選主題的可推播內容。");
     return false;
   }
-  if (!force && Date.now() - appState.lastNotifiedAt < AUTO_REFRESH_MS - 5000) {
+  if (!force && Date.now() - appState.lastNotifiedAt < getAutoRefreshIntervalMs() - 5000) {
     return false;
   }
 
@@ -2728,37 +2736,62 @@ function setRefreshButtonLoading(isLoading) {
   refreshBtn.textContent = isLoading ? "更新中..." : "立即更新資料";
 }
 
-function scheduleNextAutoRefresh() {
-  appState.nextAutoRefreshAt = Date.now() + AUTO_REFRESH_MS;
+function getAutoRefreshIntervalMs() {
+  return AUTO_REFRESH_OPTIONS[appState.autoRefreshIntervalMinutes]?.ms ?? AUTO_REFRESH_OPTIONS[15].ms;
 }
 
-function updateAutoRefreshMeta() {
-  if (!appState.autoRefreshEnabled) {
-    autoRefreshMeta.textContent = "每 15 分鐘自動更新：已暫停";
-    autoRefreshToggle.textContent = "恢復自動更新";
-    return;
+function getAutoRefreshIntervalLabel() {
+  return AUTO_REFRESH_OPTIONS[appState.autoRefreshIntervalMinutes]?.label ?? "15 分鐘";
+}
+
+function loadAutoRefreshIntervalPreference() {
+  const saved = Number(localStorage.getItem(AUTO_REFRESH_STORAGE_KEY));
+  if (AUTO_REFRESH_OPTIONS[saved]) {
+    appState.autoRefreshIntervalMinutes = saved;
   }
-  const diff = Math.max(0, appState.nextAutoRefreshAt - Date.now());
-  const minutes = Math.floor(diff / 60000);
-  const seconds = Math.floor((diff % 60000) / 1000);
-  autoRefreshMeta.textContent = `每 15 分鐘自動更新：啟用中（${minutes}:${String(seconds).padStart(2, "0")} 後）`;
-  autoRefreshToggle.textContent = "暫停自動更新";
+  if (autoRefreshIntervalSelect) {
+    autoRefreshIntervalSelect.value = String(appState.autoRefreshIntervalMinutes);
+  }
 }
 
-function startAutoRefreshTimers() {
+function restartAutoRefreshTimers() {
   scheduleNextAutoRefresh();
   if (autoRefreshTimer) {
     clearInterval(autoRefreshTimer);
-  }
-  if (countdownTimer) {
-    clearInterval(countdownTimer);
   }
   autoRefreshTimer = setInterval(() => {
     if (!appState.autoRefreshEnabled) {
       return;
     }
     performFullRefresh("auto");
-  }, AUTO_REFRESH_MS);
+  }, getAutoRefreshIntervalMs());
+  updateAutoRefreshMeta();
+}
+
+function scheduleNextAutoRefresh() {
+  appState.nextAutoRefreshAt = Date.now() + getAutoRefreshIntervalMs();
+}
+
+function updateAutoRefreshMeta() {
+  const intervalLabel = getAutoRefreshIntervalLabel();
+  if (!appState.autoRefreshEnabled) {
+    autoRefreshMeta.textContent = `每 ${intervalLabel} 自動更新：已暫停`;
+    autoRefreshToggle.textContent = "恢復自動更新";
+    return;
+  }
+  const diff = Math.max(0, appState.nextAutoRefreshAt - Date.now());
+  const minutes = Math.floor(diff / 60000);
+  const seconds = Math.floor((diff % 60000) / 1000);
+  autoRefreshMeta.textContent = `每 ${intervalLabel} 自動更新：啟用中（${minutes}:${String(seconds).padStart(2, "0")} 後）`;
+  autoRefreshToggle.textContent = "暫停自動更新";
+}
+
+function startAutoRefreshTimers() {
+  loadAutoRefreshIntervalPreference();
+  restartAutoRefreshTimers();
+  if (countdownTimer) {
+    clearInterval(countdownTimer);
+  }
   countdownTimer = setInterval(() => {
     updateAutoRefreshMeta();
   }, 1000);
@@ -2892,6 +2925,16 @@ autoRefreshToggle.addEventListener("click", () => {
     scheduleNextAutoRefresh();
   }
   updateAutoRefreshMeta();
+});
+
+autoRefreshIntervalSelect?.addEventListener("change", () => {
+  const minutes = Number(autoRefreshIntervalSelect.value);
+  if (!AUTO_REFRESH_OPTIONS[minutes]) {
+    return;
+  }
+  appState.autoRefreshIntervalMinutes = minutes;
+  localStorage.setItem(AUTO_REFRESH_STORAGE_KEY, String(minutes));
+  restartAutoRefreshTimers();
 });
 
 initRegionSelectors();

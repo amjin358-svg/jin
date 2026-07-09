@@ -382,6 +382,29 @@ label {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
+  flex-wrap: wrap;
+}
+
+.auto-refresh-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.auto-refresh-controls label {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.auto-refresh-countdown {
+  margin: 0;
+  padding: 6px 10px;
+  border: 1px solid #1f5ae1;
+  border-radius: 8px;
+  color: #1f5ae1;
+  font-weight: 600;
+  font-size: 13px;
 }
 
 .ghost-btn {
