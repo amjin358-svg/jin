@@ -276,31 +276,31 @@
               <ul class="legend-list">
                 <li>
                   <span class="legend-swatch flood-level-4" aria-hidden="true"></span>
-                  <span>積淹水感測：嚴重積水（等級 4）</span>
+                  <span>積淹水：等級 4（嚴重）</span>
                 </li>
                 <li>
                   <span class="legend-swatch flood-level-3" aria-hidden="true"></span>
-                  <span>積淹水感測：明顯積水（等級 3）</span>
+                  <span>積淹水：等級 3（明顯）</span>
                 </li>
                 <li>
                   <span class="legend-swatch flood-level-2" aria-hidden="true"></span>
-                  <span>積淹水感測：淺層積水（等級 2）</span>
+                  <span>積淹水：等級 2（淺層）</span>
                 </li>
                 <li>
                   <span class="legend-swatch flood-level-1" aria-hidden="true"></span>
-                  <span>積淹水感測：輕微積水（等級 1）</span>
+                  <span>積淹水：等級 1（輕微）</span>
                 </li>
                 <li>
                   <span class="legend-swatch power-outage-disaster" aria-hidden="true"></span>
-                  <span>停電區域：災害性停電（台電即時通報）</span>
+                  <span>停電：災害性（台電通報）</span>
                 </li>
                 <li>
                   <span class="legend-swatch power-outage-planned" aria-hidden="true"></span>
-                  <span>停電區域：今日計畫性停電（所選縣市）</span>
+                  <span>停電：計畫性（所選縣市）</span>
                 </li>
                 <li>
                   <span class="legend-swatch cctv-point" aria-hidden="true"></span>
-                  <span>縣市路口 CCTV 監測點（右側地圖可點選）</span>
+                  <span>CCTV 監測點（可點選）</span>
                 </li>
               </ul>
             </div>
@@ -310,7 +310,15 @@
       </section>
 
       <section class="card notice-card">
-        <h2>資料說明</h2>
+        <div class="notice-head">
+          <h2>資料說明</h2>
+          <div class="visitor-counter-wrap">
+            <p id="visitorCounter" class="visitor-counter">到訪人次：讀取中...</p>
+            <p id="regionVisitorCounter" class="visitor-counter region-visitor-counter">
+              區域到訪人次：讀取中...
+            </p>
+          </div>
+        </div>
         <ul>
           <li>天氣與空氣品質：Open-Meteo（鄉鎮級即時與短時預報／AQI）。</li>
           <li>區域記憶：瀏覽器 localStorage 保留上次選取的區域／縣市／鄉鎮。</li>
@@ -324,10 +332,6 @@
         </ul>
       </section>
     </main>
-
-    <footer class="site-footer">
-      <p id="visitorCounter" class="visitor-counter">拜訪人次：讀取中...</p>
-    </footer>
 
     <script
       src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"

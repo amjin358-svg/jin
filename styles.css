@@ -327,22 +327,47 @@ label {
   text-align: center;
 }
 
-.site-footer {
+.notice-head {
   display: flex;
-  justify-content: flex-end;
-  padding: 4px 0 20px;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.notice-head h2 {
+  margin: 0;
+}
+
+.visitor-counter-wrap {
+  display: grid;
+  gap: 6px;
+  justify-items: end;
+  flex-shrink: 0;
 }
 
 .visitor-counter {
   margin: 0;
-  padding: 8px 14px;
+  padding: 6px 10px;
   border: 1px solid var(--border);
   border-radius: 999px;
   background: #fff;
-  font-size: 13px;
+  font-size: 12px;
   color: #35538f;
   font-weight: 700;
   box-shadow: 0 4px 14px rgba(15, 22, 34, 0.06);
+  white-space: nowrap;
+}
+
+.region-visitor-counter {
+  color: #1f5ae1;
+  border-color: #b8ccf5;
+  background: #f3f7ff;
+}
+
+.notice-card ul {
+  margin: 8px 0 0 18px;
+  padding: 0;
+  line-height: 1.6;
 }
 
 .camera-controls-grid {
@@ -385,6 +410,9 @@ label {
 .closure-list {
   max-height: 320px;
   overflow: auto;
+  display: grid;
+  gap: 6px;
+  margin-top: 6px;
 }
 
 .auto-refresh-row {
@@ -539,12 +567,6 @@ select {
   text-decoration: none;
 }
 
-.closure-list {
-  display: grid;
-  gap: 10px;
-  margin-top: 10px;
-}
-
 .camera-controls {
   display: grid;
   gap: 8px;
@@ -624,57 +646,60 @@ select {
 .map-layout {
   margin-top: 12px;
   display: grid;
-  grid-template-columns: 280px minmax(0, 1fr);
+  grid-template-columns: minmax(0, max-content) minmax(0, 1fr);
   gap: 12px;
+  align-items: start;
 }
 
 .layer-panel {
   border: 1px solid var(--border);
   border-radius: 10px;
-  padding: 10px;
+  padding: 8px;
   background: #fbfdff;
   display: flex;
   flex-direction: column;
-  min-height: 500px;
+  gap: 6px;
+  align-self: start;
 }
 
-.layer-panel h3 {
-  margin: 0 0 10px;
-  font-size: 16px;
+.layer-panel .timestamp {
+  font-size: 12px;
+  line-height: 1.25;
 }
 
 .layer-list {
   list-style: none;
-  margin: 0 0 10px;
+  margin: 0;
   padding: 0;
   display: grid;
-  gap: 8px;
+  gap: 4px;
 }
 
 .layer-item {
   border: 1px solid var(--border);
-  border-radius: 9px;
+  border-radius: 8px;
   background: #fff;
-  padding: 8px 10px;
+  padding: 5px 8px;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .layer-item label {
-  font-size: 14px;
+  font-size: 13px;
+  line-height: 1.25;
 }
 
 .map-legend {
-  margin-top: auto;
-  padding-top: 12px;
+  margin-top: 4px;
+  padding-top: 8px;
   border-top: 1px dashed var(--border);
 }
 
 .map-legend h4 {
-  margin: 0 0 8px;
-  font-size: 14px;
+  margin: 0 0 4px;
+  font-size: 13px;
 }
 
 .legend-list {
@@ -682,22 +707,22 @@ select {
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 8px;
+  gap: 3px;
 }
 
 .legend-list li {
   display: grid;
-  grid-template-columns: 18px minmax(0, 1fr);
-  gap: 8px;
+  grid-template-columns: 12px minmax(0, max-content);
+  gap: 6px;
   align-items: center;
-  font-size: 13px;
-  line-height: 1.35;
+  font-size: 12px;
+  line-height: 1.2;
   color: #334155;
 }
 
 .legend-swatch {
-  width: 14px;
-  height: 14px;
+  width: 10px;
+  height: 10px;
   border-radius: 999px;
   border: 1px solid rgba(15, 22, 34, 0.25);
 }
@@ -811,21 +836,61 @@ select {
   color: #2d3856;
 }
 
+.closure-group {
+  display: grid;
+  gap: 3px;
+}
+
+.closure-group-label {
+  margin: 2px 0 0;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.closure-group.closure-stop .closure-group-label {
+  color: #b71c1c;
+}
+
+.closure-group.closure-normal .closure-group-label {
+  color: #0d47a1;
+}
+
 .closure-item {
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 10px;
+  border-radius: 6px;
+  padding: 4px 8px;
 }
 
 .closure-item h3 {
-  margin: 0 0 8px;
-  font-size: 17px;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.25;
 }
 
 .closure-item p {
   margin: 0;
-  color: #2d3856;
-  line-height: 1.5;
+  line-height: 1.3;
+  font-size: 13px;
+}
+
+.closure-item.closure-stop {
+  background: #ffcdd2;
+  border: 1px solid #e57373;
+}
+
+.closure-item.closure-stop h3,
+.closure-item.closure-stop p {
+  color: #b71c1c;
+}
+
+.closure-item.closure-normal {
+  background: #bbdefb;
+  border: 1px solid #64b5f6;
+}
+
+.closure-item.closure-normal h3,
+.closure-item.closure-normal p {
+  color: #0d47a1;
 }
 
 .status-ok {
@@ -836,13 +901,16 @@ select {
   color: var(--warn);
 }
 
-.notice-card ul {
-  margin: 8px 0 0 18px;
-  padding: 0;
-  line-height: 1.6;
-}
-
 @media (max-width: 860px) {
+  .notice-head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .visitor-counter-wrap {
+    justify-items: start;
+  }
+
   .hero {
     flex-direction: column;
   }
