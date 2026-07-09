@@ -1448,7 +1448,7 @@ function renderAirQualityLevelStyles({ aqi, pm25, pm10, ozone }) {
 function renderRainTimeline(hours) {
   rainTimeline.innerHTML = "";
   if (!hours.length) {
-    rainTimeline.textContent = "暫無預報資料";
+    rainTimeline.innerHTML = `<p class="rain-empty">暫無預報資料</p>`;
     return;
   }
 
@@ -1456,11 +1456,11 @@ function renderRainTimeline(hours) {
     const row = document.createElement("div");
     row.className = "rain-row";
     row.innerHTML = `
-      <span>${item.time}</span>
+      <span class="rain-row-time">${item.time}</span>
       <div class="bar-bg">
         <div class="bar" style="width:${Math.max(0, Math.min(item.probability, 100))}%"></div>
       </div>
-      <strong>${item.probability}%</strong>
+      <strong class="rain-row-probability">${item.probability}%</strong>
     `;
     rainTimeline.append(row);
   });

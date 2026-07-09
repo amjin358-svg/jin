@@ -494,10 +494,24 @@ select {
 
 .rain-row {
   display: grid;
-  gap: 6px;
-  grid-template-columns: 58px minmax(0, 1fr) 56px;
+  gap: 8px;
+  grid-template-columns: 72px minmax(0, 1fr) 64px;
   align-items: center;
-  font-size: 13px;
+  font-size: 17px;
+}
+
+.rain-row span,
+.rain-row strong {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.rain-empty {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--muted);
 }
 
 .bar-bg {
