@@ -475,7 +475,7 @@ let mapFloodLayer = null;
 let mapCameraLayer = null;
 let mapCityFocusLayer = null;
 let mapPowerOutageLayer = null;
-const mapLayerOrder = ["power-outage", "flood-warning", "cctv-points", "city-focus"];
+const mapLayerOrder = ["flood-warning", "power-outage", "cctv-points", "city-focus"];
 const mapLayerVisibility = {
   "power-outage": true,
   "flood-warning": true,
@@ -2243,12 +2243,6 @@ function buildSubscriptionNotificationMessages() {
   if (topics.has("closure")) {
     messages.push(getSubscriptionClosureMessage());
   }
-  if (topics.has("power-outage")) {
-    messages.push(getSubscriptionPowerOutageMessage());
-  }
-  if (topics.has("weather") && appState.weather) {
-    messages.push(`【即時天氣】${appState.weather.label} ${Math.round(appState.weather.current.temperature_2m)}°C，降雨機率 ${Math.round(appState.weather.rainProb ?? 0)}%。`);
-  }
   if (topics.has("flood")) {
     const floodAlert = appState.aiAlerts.find((text) => text.includes("積淹水警示"));
     if (floodAlert) {
@@ -2256,6 +2250,12 @@ function buildSubscriptionNotificationMessages() {
     } else if (appState.floodMetaText) {
       messages.push(`【積淹水監測】${appState.floodMetaText}`);
     }
+  }
+  if (topics.has("power-outage")) {
+    messages.push(getSubscriptionPowerOutageMessage());
+  }
+  if (topics.has("weather") && appState.weather) {
+    messages.push(`【即時天氣】${appState.weather.label} ${Math.round(appState.weather.current.temperature_2m)}°C，降雨機率 ${Math.round(appState.weather.rainProb ?? 0)}%。`);
   }
   if (topics.has("air") && appState.airQuality) {
     messages.push(`【空氣品質】AQI ${Math.round(appState.airQuality.aqi)}，${getAqiLabel(appState.airQuality.aqi)}。`);
@@ -2393,31 +2393,6 @@ function syncMapLayerVisibility(layerKey) {
   }
 }
 
-function updateMapLayerOrderFromDom() {
-  if (!mapLayerList) {
-    return;
-  }
-  const orderedKeys = [...mapLayerList.querySelectorAll(".layer-item")].map((item) => item.dataset.layerKey);
-  const hiddenKeys = mapLayerOrder.filter((layerKey) => mapLayerConfig[layerKey]?.hiddenInControl);
-  mapLayerOrder.splice(0, mapLayerOrder.length, ...orderedKeys, ...hiddenKeys);
-  applyMapLayerOrder();
-}
-
-function getDragAfterElement(container, y) {
-  const draggableElements = [...container.querySelectorAll(".layer-item:not(.dragging)")];
-  return draggableElements.reduce(
-    (closest, child) => {
-      const box = child.getBoundingClientRect();
-      const offset = y - box.top - box.height / 2;
-      if (offset < 0 && offset > closest.offset) {
-        return { offset, element: child };
-      }
-      return closest;
-    },
-    { offset: Number.NEGATIVE_INFINITY, element: null }
-  ).element;
-}
-
 function renderLayerControl() {
   if (!mapLayerList) {
     return;
@@ -2430,20 +2405,10 @@ function renderLayerControl() {
     const item = document.createElement("li");
     item.className = "layer-item";
     item.dataset.layerKey = layerKey;
-    item.draggable = true;
     item.innerHTML = `
-      <span class="layer-handle">☰</span>
       <label>${mapLayerConfig[layerKey].label}</label>
       <input type="checkbox" ${mapLayerVisibility[layerKey] ? "checked" : ""} aria-label="${mapLayerConfig[layerKey].label}" />
     `;
-
-    item.addEventListener("dragstart", () => {
-      item.classList.add("dragging");
-    });
-    item.addEventListener("dragend", () => {
-      item.classList.remove("dragging");
-      updateMapLayerOrderFromDom();
-    });
 
     const checkbox = item.querySelector("input");
     checkbox?.addEventListener("change", (event) => {
@@ -2452,20 +2417,7 @@ function renderLayerControl() {
     });
     mapLayerList.append(item);
   });
-
-  mapLayerList.addEventListener("dragover", (event) => {
-    event.preventDefault();
-    const dragging = mapLayerList.querySelector(".dragging");
-    if (!dragging) {
-      return;
-    }
-    const afterElement = getDragAfterElement(mapLayerList, event.clientY);
-    if (afterElement == null) {
-      mapLayerList.appendChild(dragging);
-      return;
-    }
-    mapLayerList.insertBefore(dragging, afterElement);
-  });
+  applyMapLayerOrder();
 }
 
 function buildFloodPointStyle(depthCm) {

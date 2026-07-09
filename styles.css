@@ -608,22 +608,11 @@ select {
   border: 1px solid var(--border);
   border-radius: 9px;
   background: #fff;
-  padding: 8px;
-  cursor: grab;
+  padding: 8px 10px;
   display: grid;
-  grid-template-columns: 22px minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 8px;
-}
-
-.layer-item.dragging {
-  opacity: 0.55;
-}
-
-.layer-handle {
-  color: #76839f;
-  font-weight: 700;
-  user-select: none;
 }
 
 .layer-item label {
