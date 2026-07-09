@@ -444,8 +444,7 @@ const typhoonRiskBadge = document.querySelector("#typhoonRiskBadge");
 const typhoonAnalysisList = document.querySelector("#typhoonAnalysisList");
 const windyEmbed = document.querySelector("#windyEmbed");
 const windyExternalLink = document.querySelector("#windyExternalLink");
-const windyReplayBtn = document.querySelector("#windyReplayBtn");
-const windyAutoReplayBtn = document.querySelector("#windyAutoReplayBtn");
+const windyWeatherStatus = document.querySelector("#windyWeatherStatus");
 const windyReplayMeta = document.querySelector("#windyReplayMeta");
 const aiAlertList = document.querySelector("#aiAlertList");
 const rainProjection = document.querySelector("#rainProjection");
@@ -499,8 +498,8 @@ const appState = {
 let autoRefreshTimer = null;
 let countdownTimer = null;
 let windyAutoReplayTimer = null;
-let windyAutoReplayEnabled = false;
-const WINDY_AUTO_REPLAY_MS = 30000;
+let windyAutoReplayEnabled = true;
+const WINDY_AUTO_REPLAY_MS = 28000;
 let lastWindyEmbedUrl = "";
 
 function getRegionForCity(cityName) {
@@ -1083,6 +1082,7 @@ async function fetchWeather() {
     rain24,
     rainProb
   };
+  renderWindyWeatherStatus();
 }
 
 function parseClosureMarkdown(markdownText) {
@@ -1343,17 +1343,53 @@ function updateWindyReplayMeta(message) {
     return;
   }
   windyReplayMeta.textContent = windyAutoReplayEnabled
-    ? `自動重播已開啟，約每 ${Math.round(WINDY_AUTO_REPLAY_MS / 1000)} 秒循環播放 6 小時動態路徑。`
-    : "可按「播放 6 小時動態」立即播放，或開啟「自動重播」循環播放 6 小時動態路徑。";
+    ? `6 小時颱風動態循環播放中（每 ${Math.round(WINDY_AUTO_REPLAY_MS / 1000)} 秒重播）`
+    : "6 小時颱風動態已暫停";
 }
 
-function updateWindyAutoReplayButton() {
-  if (!windyAutoReplayBtn) {
+function renderWindyWeatherStatus() {
+  if (!windyWeatherStatus) {
     return;
   }
-  windyAutoReplayBtn.textContent = windyAutoReplayEnabled ? "自動重播：開啟" : "自動重播：關閉";
-  windyAutoReplayBtn.classList.toggle("is-active", windyAutoReplayEnabled);
-  updateWindyReplayMeta();
+  const weather = appState.weather;
+  const official = appState.typhoonOfficial;
+  const location = getActiveWeatherLocation();
+  if (!weather?.current) {
+    windyWeatherStatus.innerHTML = `<p class="windy-status-head">天氣狀態讀取中...</p>`;
+    return;
+  }
+
+  const codeLabel = WEATHER_CODE_LABEL[weather.current.weather_code] ?? "天氣更新中";
+  const wind = Math.round(weather.current.wind_speed_10m ?? 0);
+  const gust = Math.round(weather.current.wind_gusts_10m ?? wind);
+  const rainProb = Math.round(weather.rainProb ?? 0);
+  const pressure = Math.round(weather.current.pressure_msl ?? 0);
+  const typhoonLine = official?.name
+    ? `<p class="windy-status-note">颱風動態：${official.name}${official.hasWarning ? "（已發布警報）" : ""}</p>`
+    : `<p class="windy-status-note">颱風動態：目前無官方警報</p>`;
+
+  windyWeatherStatus.innerHTML = `
+    <p class="windy-status-head">${location?.label ?? "所選區域"}｜${codeLabel}</p>
+    <dl class="metrics windy-status-metrics">
+      <div>
+        <dt>風速</dt>
+        <dd>${wind} km/h</dd>
+      </div>
+      <div>
+        <dt>陣風</dt>
+        <dd>${gust} km/h</dd>
+      </div>
+      <div>
+        <dt>降雨機率</dt>
+        <dd>${rainProb}%</dd>
+      </div>
+      <div>
+        <dt>氣壓</dt>
+        <dd>${pressure} hPa</dd>
+      </div>
+    </dl>
+    ${typhoonLine}
+  `;
 }
 
 function replayWindyTrack({ silent = false } = {}) {
@@ -1399,7 +1435,7 @@ function setWindyAutoReplayEnabled(enabled) {
   } else {
     stopWindyAutoReplay();
   }
-  updateWindyAutoReplayButton();
+  updateWindyReplayMeta();
 }
 
 function updateWindyTrackEmbed() {
@@ -1408,7 +1444,6 @@ function updateWindyTrackEmbed() {
   }
   const focus = getWindyFocusPoint();
   const embedUrl = buildWindyEmbedUrl(focus.lat, focus.lon, focus.zoom);
-  // Keep current animation if only cache-busting differs and auto-replay is running.
   const currentBase = (windyEmbed.getAttribute("src") || "").replace(/([&?])_replay=\d+/, "");
   const nextBase = embedUrl;
   if (currentBase !== nextBase) {
@@ -1421,7 +1456,11 @@ function updateWindyTrackEmbed() {
   if (windyExternalLink) {
     windyExternalLink.href = `https://www.windy.com/?${focus.lat.toFixed(3)},${focus.lon.toFixed(3)},${focus.zoom},i:pressure`;
   }
-  updateWindyAutoReplayButton();
+  renderWindyWeatherStatus();
+  updateWindyReplayMeta();
+  if (windyAutoReplayEnabled && !windyAutoReplayTimer) {
+    startWindyAutoReplay();
+  }
 }
 
 function calculateTyphoonRisk() {
@@ -2223,17 +2262,6 @@ cameraCitySelect?.addEventListener("change", () => {
   updateCameraMapLayer();
 });
 
-windyReplayBtn?.addEventListener("click", () => {
-  replayWindyTrack();
-  if (windyAutoReplayEnabled) {
-    startWindyAutoReplay();
-  }
-});
-
-windyAutoReplayBtn?.addEventListener("click", () => {
-  setWindyAutoReplayEnabled(!windyAutoReplayEnabled);
-});
-
 subscriptionForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   const topics = [...subscriptionForm.querySelectorAll("input[name='topic']:checked")].map((item) => item.value);
@@ -2267,7 +2295,7 @@ initCameraRegionSelect();
 initCameraCitySelect();
 loadSubscription();
 renderSubscriptionStatus();
-updateWindyTrackEmbed();
+setWindyAutoReplayEnabled(true);
 performFullRefresh("manual");
 fetchRoadCameras();
 initWarningMap();

@@ -151,24 +151,18 @@
             <ul id="typhoonAnalysisList" class="analysis-list"></ul>
           </div>
           <div class="windy-wrap">
-            <div class="windy-toolbar">
-              <h3>6 小時走勢圖（Windy）</h3>
-              <div class="windy-actions">
-                <button id="windyReplayBtn" type="button" class="ghost-btn">播放 6 小時動態</button>
-                <button id="windyAutoReplayBtn" type="button" class="ghost-btn">自動重播：關閉</button>
-              </div>
-            </div>
             <iframe
               id="windyEmbed"
               class="windy-embed"
-              title="Windy 颱風 12 小時走勢圖"
+              title="Windy 颱風 6 小時走勢圖"
               loading="lazy"
               referrerpolicy="no-referrer-when-downgrade"
               allowfullscreen
             ></iframe>
-            <p id="windyReplayMeta" class="timestamp">
-              可按「播放 6 小時動態」立即播放，或開啟「自動重播」循環播放 6 小時動態路徑。
-            </p>
+            <div id="windyWeatherStatus" class="windy-weather-status" aria-live="polite">
+              <p class="windy-status-head">天氣狀態讀取中...</p>
+            </div>
+            <p id="windyReplayMeta" class="timestamp">6 小時颱風動態循環播放中</p>
           </div>
         </div>
       </section>
@@ -266,7 +260,7 @@
           <li>市區路口監控：交通部運輸資料流通服務（各縣市 CCTV 公開資料快照）。</li>
           <li>國道監控：交通部公路局即時 CCTV 公開資料（部署時快照）。</li>
           <li>積淹水警示：經濟部水利署 IoW 即時淹水深度感測（公開 API）。</li>
-          <li>颱風分析：中央氣象署颱風消息／警報頁面即時解析 + Windy 12 小時走勢圖嵌入。</li>
+          <li>颱風分析：中央氣象署颱風消息／警報頁面即時解析 + Windy 6 小時動態圖自動循環播放。</li>
           <li>若公告暫無資料或來源暫時無法連線，頁面會顯示提示並保留上一筆成功結果。</li>
         </ul>
       </section>

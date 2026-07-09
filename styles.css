@@ -211,6 +211,30 @@ label {
   background: #0f1622;
 }
 
+.windy-weather-status {
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #f7f9fc;
+}
+
+.windy-status-head {
+  margin: 0 0 8px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.windy-status-metrics {
+  margin: 0;
+}
+
+.windy-status-note {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
 .camera-controls-grid {
   grid-template-columns: minmax(160px, 220px) minmax(160px, 240px) minmax(0, 1fr);
   align-items: end;
