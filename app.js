@@ -413,7 +413,7 @@ const WEATHER_CODE_LABEL = {
   99: "強雷雨伴冰雹"
 };
 
-const regionSelect = document.querySelector("#regionSelect");
+const regionSelect = null;
 const citySelect = document.querySelector("#citySelect");
 const townshipSelect = document.querySelector("#townshipSelect");
 const locateBtn = document.querySelector("#locateBtn");
@@ -456,6 +456,7 @@ const typhoonRiskBadge = document.querySelector("#typhoonRiskBadge");
 const typhoonAnalysisList = document.querySelector("#typhoonAnalysisList");
 const windyEmbed = document.querySelector("#windyEmbed");
 const windyExternalLink = document.querySelector("#windyExternalLink");
+const visitorCounter = document.querySelector("#visitorCounter");
 const powerOutageMeta = document.querySelector("#powerOutageMeta");
 const aiAlertList = document.querySelector("#aiAlertList");
 const rainProjection = document.querySelector("#rainProjection");
@@ -511,7 +512,11 @@ const TYPHOON_WARN_MIRROR = "https://r.jina.ai/https://www.cwa.gov.tw/V8/C/P/Typ
 const CLOSURE_OFFICIAL_URL = "https://www.dgpa.gov.tw/typh/daily/nds.html";
 const CLOSURE_REGION_LABELS = ["北部地區", "中部地區", "南部地區", "東部地區", "外島地區"];
 const MAP_FOCUS_CIRCLE_RADIUS_M = 12000;
-const WINDY_EMBED_HEIGHT = 580;
+const WINDY_EMBED_HEIGHT = 820;
+const RAIN_FORECAST_HOURS = 8;
+const VISITOR_COUNTER_NAMESPACE = "jin-weather-tw-v1";
+const VISITOR_COUNTER_KEY = "visits";
+const VISITOR_COUNTER_STORAGE_KEY = "siteVisitCountV1";
 const CITY_CCTV_RADIUS_KM = 5;
 const FREEWAY_CCTV_RADIUS_KM = 65;
 const POWER_OUTAGE_NOTIFY_RADIUS_KM = 10;
@@ -849,8 +854,9 @@ function updatePowerOutageMapLayer() {
 }
 
 function saveRegionPreference() {
+  const region = getRegionForCity(citySelect.value);
   const payload = {
-    region: regionSelect.value,
+    region,
     city: citySelect.value,
     town: townshipSelect.value,
     savedAt: new Date().toISOString()
@@ -871,29 +877,16 @@ function readRegionPreference() {
   }
 }
 
-function fillRegionSelect() {
-  regionSelect.innerHTML = "";
-  REGION_GROUPS.forEach((region) => {
-    const option = document.createElement("option");
-    option.value = region.name;
-    option.textContent = region.name;
-    regionSelect.append(option);
-  });
-}
-
-function fillCitySelect(regionName, preferredCity) {
-  const region = REGION_GROUPS.find((item) => item.name === regionName) ?? REGION_GROUPS[0];
+function fillCitySelect(preferredCity) {
   citySelect.innerHTML = "";
-  region.cities.forEach((cityName) => {
+  CITY_LOCATIONS.forEach((city) => {
     const option = document.createElement("option");
-    option.value = cityName;
-    option.textContent = cityName;
+    option.value = city.name;
+    option.textContent = city.name;
     citySelect.append(option);
   });
-  if (preferredCity && region.cities.includes(preferredCity)) {
+  if (preferredCity && CITY_LOCATIONS.some((city) => city.name === preferredCity)) {
     citySelect.value = preferredCity;
-  } else {
-    citySelect.value = region.cities[0];
   }
 }
 
@@ -914,9 +907,8 @@ function fillTownshipSelect(cityName, preferredTown) {
 }
 
 function applyRegionSelection(regionName, cityName, townName, { persist = true } = {}) {
-  const region = regionName || getRegionForCity(cityName || "臺北市");
-  regionSelect.value = region;
-  fillCitySelect(region, cityName);
+  const city = cityName || "臺北市";
+  fillCitySelect(city);
   fillTownshipSelect(citySelect.value, townName);
   if (persist) {
     saveRegionPreference();
@@ -924,7 +916,6 @@ function applyRegionSelection(regionName, cityName, townName, { persist = true }
 }
 
 function initRegionSelectors() {
-  fillRegionSelect();
   const saved = readRegionPreference();
   if (saved?.city) {
     applyRegionSelection(saved.region || getRegionForCity(saved.city), saved.city, saved.town, {
@@ -1503,7 +1494,7 @@ async function fetchWeather() {
   }));
   const nowIndex = allHours.findIndex((row) => row.isoTime >= current.time);
   const startIndex = nowIndex === -1 ? 0 : nowIndex;
-  const next12Hours = allHours.slice(startIndex, startIndex + 12);
+  const next8Hours = allHours.slice(startIndex, startIndex + RAIN_FORECAST_HOURS);
   const next24Hours = allHours.slice(startIndex, startIndex + 24);
   const rain24 = next24Hours.reduce((sum, item) => sum + item.precipitation, 0);
   const rainProbIndex = findNearestTimeIndex(payload.hourly.time, current.time);
@@ -1519,7 +1510,7 @@ async function fetchWeather() {
   cloudValue.textContent = `${Math.round(current.cloud_cover)}%`;
   pressureValue.textContent = `${Math.round(current.pressure_msl)} hPa`;
   rainProjection.textContent = `未來 24 小時累積降雨預估：${rain24.toFixed(1)} mm`;
-  renderRainTimeline(next12Hours);
+  renderRainTimeline(next8Hours);
 
   appState.weather = {
     cityName: location.cityName,
@@ -1528,7 +1519,7 @@ async function fetchWeather() {
     lat: location.lat,
     lon: location.lon,
     current,
-    next12Hours,
+    next8Hours,
     next24Hours,
     rain24,
     rainProb
@@ -1860,14 +1851,14 @@ function buildWindyEmbedUrl(lat, lon, zoom = 6) {
     level: "surface",
     overlay: "wind",
     product: "ecmwf",
-    menu: "true",
+    menu: "false",
     message: "false",
     marker: "true",
     calendar: "6",
-    pressure: "true",
+    pressure: "false",
     type: "map",
     location: "coordinates",
-    detail: "true",
+    detail: "false",
     metricWind: "default",
     metricTemp: "default",
     radarRange: "-1"
@@ -1906,8 +1897,37 @@ function updateWindyTrackEmbed() {
   if (!currentSrc || normalizeSrc(currentSrc) !== normalizeSrc(embedUrl)) {
     windyEmbed.src = embedUrl;
   }
+  windyEmbed.style.height = `${WINDY_EMBED_HEIGHT}px`;
   if (windyExternalLink) {
     windyExternalLink.href = `https://www.windy.com/?${focus.lat.toFixed(3)},${focus.lon.toFixed(3)},${focus.zoom},i:pressure`;
+  }
+}
+
+async function initVisitorCounter() {
+  if (!visitorCounter) {
+    return;
+  }
+  const localCount = Number(localStorage.getItem(VISITOR_COUNTER_STORAGE_KEY) || 0) + 1;
+  localStorage.setItem(VISITOR_COUNTER_STORAGE_KEY, String(localCount));
+  visitorCounter.textContent = `觀看總人數：${localCount.toLocaleString("zh-TW")}`;
+
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    const response = await fetch(
+      `https://api.countapi.xyz/hit/${VISITOR_COUNTER_NAMESPACE}/${VISITOR_COUNTER_KEY}`,
+      { signal: controller.signal }
+    );
+    clearTimeout(timeoutId);
+    if (!response.ok) {
+      return;
+    }
+    const payload = await response.json();
+    if (Number.isFinite(payload.value)) {
+      visitorCounter.textContent = `觀看總人數：${Number(payload.value).toLocaleString("zh-TW")}`;
+    }
+  } catch {
+    visitorCounter.textContent = `觀看總人數：${localCount.toLocaleString("zh-TW")}（本機累計）`;
   }
 }
 
@@ -1922,7 +1942,7 @@ function calculateTyphoonRisk() {
   const gust = Number(weather?.current?.wind_gusts_10m ?? wind);
   const pressure = Number(weather?.current?.pressure_msl ?? 1015);
   const rainProbAvg = weather
-    ? weather.next12Hours.reduce((sum, item) => sum + item.probability, 0) / Math.max(weather.next12Hours.length, 1)
+    ? weather.next8Hours.reduce((sum, item) => sum + item.probability, 0) / Math.max(weather.next8Hours.length, 1)
     : 0;
   const rain24 = Number(weather?.rain24 ?? 0);
 
@@ -3062,15 +3082,6 @@ async function performFullRefresh(triggerSource) {
   }
 }
 
-regionSelect.addEventListener("change", () => {
-  fillCitySelect(regionSelect.value);
-  fillTownshipSelect(citySelect.value);
-  saveRegionPreference();
-  performFullRefresh("manual");
-  renderAllCameraLists();
-  updateMapForCityChange();
-});
-
 citySelect.addEventListener("change", () => {
   fillTownshipSelect(citySelect.value);
   saveRegionPreference();
@@ -3205,6 +3216,7 @@ updateWindyTrackEmbed();
 syncNoticeDetailsOpen();
 window.matchMedia("(min-width: 861px)").addEventListener("change", syncNoticeDetailsOpen);
 initServiceWorker();
+initVisitorCounter();
 performFullRefresh("manual");
 fetchRoadCameras();
 initWarningMap();

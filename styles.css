@@ -168,6 +168,28 @@ body {
   opacity: 0.85;
 }
 
+.hero-centered {
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 14px;
+}
+
+.hero-centered .hero-content {
+  width: 100%;
+}
+
+.hero-centered h1 {
+  margin: 0;
+  font-size: clamp(1.55rem, 5vw, 2.35rem);
+  line-height: 1.25;
+  letter-spacing: 0.02em;
+}
+
+.hero-centered .refresh-btn {
+  width: min(300px, 100%);
+}
+
 h1 {
   margin: 0 0 8px;
   line-height: 1.2;
@@ -175,8 +197,12 @@ h1 {
 }
 
 h2 {
-  margin: 0 0 12px;
-  font-size: clamp(18px, 2.5vw, 24px);
+  margin: 0 0 10px;
+  font-size: clamp(15px, 2vw, 18px);
+}
+
+.section-head h2 {
+  margin: 0;
 }
 
 .subtitle {
@@ -223,7 +249,7 @@ label {
 }
 
 .region-grid {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   align-items: end;
 }
 
@@ -402,8 +428,8 @@ label {
 
 .typhoon-layout {
   display: grid;
-  grid-template-columns: minmax(260px, 0.9fr) minmax(0, 1.6fr);
-  gap: 16px;
+  grid-template-columns: minmax(180px, 0.45fr) minmax(0, 2fr);
+  gap: 12px;
   align-items: start;
 }
 
@@ -412,22 +438,43 @@ label {
   gap: 8px;
 }
 
-.typhoon-wind-wrap {
-  display: grid;
-  gap: 8px;
+.typhoon-wide h2,
+.typhoon-panel .risk-badge,
+.analysis-list {
+  font-size: 13px;
 }
 
-.windy-wrap {
-  display: grid;
-  gap: 8px;
+.windy-wrap-large {
+  overflow: hidden;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: #0f1622;
+  min-height: 620px;
+  max-height: 660px;
+  position: relative;
+}
+
+.windy-wrap-large::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 120px;
+  background: linear-gradient(180deg, rgba(15, 22, 34, 0) 0%, rgba(15, 22, 34, 0.92) 72%);
+  pointer-events: none;
+  z-index: 2;
 }
 
 .windy-embed {
   width: 100%;
-  min-height: 580px;
-  border: 1px solid var(--border);
+  min-height: 820px;
+  height: 820px;
+  margin-bottom: -150px;
+  border: 0;
   border-radius: 10px;
   background: #0f1622;
+  display: block;
 }
 
 .typhoon-wind-map {
@@ -475,6 +522,27 @@ label {
 
 .notice-details summary h2 {
   margin: 0;
+  font-size: clamp(14px, 2vw, 16px);
+}
+
+.site-footer {
+  display: flex;
+  justify-content: center;
+  padding: 8px 10px calc(18px + env(safe-area-inset-bottom));
+  position: relative;
+  z-index: 1;
+}
+
+.visitor-counter {
+  margin: 0;
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: #fff;
+  font-size: 13px;
+  color: #35538f;
+  font-weight: 700;
+  box-shadow: 0 4px 14px rgba(15, 22, 34, 0.06);
 }
 
 .notice-hint {
@@ -1122,6 +1190,15 @@ input[type="checkbox"] {
     width: 100%;
   }
 
+  .hero-centered h1 {
+    font-size: clamp(1.25rem, 5.6vw, 1.7rem);
+  }
+
+  h2 {
+    font-size: 0.95rem;
+    margin-bottom: 6px;
+  }
+
   .grid {
     grid-template-columns: 1fr;
     gap: 10px;
@@ -1270,13 +1347,19 @@ input[type="checkbox"] {
   }
 
   .warning-map,
-  .windy-embed,
   .typhoon-wind-map {
     min-height: 280px;
   }
 
+  .windy-wrap-large {
+    min-height: 360px;
+    max-height: 400px;
+  }
+
   .windy-embed {
-    height: 280px;
+    min-height: 520px;
+    height: 520px;
+    margin-bottom: -120px;
   }
 
   .camera-list {
@@ -1336,6 +1419,17 @@ input[type="checkbox"] {
     font-size: 1.05rem;
   }
 
+  .windy-wrap-large {
+    min-height: 300px;
+    max-height: 340px;
+  }
+
+  .windy-embed {
+    min-height: 460px;
+    height: 460px;
+    margin-bottom: -110px;
+  }
+
   .region-grid {
     grid-template-columns: 1fr;
   }
@@ -1347,13 +1441,8 @@ input[type="checkbox"] {
 
   .map-pane,
   .warning-map,
-  .windy-embed,
   .typhoon-wind-map {
     min-height: 240px;
-  }
-
-  .windy-embed {
-    height: 240px;
   }
 
   .closure-list {

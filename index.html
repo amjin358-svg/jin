@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <title>台灣即時氣象與停班停課資訊平台</title>
+    <title>台灣即時預報＋停班停課通知平台</title>
     <link
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -23,10 +23,10 @@
       <span class="ambient-orb ambient-orb-c"></span>
     </div>
     <main class="app">
-      <header class="hero">
-        <div>
+      <header class="hero hero-centered">
+        <div class="hero-content">
           <p class="eyebrow desktop-only">Taiwan Weather + Closure Notice</p>
-          <h1>台灣即時預報與停班停課通知平台</h1>
+          <h1>台灣即時預報＋停班停課通知平台</h1>
           <p class="subtitle desktop-only">
             整合即時天氣、短時預報與官方停班停課資訊，颱風天可快速掌握最新動態。
           </p>
@@ -39,10 +39,6 @@
 
       <section class="controls card">
         <div class="control-grid region-grid">
-          <div>
-            <label for="regionSelect">選擇區域</label>
-            <select id="regionSelect" aria-label="選擇區域"></select>
-          </div>
           <div>
             <label for="citySelect">選擇縣市</label>
             <select id="citySelect" aria-label="選擇縣市"></select>
@@ -114,7 +110,7 @@
             <p id="typhoonRiskBadge" class="risk-badge risk-low">風險等級：資料讀取中</p>
             <ul id="typhoonAnalysisList" class="analysis-list"></ul>
           </div>
-          <div class="windy-wrap">
+          <div class="windy-wrap windy-wrap-large">
             <iframe
               id="windyEmbed"
               class="windy-embed"
@@ -198,7 +194,7 @@
         </article>
 
         <article class="card forecast-card">
-          <h2>降雨預測</h2>
+          <h2>降雨預測（未來 8 小時）</h2>
           <div id="rainTimeline" class="rain-timeline" aria-live="polite"></div>
           <p id="rainProjection" class="timestamp">未來 24 小時累積降雨預估：-- mm</p>
         </article>
@@ -393,6 +389,10 @@
         </details>
       </section>
     </main>
+
+    <footer class="site-footer">
+      <p id="visitorCounter" class="visitor-counter">觀看總人數：讀取中...</p>
+    </footer>
 
     <script
       src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
