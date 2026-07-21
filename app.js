@@ -1031,7 +1031,7 @@ function locateByDevice() {
     return;
   }
   locateBtn.disabled = true;
-  locateBtn.textContent = "定位中...";
+  setDualLabelText(locateBtn, "定位中...", "定位中");
   navigator.geolocation.getCurrentPosition(
     (position) => {
       const { latitude, longitude } = position.coords;
@@ -1039,13 +1039,13 @@ function locateByDevice() {
       if (!nearest) {
         regionMemoryMeta.textContent = "區域偏好：定位成功，但找不到對應鄉鎮";
         locateBtn.disabled = false;
-        locateBtn.textContent = "依設備定位選區";
+        setDualLabelText(locateBtn, "依設備定位選區", "定位");
         return;
       }
       applyRegionSelection(getRegionForCity(nearest.city), nearest.city, nearest.town, { persist: true });
       regionMemoryMeta.textContent = `區域偏好：定位完成，已選 ${nearest.city}${nearest.town}（距離約 ${nearest.distanceKm.toFixed(1)} km）`;
       locateBtn.disabled = false;
-      locateBtn.textContent = "依設備定位選區";
+      setDualLabelText(locateBtn, "依設備定位選區", "定位");
       performFullRefresh("manual");
       renderAllCameraLists();
       updateMapForCityChange();
@@ -1053,7 +1053,7 @@ function locateByDevice() {
     (error) => {
       regionMemoryMeta.textContent = `區域偏好：定位失敗（${error.message}）`;
       locateBtn.disabled = false;
-      locateBtn.textContent = "依設備定位選區";
+      setDualLabelText(locateBtn, "依設備定位選區", "定位");
     },
     { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 }
   );
@@ -2827,9 +2827,27 @@ async function fetchRoadCameras() {
   }
 }
 
+function setDualLabelText(element, fullText, shortText = fullText) {
+  if (!element) {
+    return;
+  }
+  const fullNode = element.querySelector(".text-full");
+  const shortNode = element.querySelector(".text-short");
+  if (fullNode && shortNode) {
+    fullNode.textContent = fullText;
+    shortNode.textContent = shortText;
+    return;
+  }
+  element.textContent = fullText;
+}
+
 function setRefreshButtonLoading(isLoading) {
   refreshBtn.disabled = isLoading;
-  refreshBtn.textContent = isLoading ? "更新中..." : "立即更新資料";
+  if (isLoading) {
+    setDualLabelText(refreshBtn, "更新中...", "更新中");
+  } else {
+    setDualLabelText(refreshBtn, "立即更新資料", "更新");
+  }
 }
 
 function getAutoRefreshIntervalMs() {
@@ -2871,17 +2889,17 @@ function updateAutoRefreshMeta() {
   }
   if (!appState.autoRefreshEnabled) {
     autoRefreshMeta.textContent = "自動更新：已暫停";
-    autoRefreshToggle.textContent = "恢復自動更新";
+    setDualLabelText(autoRefreshToggle, "恢復自動更新", "恢復");
     return;
   }
   if (appState.autoRefreshRunning) {
     autoRefreshMeta.textContent = "自動更新：資料更新中...";
-    autoRefreshToggle.textContent = "暫停自動更新";
+    setDualLabelText(autoRefreshToggle, "暫停自動更新", "暫停");
     return;
   }
   const remainingMs = Math.max(0, appState.nextAutoRefreshAt - Date.now());
   autoRefreshMeta.textContent = `自動更新：啟用中（${formatAutoRefreshCountdown(remainingMs)} 後）`;
-  autoRefreshToggle.textContent = "暫停自動更新";
+  setDualLabelText(autoRefreshToggle, "暫停自動更新", "暫停");
 }
 
 async function tickAutoRefreshCountdown() {
@@ -3070,6 +3088,14 @@ autoRefreshIntervalSelect?.addEventListener("change", () => {
   restartAutoRefreshTimers();
 });
 
+function syncNoticeDetailsOpen() {
+  const noticeDetails = document.querySelector("#noticeDetails");
+  if (!noticeDetails) {
+    return;
+  }
+  noticeDetails.open = window.matchMedia("(min-width: 861px)").matches;
+}
+
 initRegionSelectors();
 initCameraRegionSelect();
 initCameraCitySelect();
@@ -3078,6 +3104,8 @@ initFreewayCitySelect();
 loadSubscription();
 renderSubscriptionStatus();
 updateWindyTrackEmbed();
+syncNoticeDetailsOpen();
+window.matchMedia("(min-width: 861px)").addEventListener("change", syncNoticeDetailsOpen);
 performFullRefresh("manual");
 fetchRoadCameras();
 initWarningMap();
