@@ -74,35 +74,37 @@
         </div>
       </section>
 
+      <div
+        class="visual-break section-title-bar visual-break-closure"
+        style="--visual-image: url('https://images.unsplash.com/photo-1504608524841-42fe6f032b4b?auto=format&fit=crop&w=1400&q=80')"
+      >
+        <div class="visual-break-overlay"></div>
+        <h2 class="visual-break-caption">停班停課資訊</h2>
+      </div>
+
       <section class="card closure-card" aria-label="停班停課通知">
-        <div class="section-head card-section-title">
-          <h2>停班停課資訊</h2>
-        </div>
         <p id="closureMeta" class="timestamp closure-meta">讀取中...</p>
         <div id="closureList" class="closure-list"></div>
       </section>
 
       <div
-        class="visual-break visual-break-typhoon"
+        class="visual-break section-title-bar visual-break-typhoon"
         style="--visual-image: url('https://images.unsplash.com/photo-1527482795447-6353af94f517?auto=format&fit=crop&w=1400&q=80')"
-        aria-hidden="true"
       >
         <div class="visual-break-overlay"></div>
+        <h2 class="visual-break-caption">
+          颱風動態與警戒資訊
+          <a
+            id="windyExternalLink"
+            href="https://www.windy.com/?23.700,121.000,5"
+            target="_blank"
+            rel="noopener noreferrer"
+            >(開啟 Windy 完整版)</a
+          >
+        </h2>
       </div>
 
       <section class="card typhoon-card typhoon-wide" aria-label="颱風分析">
-        <div class="section-head card-section-title">
-          <h2>
-            颱風動態與警戒資訊
-            <a
-              id="windyExternalLink"
-              href="https://www.windy.com/?23.700,121.000,5"
-              target="_blank"
-              rel="noopener noreferrer"
-              >(開啟 Windy 完整版)</a
-            >
-          </h2>
-        </div>
         <div class="typhoon-layout">
           <div class="typhoon-panel">
             <p id="typhoonRiskBadge" class="risk-badge risk-low">風險等級：資料讀取中</p>
@@ -122,17 +124,14 @@
       </section>
 
       <div
-        class="visual-break visual-break-weather"
+        class="visual-break section-title-bar visual-break-weather"
         style="--visual-image: url('https://images.unsplash.com/photo-1428908728789-d2de25dbd4e2?auto=format&fit=crop&w=1400&q=80')"
-        aria-hidden="true"
       >
         <div class="visual-break-overlay"></div>
+        <h2 class="visual-break-caption">鄉鎮天氣＋8小時降雨預測</h2>
       </div>
 
       <section class="card section-block weather-block" aria-label="鄉鎮天氣與 8 小時降雨預測">
-        <div class="section-head card-section-title">
-          <h2>鄉鎮天氣＋8小時降雨預測</h2>
-        </div>
         <div class="grid weather-air-grid">
         <article class="card weather-card weather-air-card" aria-label="即時天氣">
           <p id="weatherSummary" class="big-text">資料讀取中...</p>
@@ -201,17 +200,14 @@
       </section>
 
       <div
-        class="visual-break visual-break-alert"
+        class="visual-break section-title-bar visual-break-alert"
         style="--visual-image: url('https://images.unsplash.com/photo-1466611659831-30db71a1e2ec?auto=format&fit=crop&w=1400&q=80')"
-        aria-hidden="true"
       >
         <div class="visual-break-overlay"></div>
+        <h2 class="visual-break-caption">AI 災害提醒與訂閱推播</h2>
       </div>
 
       <section class="card section-block alert-block" aria-label="AI 災害提醒與訂閱推播">
-        <div class="section-head card-section-title">
-          <h2>AI 災害提醒與訂閱推播.</h2>
-        </div>
         <div class="grid">
         <article class="card ai-alert-card" aria-label="AI 災害提醒">
           <ul id="aiAlertList" class="analysis-list"></ul>
@@ -255,25 +251,22 @@
       <div id="inPageAlertHost" class="in-page-alert-host" aria-live="polite" aria-atomic="true"></div>
 
       <div
-        class="visual-break visual-break-cctv"
+        class="visual-break section-title-bar visual-break-cctv"
         style="--visual-image: url('https://images.unsplash.com/photo-1477959854737-f9dbcd076566?auto=format&fit=crop&w=1400&q=80')"
-        aria-hidden="true"
       >
         <div class="visual-break-overlay"></div>
+        <h2 class="visual-break-caption">
+          路口即時影像監控
+          <a
+            href="https://traffic.transportdata.tw/"
+            target="_blank"
+            rel="noopener noreferrer"
+            >(開啟運輸資料流通服務來源)</a
+          >
+        </h2>
       </div>
 
       <section class="card camera-card" aria-label="縣市路口 CCTV 監控">
-        <div class="section-head card-section-title">
-          <h2>
-            路口即時影像監控
-            <a
-              href="https://traffic.transportdata.tw/"
-              target="_blank"
-              rel="noopener noreferrer"
-              >(開啟運輸資料流通服務來源)</a
-            >
-          </h2>
-        </div>
         <p id="cameraMeta" class="timestamp">讀取中...</p>
         <div class="camera-controls camera-controls-grid city-camera-controls">
           <div>
