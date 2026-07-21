@@ -78,18 +78,20 @@
         aria-hidden="true"
       >
         <div class="visual-break-overlay"></div>
-        <p class="visual-break-caption">即時掌握颱風動態與警戒資訊</p>
       </div>
 
       <section class="card typhoon-card typhoon-wide" aria-label="颱風分析">
-        <div class="section-head section-head-link-only">
-          <a
-            id="windyExternalLink"
-            href="https://www.windy.com/?23.700,121.000,6"
-            target="_blank"
-            rel="noopener noreferrer"
-            >開啟 Windy 完整版</a
-          >
+        <div class="section-head card-section-title">
+          <h2>
+            即時掌握颱風動態與警戒資訊.
+            <a
+              id="windyExternalLink"
+              href="https://www.windy.com/?23.700,121.000,5"
+              target="_blank"
+              rel="noopener noreferrer"
+              >(開啟 Windy 完整版)</a
+            >
+          </h2>
         </div>
         <div class="typhoon-layout">
           <div class="typhoon-panel">
@@ -115,10 +117,13 @@
         aria-hidden="true"
       >
         <div class="visual-break-overlay"></div>
-        <p class="visual-break-caption">鄉鎮級天氣與降雨預測</p>
       </div>
 
-      <section class="grid weather-air-grid">
+      <section class="card section-block weather-block" aria-label="鄉鎮級天氣與降雨預測">
+        <div class="section-head card-section-title">
+          <h2>鄉鎮級天氣與降雨預測.</h2>
+        </div>
+        <div class="grid weather-air-grid">
         <article class="card weather-card weather-air-card" aria-label="即時天氣">
           <p id="weatherSummary" class="big-text">資料讀取中...</p>
           <dl class="metrics weather-metrics">
@@ -182,6 +187,7 @@
           <div id="rainTimeline" class="rain-timeline" aria-live="polite"></div>
           <p id="rainProjection" class="timestamp">未來 24 小時累積降雨預估：-- mm</p>
         </article>
+        </div>
       </section>
 
       <div
@@ -190,10 +196,13 @@
         aria-hidden="true"
       >
         <div class="visual-break-overlay"></div>
-        <p class="visual-break-caption">AI 災害提醒與訂閱推播</p>
       </div>
 
-      <section class="grid">
+      <section class="card section-block alert-block" aria-label="AI 災害提醒與訂閱推播">
+        <div class="section-head card-section-title">
+          <h2>AI 災害提醒與訂閱推播.</h2>
+        </div>
+        <div class="grid">
         <article class="card ai-alert-card" aria-label="AI 災害提醒">
           <ul id="aiAlertList" class="analysis-list"></ul>
         </article>
@@ -228,6 +237,7 @@
           </form>
           <p id="subscriptionStatus" class="timestamp">尚未設定訂閱。</p>
         </article>
+        </div>
       </section>
 
       <div
@@ -236,17 +246,19 @@
         aria-hidden="true"
       >
         <div class="visual-break-overlay"></div>
-        <p class="visual-break-caption">路口即時影像監控</p>
       </div>
 
       <section class="card camera-card" aria-label="縣市路口 CCTV 監控">
-        <div class="section-head section-head-link-only">
-          <a
-            href="https://traffic.transportdata.tw/"
-            target="_blank"
-            rel="noopener noreferrer"
-            >開啟運輸資料流通服務來源</a
-          >
+        <div class="section-head card-section-title">
+          <h2>
+            路口即時影像監控
+            <a
+              href="https://traffic.transportdata.tw/"
+              target="_blank"
+              rel="noopener noreferrer"
+              >(開啟運輸資料流通服務來源)</a
+            >
+          </h2>
         </div>
         <p id="cameraMeta" class="timestamp">讀取中...</p>
         <div class="camera-controls camera-controls-grid city-camera-controls">
