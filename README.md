@@ -8,27 +8,45 @@
 - 降雨預測與 24 小時累積雨量估算
 - 停班停課通知整合顯示（連結官方公告來源）
 - 全台政府國道 CCTV 路口監控清單（近距排序、關鍵字篩選）
-- 高對比精簡地圖（可拖曳圖層順序、積淹水警示區塊）
+- 高對比精簡地圖（積淹水／停電／CCTV 圖層）
 - AI 災害提醒、颱風分析、空氣品質、會員訂閱通知
-- 每 15 分鐘自動更新（可暫停/恢復）
+- 自動更新（15／30／60 分鐘可選）
 
 ## 本地啟動
-
-可用任一靜態伺服器啟動，例如：
 
 ```bash
 python3 -m http.server 4173
 ```
 
-啟動後開啟：`http://localhost:4173`
+開啟：`http://localhost:4173`
 
-## GitHub 部署（GitHub Pages）
+## 公開網站（GitHub Pages）
 
-已配置 GitHub Actions：`.github/workflows/deploy-pages.yml`
+程式碼已在公開倉庫：https://github.com/amjin358-svg/jin
 
-- 觸發條件：推送到 `main`
+預期公開網址：
+
+**https://amjin358-svg.github.io/jin/**
+
+### 一次性啟用（倉庫擁有者必做，約 30 秒）
+
+目前 Actions 無法代替擁有者「第一次」開啟 Pages（權限限制）。請用擁有者帳號完成：
+
+1. 開啟 [Pages 設定](https://github.com/amjin358-svg/jin/settings/pages)
+2. **Build and deployment → Source** 選其中一種：
+   - **最快**：`Deploy from a branch` → Branch 選 `main` → Folder `/ (root)` → Save  
+   - 或：`GitHub Actions`（之後每次推 `main` 會自動部署）
+3. 若選 GitHub Actions，請再到 [Actions 權限](https://github.com/amjin358-svg/jin/settings/actions)：
+   - Workflow permissions → **Read and write permissions** → Save
+4. 開啟 [Actions](https://github.com/amjin358-svg/jin/actions) 手動執行 **Deploy site to GitHub Pages**（或再推一次 `main`）
+5. 約 1～2 分鐘後造訪：https://amjin358-svg.github.io/jin/
+
+### 自動部署工作流程
+
+已配置：`.github/workflows/deploy-pages.yml`
+
+- 觸發：推送到 `main`，或手動 `workflow_dispatch`
 - 部署目標：GitHub Pages
-- 預期網址：`https://amjin358-svg.github.io/jin/`
 
 ## CCTV 資料更新
 
