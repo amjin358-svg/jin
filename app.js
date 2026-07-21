@@ -1258,12 +1258,69 @@ function isLikelyDirectImageStream(url = "") {
   return true;
 }
 
-function createCameraCard(camera, scopeLabel) {
+function normalizeRoadToken(text = "") {
+  return String(text)
+    .replace(/[()（）\[\]【】].*$/g, "")
+    .replace(/(交叉口|路口|街口|巷口|口)$/g, "")
+    .replace(/\s+/g, "")
+    .trim();
+}
+
+function getCameraIntersectionRoads(camera) {
+  const parts = [];
+  const pushUnique = (value) => {
+    const token = normalizeRoadToken(value);
+    if (!token) {
+      return;
+    }
+    if (!parts.includes(token)) {
+      parts.push(token);
+    }
+  };
+
+  const candidates = [camera.description, camera.stakenumber, camera.roadName].filter(Boolean);
+  for (const raw of candidates) {
+    const text = String(raw);
+    if (/與/.test(text)) {
+      text.split(/與/).forEach((piece) => pushUnique(piece));
+      break;
+    }
+    if (/到/.test(text) && /國道|快速|公路/.test(text)) {
+      text
+        .replace(/^.*?(國道[^()（）]*)/, "$1")
+        .split(/到/)
+        .forEach((piece) => pushUnique(piece.replace(/[()（）]/g, " ")));
+      break;
+    }
+    if (/[／\/]/.test(text)) {
+      text.split(/[／\/]/).forEach((piece) => pushUnique(piece));
+      break;
+    }
+  }
+
+  pushUnique(camera.roadName);
+  pushUnique(camera.description);
+  pushUnique(camera.stakenumber);
+
+  if (!parts.length) {
+    return ["未提供路名", "未提供交叉路名"];
+  }
+  if (parts.length === 1) {
+    return [parts[0], "交叉路名待補"];
+  }
+  return parts.slice(0, 2);
+}
+
+function createCameraCard(camera, scopeLabel, { radiusKm = CITY_CCTV_RADIUS_KM } = {}) {
   const card = document.createElement("article");
   card.className = "camera-item";
   const streamUrl = camera.html;
-  const safeStake = camera.stakenumber || camera.roadName || "未提供路口資訊";
+  const [roadA, roadB] = getCameraIntersectionRoads(camera);
   const distance = Number.isFinite(camera.distanceKm) ? `${camera.distanceKm.toFixed(1)} km` : "--";
+  const inRange =
+    Number.isFinite(camera.distanceKm) && camera.distanceKm <= radiusKm
+      ? `（${radiusKm} 公里範圍內）`
+      : `（超出 ${radiusKm} 公里）`;
   const directImage = isLikelyDirectImageStream(streamUrl);
 
   const mediaHtml = directImage
@@ -1274,8 +1331,8 @@ function createCameraCard(camera, scopeLabel) {
     ${mediaHtml}
     <div class="camera-body">
       <h3>${camera.id}</h3>
-      <p>${safeStake}</p>
-      <p>定位區域：${scopeLabel}｜距離中心：約 ${distance}</p>
+      <p>交叉路口：${roadA} × ${roadB}</p>
+      <p>定位所在地：${scopeLabel}｜距離定位點：${distance} ${inRange}</p>
       <a href="${streamUrl}" target="_blank" rel="noopener noreferrer">開啟官方即時影像</a>
     </div>
   `;
@@ -1301,9 +1358,11 @@ function updateCameraMetaText() {
     return;
   }
   const cityFetchedAt = cityCameraDataset.fetchedAt ? formatDateTime(cityCameraDataset.fetchedAt) : "未提供";
-  const matchedCount = getFilteredSortedCityCameras().length;
+  const rows = getFilteredSortedCityCameras();
+  const matchedCount = rows.length;
   const focus = getCctvLocationFocus();
-  cameraMeta.textContent = `${focus.label} 半徑 ${CITY_CCTV_RADIUS_KM} 公里內 ${matchedCount} 支｜快照：${cityFetchedAt}`;
+  const nearestKm = Number.isFinite(rows[0]?.distanceKm) ? rows[0].distanceKm.toFixed(1) : "--";
+  cameraMeta.textContent = `定位所在地：${focus.label}｜半徑 ${CITY_CCTV_RADIUS_KM} 公里｜${matchedCount} 支｜最近距離 ${nearestKm} km｜快照：${cityFetchedAt}`;
 }
 
 function renderCameraList() {
@@ -1316,12 +1375,23 @@ function renderCameraList() {
 
   updateCameraMetaText();
   const rows = getFilteredSortedCityCameras().slice(0, 16);
+  const focus = getCctvLocationFocus();
+  const feedback = document.createElement("p");
+  feedback.className = "camera-distance-feedback";
   if (!rows.length) {
-    cameraList.innerHTML = `<p class="status-warn">所選位置半徑 ${CITY_CCTV_RADIUS_KM} 公里內查無市區路口監控點，請更換鄉鎮或關鍵字。</p>`;
+    feedback.textContent = `定位點 ${focus.label}：半徑 ${CITY_CCTV_RADIUS_KM} 公里內查無路口 CCTV，請調整定位或關鍵字。`;
+    cameraList.append(feedback);
+    cameraList.insertAdjacentHTML(
+      "beforeend",
+      `<p class="status-warn">所選位置半徑 ${CITY_CCTV_RADIUS_KM} 公里內查無市區路口監控點，請更換鄉鎮或關鍵字。</p>`
+    );
     return;
   }
 
-  const focus = getCctvLocationFocus();
+  const nearestKm = Number.isFinite(rows[0]?.distanceKm) ? rows[0].distanceKm.toFixed(1) : "--";
+  feedback.textContent = `距離測試回饋：定位點 ${focus.label}，最近 CCTV ${nearestKm} km（篩選半徑 ${CITY_CCTV_RADIUS_KM} 公里）。`;
+  cameraList.append(feedback);
+
   const scopeLabel = focus.label || "所選位置";
   rows.forEach((camera) => {
     cameraList.append(createCameraCard(camera, scopeLabel));
@@ -1338,7 +1408,7 @@ function updateFreewayCameraMetaText() {
   const matchedCount = getFilteredSortedFreewayCameras().length;
   const focus = getCctvLocationFocus();
   const radiusKm = resolveFreewayCctvRadiusKm();
-  freewayCameraMeta.textContent = `${focus.label} 半徑 ${radiusKm} 公里內 ${matchedCount} 支｜定位區域｜快照：${freewayFetchedAt}`;
+  freewayCameraMeta.textContent = `定位所在地：${focus.label}｜半徑 ${radiusKm} 公里｜${matchedCount} 支｜快照：${freewayFetchedAt}`;
 }
 
 function renderFreewayCameraList() {
@@ -1360,7 +1430,7 @@ function renderFreewayCameraList() {
   const focus = getCctvLocationFocus();
   const scopeLabel = focus.label || "所選位置";
   rows.forEach((camera) => {
-    freewayCameraList.append(createCameraCard(camera, scopeLabel));
+    freewayCameraList.append(createCameraCard(camera, scopeLabel, { radiusKm: FREEWAY_CCTV_RADIUS_KM }));
   });
 }
 
@@ -1965,9 +2035,10 @@ async function initVisitorCounter() {
   if (!visitorCounter) {
     return;
   }
-  const localCount = Number(localStorage.getItem(VISITOR_COUNTER_STORAGE_KEY) || 0) + 1;
-  localStorage.setItem(VISITOR_COUNTER_STORAGE_KEY, String(localCount));
-  setVisitorCountDisplay(localCount);
+  const previousLocal = Number(localStorage.getItem(VISITOR_COUNTER_STORAGE_KEY) || 0);
+  let totalCount = previousLocal + 1;
+  localStorage.setItem(VISITOR_COUNTER_STORAGE_KEY, String(totalCount));
+  setVisitorCountDisplay(totalCount);
 
   try {
     const controller = new AbortController();
@@ -1982,10 +2053,13 @@ async function initVisitorCounter() {
     }
     const payload = await response.json();
     if (Number.isFinite(payload.value)) {
-      setVisitorCountDisplay(payload.value);
+      // Keep a monotonic cumulative count across local and remote sources.
+      totalCount = Math.max(totalCount, Number(payload.value));
+      localStorage.setItem(VISITOR_COUNTER_STORAGE_KEY, String(totalCount));
+      setVisitorCountDisplay(totalCount);
     }
   } catch {
-    setVisitorCountDisplay(localCount);
+    setVisitorCountDisplay(totalCount);
   }
 }
 

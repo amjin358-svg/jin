@@ -246,19 +246,19 @@
         style="--visual-image: url('https://images.unsplash.com/photo-1477959854737-f9dbcd076566?auto=format&fit=crop&w=1400&q=80')"
       >
         <div class="visual-break-overlay"></div>
-        <h2 class="visual-break-caption">
-          路口即時影像監控
-          <a
-            href="https://traffic.transportdata.tw/"
-            target="_blank"
-            rel="noopener noreferrer"
-            >(開啟運輸資料流通服務來源)</a
-          >
-        </h2>
+        <h2 class="visual-break-caption">路口即時影像監控</h2>
       </div>
 
       <section class="card camera-card" aria-label="縣市路口 CCTV 監控">
         <p id="cameraMeta" class="timestamp">讀取中...</p>
+        <p class="camera-source-link">
+          <a
+            href="https://traffic.transportdata.tw/"
+            target="_blank"
+            rel="noopener noreferrer"
+            >(來源：運輸資料流通服務)</a
+          >
+        </p>
         <div class="camera-controls camera-controls-grid city-camera-controls">
           <div>
             <label for="cameraCitySelect">縣市範圍</label>
@@ -305,9 +305,17 @@
         </details>
       </section>
 
-      <section class="card map-card" aria-label="即時災害地圖">
+      <div
+        class="visual-break section-title-bar visual-break-map"
+        style="--visual-image: url('https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=1400&q=80')"
+      >
+        <div class="visual-break-overlay"></div>
+        <h2 class="visual-break-caption">災害區域標示圖</h2>
+      </div>
+
+      <section class="card map-card" aria-label="災害區域標示圖">
         <div class="map-layout">
-          <div id="warningMap" class="warning-map map-pane" aria-label="即時災害地圖"></div>
+          <div id="warningMap" class="warning-map map-pane" aria-label="災害區域標示圖"></div>
           <aside class="layer-panel">
             <ul id="mapLayerList" class="layer-list" hidden></ul>
             <p id="powerOutageMeta" class="timestamp">停電區域資料讀取中...</p>
