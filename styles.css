@@ -358,8 +358,15 @@ label {
   cursor: pointer;
 }
 
-.locate-btn-pulse {
-  animation: locate-pulse 1.4s ease-in-out infinite;
+.locate-status {
+  margin: 0;
+  min-height: 1.2em;
+  color: #1f5ae1;
+  font-weight: 600;
+}
+
+.locate-status-error {
+  color: var(--warn);
 }
 
 .locate-btn:disabled {
