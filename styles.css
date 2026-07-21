@@ -596,15 +596,30 @@ label {
 }
 
 .visitor-counter {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   margin: 0;
-  padding: 8px 14px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
+  padding: 6px 10px;
+  border: 0.5px solid #b8c4dc;
+  border-radius: 8px;
   background: #fff;
   font-size: 13px;
   color: #35538f;
+  font-weight: 600;
+}
+
+.visitor-counter-label {
+  white-space: nowrap;
+}
+
+.visitor-counter-value {
+  display: inline-block;
+  min-width: 7ch;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
   font-weight: 700;
-  box-shadow: 0 4px 14px rgba(15, 22, 34, 0.06);
+  letter-spacing: 0.04em;
 }
 
 .notice-hint {

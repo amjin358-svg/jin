@@ -469,6 +469,7 @@ const typhoonAnalysisList = document.querySelector("#typhoonAnalysisList");
 const windyEmbed = document.querySelector("#windyEmbed");
 const windyExternalLink = document.querySelector("#windyExternalLink");
 const visitorCounter = document.querySelector("#visitorCounter");
+const visitorCounterValue = document.querySelector("#visitorCounterValue");
 const powerOutageMeta = document.querySelector("#powerOutageMeta");
 const aiAlertList = document.querySelector("#aiAlertList");
 const rainProjection = document.querySelector("#rainProjection");
@@ -1968,13 +1969,29 @@ function updateWindyTrackEmbed() {
   }
 }
 
+function formatVisitorCount(count) {
+  const value = Math.max(0, Math.floor(Number(count) || 0));
+  return String(value).padStart(7, "0");
+}
+
+function setVisitorCountDisplay(count) {
+  const formatted = formatVisitorCount(count);
+  if (visitorCounterValue) {
+    visitorCounterValue.textContent = formatted;
+    return;
+  }
+  if (visitorCounter) {
+    visitorCounter.textContent = `觀看人數：${formatted}`;
+  }
+}
+
 async function initVisitorCounter() {
   if (!visitorCounter) {
     return;
   }
   const localCount = Number(localStorage.getItem(VISITOR_COUNTER_STORAGE_KEY) || 0) + 1;
   localStorage.setItem(VISITOR_COUNTER_STORAGE_KEY, String(localCount));
-  visitorCounter.textContent = `觀看總人數：${localCount.toLocaleString("zh-TW")}`;
+  setVisitorCountDisplay(localCount);
 
   try {
     const controller = new AbortController();
@@ -1989,10 +2006,10 @@ async function initVisitorCounter() {
     }
     const payload = await response.json();
     if (Number.isFinite(payload.value)) {
-      visitorCounter.textContent = `觀看總人數：${Number(payload.value).toLocaleString("zh-TW")}`;
+      setVisitorCountDisplay(payload.value);
     }
   } catch {
-    visitorCounter.textContent = `觀看總人數：${localCount.toLocaleString("zh-TW")}（本機累計）`;
+    setVisitorCountDisplay(localCount);
   }
 }
 
