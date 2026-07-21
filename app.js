@@ -477,6 +477,9 @@ const subscriptionForm = document.querySelector("#subscriptionForm");
 const subscriberEmail = document.querySelector("#subscriberEmail");
 const subscriptionStatus = document.querySelector("#subscriptionStatus");
 const testNotificationBtn = document.querySelector("#testNotificationBtn");
+const enableNotificationBtn = document.querySelector("#enableNotificationBtn");
+const notificationHint = document.querySelector("#notificationHint");
+const inPageAlertHost = document.querySelector("#inPageAlertHost");
 const autoRefreshMeta = document.querySelector("#autoRefreshMeta");
 const autoRefreshToggle = document.querySelector("#autoRefreshToggle");
 const autoRefreshIntervalSelect = document.querySelector("#autoRefreshInterval");
@@ -2299,19 +2302,102 @@ function renderSubscriptionStatus(message) {
     subscriptionStatus.textContent = "尚未設定訂閱。";
     return;
   }
-  const permissionLabel =
-    !("Notification" in window)
-      ? "此瀏覽器不支援通知"
-      : Notification.permission === "granted"
-        ? "已允許瀏覽器通知"
-        : Notification.permission === "denied"
-          ? "通知權限已封鎖"
-          : "尚未允許瀏覽器通知";
+  const support = getNotificationSupport();
+  const permissionLabel = !support.apiAvailable
+    ? support.isStandalone
+      ? "此瀏覽器不支援系統通知，改用頁面內提醒"
+      : "系統通知需以主畫面開啟，或改用頁面內提醒"
+    : Notification.permission === "granted"
+      ? "已允許瀏覽器通知"
+      : Notification.permission === "denied"
+        ? "通知權限已封鎖，改用頁面內提醒"
+        : "尚未允許瀏覽器通知，暫用頁面內提醒";
   subscriptionStatus.textContent = `已訂閱 ${appState.subscription.email}（地區：${appState.subscription.city || "未指定"}｜主題：${getSelectedSubscriptionTopics().join("、")}｜${permissionLabel}）`;
 }
 
+function isStandaloneDisplay() {
+  return (
+    window.matchMedia("(display-mode: standalone)").matches ||
+    window.matchMedia("(display-mode: fullscreen)").matches ||
+    Boolean(window.navigator.standalone)
+  );
+}
+
+function isLikelyIosDevice() {
+  const ua = navigator.userAgent || "";
+  return /iPad|iPhone|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+}
+
+function getNotificationSupport() {
+  const secure = Boolean(window.isSecureContext);
+  const apiAvailable = secure && "Notification" in window;
+  const standalone = isStandaloneDisplay();
+  const ios = isLikelyIosDevice();
+  let reason = "ok";
+  if (!secure) {
+    reason = "insecure";
+  } else if (!apiAvailable && ios && !standalone) {
+    reason = "ios-home-screen";
+  } else if (!apiAvailable) {
+    reason = "unsupported";
+  }
+  return {
+    secure,
+    apiAvailable,
+    isStandalone: standalone,
+    isIos: ios,
+    reason
+  };
+}
+
+function updateNotificationHint(extraMessage = "") {
+  if (!notificationHint) {
+    return;
+  }
+  const support = getNotificationSupport();
+  const tips = [];
+  if (extraMessage) {
+    tips.push(extraMessage);
+  }
+  if (!support.secure) {
+    tips.push("請以 HTTPS 開啟本站後再啟用通知。");
+  } else if (support.reason === "ios-home-screen") {
+    tips.push("iPhone／iPad：請先用 Safari「分享 → 加入主畫面」，再從主畫面圖示開啟本站，即可啟用系統通知。目前仍可使用頁面內即時提醒。");
+  } else if (support.reason === "unsupported") {
+    tips.push("此瀏覽器暫不支援系統通知，已自動改用頁面內即時提醒。");
+  } else if ("Notification" in window && Notification.permission === "denied") {
+    tips.push("通知權限已封鎖：請到瀏覽器設定允許本站通知；目前會改用頁面內提醒。");
+  } else if ("Notification" in window && Notification.permission !== "granted") {
+    tips.push("點「啟用通知」或「儲存訂閱」時，請在瀏覽器提示中選擇允許。");
+  } else {
+    tips.push("系統通知已就緒；若未跳出系統通知，也會以頁面內提醒顯示。");
+  }
+  notificationHint.textContent = tips.join(" ");
+}
+
+function showInPageAlert(title, body, { timeoutMs = 8000 } = {}) {
+  if (!inPageAlertHost) {
+    return false;
+  }
+  const alert = document.createElement("article");
+  alert.className = "in-page-alert";
+  alert.innerHTML = `
+    <strong>${title}</strong>
+    <p></p>
+    <button type="button" class="in-page-alert-close">知道了</button>
+  `;
+  alert.querySelector("p").textContent = body;
+  const close = () => alert.remove();
+  alert.querySelector(".in-page-alert-close")?.addEventListener("click", close);
+  inPageAlertHost.append(alert);
+  if (timeoutMs > 0) {
+    window.setTimeout(close, timeoutMs);
+  }
+  return true;
+}
+
 async function initServiceWorker() {
-  if (!("serviceWorker" in navigator)) {
+  if (!("serviceWorker" in navigator) || !window.isSecureContext) {
     return null;
   }
   try {
@@ -2327,7 +2413,7 @@ async function getNotificationRegistration() {
   if (notificationRegistration) {
     return notificationRegistration;
   }
-  if (!("serviceWorker" in navigator)) {
+  if (!("serviceWorker" in navigator) || !window.isSecureContext) {
     return null;
   }
   try {
@@ -2349,17 +2435,23 @@ async function showAppNotification(title, body, { tag, data } = {}) {
     data: data || {}
   };
 
-  const registration = await getNotificationRegistration();
-  if (registration?.showNotification) {
-    await registration.showNotification(title, payload);
-    return true;
+  let systemShown = false;
+  try {
+    const registration = await getNotificationRegistration();
+    if (registration?.showNotification && "Notification" in window && Notification.permission === "granted") {
+      await registration.showNotification(title, payload);
+      systemShown = true;
+    } else if ("Notification" in window && Notification.permission === "granted") {
+      new Notification(title, payload);
+      systemShown = true;
+    }
+  } catch {
+    systemShown = false;
   }
 
-  if ("Notification" in window) {
-    new Notification(title, payload);
-    return true;
-  }
-  return false;
+  // Always keep an in-page reminder so alerts still work when system notifications are blocked/unavailable.
+  showInPageAlert(title, body, { timeoutMs: systemShown ? 5000 : 10000 });
+  return true;
 }
 
 function getNotificationDigest(messages) {
@@ -2376,25 +2468,34 @@ function shouldSendNotificationDigest(messages, { force = false } = {}) {
 }
 
 async function ensureNotificationPermission() {
-  if (!("Notification" in window)) {
-    renderSubscriptionStatus("此瀏覽器不支援通知，無法啟用即時提醒。");
-    return false;
+  const support = getNotificationSupport();
+  if (!support.apiAvailable) {
+    updateNotificationHint();
+    // Fallback mode: allow subscription alerts via in-page reminders.
+    return "fallback";
   }
   if (Notification.permission === "granted") {
     await initServiceWorker();
-    return true;
+    updateNotificationHint();
+    return "granted";
   }
   if (Notification.permission === "denied") {
-    renderSubscriptionStatus("通知權限已封鎖，請在瀏覽器設定中允許本站通知。");
-    return false;
+    updateNotificationHint();
+    return "fallback";
   }
-  const permission = await Notification.requestPermission();
-  if (permission !== "granted") {
-    renderSubscriptionStatus("尚未取得通知權限，因此無法推送提醒。");
-    return false;
+  try {
+    const permission = await Notification.requestPermission();
+    if (permission === "granted") {
+      await initServiceWorker();
+      updateNotificationHint();
+      return "granted";
+    }
+  } catch {
+    updateNotificationHint("瀏覽器拒絕通知權限請求，已改用頁面內即時提醒。");
+    return "fallback";
   }
-  await initServiceWorker();
-  return true;
+  updateNotificationHint("尚未允許系統通知，已改用頁面內即時提醒。");
+  return "fallback";
 }
 
 function getSubscriptionCityName() {
@@ -2540,8 +2641,8 @@ async function sendRecoveryNotifications(messages) {
   if (!messages.length || !appState.subscription?.email) {
     return false;
   }
-  const permissionGranted = await ensureNotificationPermission();
-  if (!permissionGranted) {
+  const permissionMode = await ensureNotificationPermission();
+  if (!permissionMode) {
     return false;
   }
   for (const message of messages) {
@@ -2558,8 +2659,8 @@ async function sendSubscriptionNotification({ force = false } = {}) {
     renderSubscriptionStatus("請先輸入 Email 並儲存訂閱。");
     return false;
   }
-  const permissionGranted = await ensureNotificationPermission();
-  if (!permissionGranted) {
+  const permissionMode = await ensureNotificationPermission();
+  if (!permissionMode) {
     return false;
   }
   const messages = buildSubscriptionNotificationMessages();
@@ -2590,10 +2691,12 @@ async function sendSubscriptionNotification({ force = false } = {}) {
 
   localStorage.setItem(NOTIFICATION_DIGEST_STORAGE_KEY, getNotificationDigest(messages));
   appState.lastNotifiedAt = Date.now();
+  const channelHint = permissionMode === "granted" ? "系統通知＋頁面提醒" : "頁面內即時提醒";
   const statusHint = hasClosureAlert
-    ? `已依訂閱順序同步送出 ${messages.length} 項通知（停班停課提醒 3 次）`
-    : `已依訂閱順序同步送出 ${messages.length} 項通知`;
+    ? `已依訂閱順序同步送出 ${messages.length} 項通知（停班停課提醒 3 次｜${channelHint}）`
+    : `已依訂閱順序同步送出 ${messages.length} 項通知（${channelHint}）`;
   renderSubscriptionStatus(statusHint);
+  updateNotificationHint();
   return true;
 }
 
@@ -3227,17 +3330,35 @@ subscriptionForm.addEventListener("submit", async (event) => {
   };
   localStorage.setItem(SUBSCRIPTION_STORAGE_KEY, JSON.stringify(appState.subscription));
   await initServiceWorker();
-  const permissionGranted = await ensureNotificationPermission();
-  if (permissionGranted) {
-    await sendSubscriptionNotification({ force: true });
-    renderSubscriptionStatus("訂閱已儲存，所有裝置將自動接收更新通知。");
+  const permissionMode = await ensureNotificationPermission();
+  await sendSubscriptionNotification({ force: true });
+  if (permissionMode === "granted") {
+    renderSubscriptionStatus("訂閱已儲存，系統通知與頁面內提醒皆已啟用。");
   } else {
-    renderSubscriptionStatus("訂閱設定已儲存，但尚未取得通知權限，請允許通知後重新儲存。");
+    renderSubscriptionStatus("訂閱已儲存，已啟用頁面內即時提醒（系統通知暫不可用）。");
   }
+  updateNotificationHint();
 });
 
 testNotificationBtn?.addEventListener("click", async () => {
   await sendSubscriptionNotification({ force: true });
+});
+
+enableNotificationBtn?.addEventListener("click", async () => {
+  await initServiceWorker();
+  const permissionMode = await ensureNotificationPermission();
+  if (permissionMode === "granted") {
+    renderSubscriptionStatus("系統通知已啟用。");
+    await showAppNotification("通知測試", "系統通知與頁面內提醒已就緒。", {
+      tag: "notification-enable-test"
+    });
+  } else {
+    renderSubscriptionStatus("已改用頁面內即時提醒。");
+    await showAppNotification("頁面內提醒測試", "此瀏覽器暫無法使用系統通知，已改以頁面內即時提醒顯示。", {
+      tag: "notification-fallback-test"
+    });
+  }
+  updateNotificationHint();
 });
 
 document.addEventListener("visibilitychange", () => {
@@ -3279,10 +3400,11 @@ initFreewayRegionSelect();
 initFreewayCitySelect();
 loadSubscription();
 renderSubscriptionStatus();
+updateNotificationHint();
 updateWindyTrackEmbed();
 syncNoticeDetailsOpen();
 window.matchMedia("(min-width: 861px)").addEventListener("change", syncNoticeDetailsOpen);
-initServiceWorker();
+initServiceWorker().then(() => updateNotificationHint());
 initVisitorCounter();
 performFullRefresh("manual");
 fetchRoadCameras();

@@ -245,12 +245,16 @@
             <div class="subscription-actions">
               <button type="submit" class="refresh-btn">儲存訂閱</button>
               <button id="testNotificationBtn" type="button" class="ghost-btn">測試通知</button>
+              <button id="enableNotificationBtn" type="button" class="ghost-btn">啟用通知</button>
             </div>
           </form>
           <p id="subscriptionStatus" class="timestamp">尚未設定訂閱。</p>
+          <p id="notificationHint" class="timestamp notification-hint"></p>
         </article>
         </div>
       </section>
+
+      <div id="inPageAlertHost" class="in-page-alert-host" aria-live="polite" aria-atomic="true"></div>
 
       <div
         class="visual-break visual-break-cctv"
