@@ -492,11 +492,11 @@ let mapFloodLayer = null;
 let mapCameraLayer = null;
 let mapCityFocusLayer = null;
 let mapPowerOutageLayer = null;
-const mapLayerOrder = ["city-focus"];
+const mapLayerOrder = ["flood-warning", "power-outage", "cctv-points", "city-focus"];
 const mapLayerVisibility = {
-  "power-outage": false,
-  "flood-warning": false,
-  "cctv-points": false,
+  "power-outage": true,
+  "flood-warning": true,
+  "cctv-points": true,
   "city-focus": true
 };
 const mapLayerConfig = {
