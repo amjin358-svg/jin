@@ -1644,9 +1644,15 @@ function renderClosureMeta(updateAt, sourceLabel, { cacheSuffix = false } = {}) 
   const timeText = updateAt || "未提供";
   const linkLabel =
     sourceLabel === "本機快取" ? "行政院人事行政總處" : sourceLabel || "行政院人事行政總處";
-  closureMeta.innerHTML = `公告更新時間：${timeText}（來源：<a href="${CLOSURE_OFFICIAL_URL}" target="_blank" rel="noopener noreferrer" class="closure-meta-link">${linkLabel}</a>）`;
+  closureMeta.innerHTML = `
+    <span class="closure-meta-primary">公告更新時間：${timeText}</span>
+    <span class="closure-meta-source">（來源：<a href="${CLOSURE_OFFICIAL_URL}" target="_blank" rel="noopener noreferrer" class="closure-meta-link">${linkLabel}</a>）</span>
+  `;
   if (cacheSuffix) {
-    closureMeta.insertAdjacentText("beforeend", "（目前使用快取，請稍後重試）");
+    const cacheNote = document.createElement("span");
+    cacheNote.className = "closure-meta-source";
+    cacheNote.textContent = "（目前使用快取，請稍後重試）";
+    closureMeta.append(cacheNote);
   }
 }
 
