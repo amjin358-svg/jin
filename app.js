@@ -3810,17 +3810,20 @@ function fitSingleLineText(element, { maxPx, minPx } = {}) {
   if (!parent) {
     return;
   }
-  const available = Math.max(0, parent.clientWidth);
+  const available = Math.max(0, Math.floor(parent.getBoundingClientRect().width));
   if (!available) {
     return;
   }
   const upper = Number.isFinite(maxPx) ? maxPx : Math.max(16, Math.floor(available * 0.12));
   const lower = Number.isFinite(minPx) ? minPx : 10;
   let low = lower;
-  let high = upper;
+  let high = Math.max(lower, upper);
   let best = lower;
   element.style.whiteSpace = "nowrap";
   element.style.width = "100%";
+  element.style.maxWidth = "100%";
+  element.style.minWidth = "0";
+  element.style.boxSizing = "border-box";
   while (low <= high) {
     const mid = Math.floor((low + high) / 2);
     element.style.fontSize = `${mid}px`;
@@ -3838,10 +3841,10 @@ function fitHeroTexts() {
   const title = document.querySelector(".hero h1.hero-fit-text");
   const subtitle = document.querySelector(".hero .subtitle.hero-fit-text");
   const content = document.querySelector(".hero-content");
-  const width = content?.clientWidth || window.innerWidth;
+  const width = Math.floor(content?.getBoundingClientRect().width || document.documentElement.clientWidth || 0);
   fitSingleLineText(title, {
-    maxPx: Math.min(52, Math.floor(width * 0.095)),
-    minPx: 12
+    maxPx: Math.min(48, Math.floor(width * 0.088)),
+    minPx: 11
   });
   fitSingleLineText(subtitle, {
     maxPx: Math.min(18, Math.floor(width * 0.038)),
