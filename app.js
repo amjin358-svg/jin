@@ -463,6 +463,7 @@ const subscriptionForm = document.querySelector("#subscriptionForm");
 const subscriberEmail = document.querySelector("#subscriberEmail");
 const subscriptionStatus = document.querySelector("#subscriptionStatus");
 const testNotificationBtn = document.querySelector("#testNotificationBtn");
+const enableMobilePushBtn = document.querySelector("#enableMobilePushBtn");
 const autoRefreshMeta = document.querySelector("#autoRefreshMeta");
 const autoRefreshToggle = document.querySelector("#autoRefreshToggle");
 const autoRefreshIntervalSelect = document.querySelector("#autoRefreshInterval");
@@ -496,6 +497,7 @@ const AUTO_REFRESH_OPTIONS = {
 const AUTO_REFRESH_STORAGE_KEY = "autoRefreshIntervalMinutesV1";
 const DEFAULT_AUTO_REFRESH_MINUTES = 15;
 const SUBSCRIPTION_STORAGE_KEY = "weatherMemberSubscriptionV1";
+const NOTIFICATION_DIGEST_STORAGE_KEY = "subscriptionNotificationDigestV1";
 const SUBSCRIPTION_TOPIC_ORDER = ["closure", "flood", "power-outage", "weather", "air"];
 const RECOVERY_STATE_STORAGE_KEY = "subscriptionRecoveryStateV1";
 const FLOOD_LATEST_API =
@@ -538,6 +540,7 @@ const appState = {
   lastNotifiedAt: 0
 };
 let autoRefreshTickTimer = null;
+let notificationRegistration = null;
 
 function getRegionForCity(cityName) {
   return REGION_GROUPS.find((region) => region.cities.includes(cityName))?.name ?? REGION_GROUPS[0].name;
@@ -1270,10 +1273,9 @@ function updateCameraMetaText() {
     return;
   }
   const cityFetchedAt = cityCameraDataset.fetchedAt ? formatDateTime(cityCameraDataset.fetchedAt) : "未提供";
-  const cityCount = Array.isArray(cityCameraDataset.cameras) ? cityCameraDataset.cameras.length : 0;
   const matchedCount = getFilteredSortedCityCameras().length;
   const focus = getCctvLocationFocus();
-  cameraMeta.textContent = `資料來源：各縣市市區路口 CCTV（運輸資料流通服務）｜全台 ${cityCount} 支｜${focus.label} 半徑 ${CITY_CCTV_RADIUS_KM} 公里內 ${matchedCount} 支｜快照時間：${cityFetchedAt}`;
+  cameraMeta.textContent = `${focus.label} 半徑 ${CITY_CCTV_RADIUS_KM} 公里內 ${matchedCount} 支｜快照：${cityFetchedAt}`;
 }
 
 function renderCameraList() {
@@ -2206,12 +2208,78 @@ function renderSubscriptionStatus(message) {
   subscriptionStatus.textContent = `已訂閱 ${appState.subscription.email}（地區：${appState.subscription.city || "未指定"}｜主題：${getSelectedSubscriptionTopics().join("、")}｜${permissionLabel}）`;
 }
 
+async function initServiceWorker() {
+  if (!("serviceWorker" in navigator)) {
+    return null;
+  }
+  try {
+    notificationRegistration = await navigator.serviceWorker.register("./sw.js", { scope: "./" });
+    await notificationRegistration.update();
+    return notificationRegistration;
+  } catch {
+    return null;
+  }
+}
+
+async function getNotificationRegistration() {
+  if (notificationRegistration) {
+    return notificationRegistration;
+  }
+  if (!("serviceWorker" in navigator)) {
+    return null;
+  }
+  try {
+    notificationRegistration = await navigator.serviceWorker.ready;
+    return notificationRegistration;
+  } catch {
+    return null;
+  }
+}
+
+async function showAppNotification(title, body, { tag, data } = {}) {
+  const payload = {
+    body,
+    tag: tag || `jin-${Date.now()}`,
+    renotify: true,
+    vibrate: [200, 100, 200, 100, 200],
+    icon: "./icons/icon-192.svg",
+    badge: "./icons/icon-192.svg",
+    data: data || {}
+  };
+
+  const registration = await getNotificationRegistration();
+  if (registration?.showNotification) {
+    await registration.showNotification(title, payload);
+    return true;
+  }
+
+  if ("Notification" in window) {
+    new Notification(title, payload);
+    return true;
+  }
+  return false;
+}
+
+function getNotificationDigest(messages) {
+  return messages.join("\n");
+}
+
+function shouldSendNotificationDigest(messages, { force = false } = {}) {
+  if (force) {
+    return true;
+  }
+  const digest = getNotificationDigest(messages);
+  const previous = localStorage.getItem(NOTIFICATION_DIGEST_STORAGE_KEY);
+  return previous !== digest;
+}
+
 async function ensureNotificationPermission() {
   if (!("Notification" in window)) {
     renderSubscriptionStatus("此瀏覽器不支援通知，無法啟用即時提醒。");
     return false;
   }
   if (Notification.permission === "granted") {
+    await initServiceWorker();
     return true;
   }
   if (Notification.permission === "denied") {
@@ -2223,6 +2291,7 @@ async function ensureNotificationPermission() {
     renderSubscriptionStatus("尚未取得通知權限，因此無法推送提醒。");
     return false;
   }
+  await initServiceWorker();
   return true;
 }
 
@@ -2374,8 +2443,7 @@ async function sendRecoveryNotifications(messages) {
     return false;
   }
   for (const message of messages) {
-    new Notification("災害狀態更新", {
-      body: message,
+    await showAppNotification("災害狀態更新", message, {
       tag: `recovery-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
     });
     await sleep(900);
@@ -2400,6 +2468,9 @@ async function sendSubscriptionNotification({ force = false } = {}) {
   if (!force && Date.now() - appState.lastNotifiedAt < getAutoRefreshIntervalMs() - 5000) {
     return false;
   }
+  if (!shouldSendNotificationDigest(messages, { force })) {
+    return false;
+  }
 
   const body = messages.join("\n");
   const hasClosureAlert = messages.some((message) => isClosureAlertMessage(message));
@@ -2407,8 +2478,7 @@ async function sendSubscriptionNotification({ force = false } = {}) {
 
   for (let repeat = 0; repeat < repeatCount; repeat += 1) {
     const suffix = repeatCount > 1 ? `\n（第 ${repeat + 1}/${repeatCount} 次提醒）` : "";
-    new Notification("預報訂閱通知", {
-      body: `${body}${suffix}`,
+    await showAppNotification("預報訂閱通知", `${body}${suffix}`, {
       tag: `subscription-alert-${repeat}-${Date.now()}`
     });
     if (repeat < repeatCount - 1) {
@@ -2416,6 +2486,7 @@ async function sendSubscriptionNotification({ force = false } = {}) {
     }
   }
 
+  localStorage.setItem(NOTIFICATION_DIGEST_STORAGE_KEY, getNotificationDigest(messages));
   appState.lastNotifiedAt = Date.now();
   const statusHint = hasClosureAlert
     ? `已依訂閱順序同步送出 ${messages.length} 項通知（停班停課提醒 3 次）`
@@ -2425,13 +2496,20 @@ async function sendSubscriptionNotification({ force = false } = {}) {
 }
 
 async function maybeNotifySubscribers(triggerSource, recoveryMessages = []) {
-  if (triggerSource !== "auto" || !appState.subscription?.email) {
+  if (!appState.subscription?.email) {
+    return;
+  }
+  const shouldNotify =
+    triggerSource === "auto" || (triggerSource === "manual" && document.hidden) || recoveryMessages.length > 0;
+  if (!shouldNotify) {
     return;
   }
   if (recoveryMessages.length) {
     await sendRecoveryNotifications(recoveryMessages);
   }
-  await sendSubscriptionNotification();
+  if (triggerSource === "auto" || document.hidden) {
+    await sendSubscriptionNotification();
+  }
 }
 
 function getMapLayerInstance(layerKey) {
@@ -3070,6 +3148,26 @@ testNotificationBtn?.addEventListener("click", async () => {
   await sendSubscriptionNotification({ force: true });
 });
 
+enableMobilePushBtn?.addEventListener("click", async () => {
+  await initServiceWorker();
+  const permissionGranted = await ensureNotificationPermission();
+  if (!permissionGranted) {
+    return;
+  }
+  if (appState.subscription?.email) {
+    await sendSubscriptionNotification({ force: true });
+    renderSubscriptionStatus("手機同步通知已啟用，背景更新時也會推播提醒。");
+    return;
+  }
+  renderSubscriptionStatus("請先儲存訂閱，再啟用手機同步通知。");
+});
+
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden && appState.subscription?.email && appState.autoRefreshEnabled) {
+    performFullRefresh("auto").catch(() => {});
+  }
+});
+
 autoRefreshToggle.addEventListener("click", () => {
   appState.autoRefreshEnabled = !appState.autoRefreshEnabled;
   if (appState.autoRefreshEnabled) {
@@ -3106,6 +3204,7 @@ renderSubscriptionStatus();
 updateWindyTrackEmbed();
 syncNoticeDetailsOpen();
 window.matchMedia("(min-width: 861px)").addEventListener("change", syncNoticeDetailsOpen);
+initServiceWorker();
 performFullRefresh("manual");
 fetchRoadCameras();
 initWarningMap();

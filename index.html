@@ -11,8 +11,17 @@
       crossorigin=""
     />
     <link rel="stylesheet" href="./styles.css" />
+    <link rel="manifest" href="./manifest.json" />
+    <meta name="theme-color" content="#1f5ae1" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="台灣災防" />
   </head>
   <body>
+    <div class="ambient-bg" aria-hidden="true">
+      <span class="ambient-orb ambient-orb-a"></span>
+      <span class="ambient-orb ambient-orb-b"></span>
+      <span class="ambient-orb ambient-orb-c"></span>
+    </div>
     <main class="app">
       <header class="hero">
         <div>
@@ -79,6 +88,53 @@
         <p id="closureMeta" class="timestamp closure-meta">讀取中...</p>
         <div id="closureList" class="closure-list"></div>
       </section>
+
+      <div
+        class="visual-break visual-break-typhoon"
+        style="--visual-image: url('https://images.unsplash.com/photo-1527482795447-6353af94f517?auto=format&fit=crop&w=1400&q=80')"
+        aria-hidden="true"
+      >
+        <div class="visual-break-overlay"></div>
+        <p class="visual-break-caption">即時掌握颱風動態與警戒資訊</p>
+      </div>
+
+      <section class="card typhoon-card typhoon-wide">
+        <div class="section-head">
+          <h2>颱風分析</h2>
+          <a
+            id="windyExternalLink"
+            href="https://www.windy.com/?23.700,121.000,6"
+            target="_blank"
+            rel="noopener noreferrer"
+            >開啟 Windy 完整版</a
+          >
+        </div>
+        <div class="typhoon-layout">
+          <div class="typhoon-panel">
+            <p id="typhoonRiskBadge" class="risk-badge risk-low">風險等級：資料讀取中</p>
+            <ul id="typhoonAnalysisList" class="analysis-list"></ul>
+          </div>
+          <div class="windy-wrap">
+            <iframe
+              id="windyEmbed"
+              class="windy-embed"
+              title="Windy 颱風 6 小時走勢圖"
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade"
+              allowfullscreen
+            ></iframe>
+          </div>
+        </div>
+      </section>
+
+      <div
+        class="visual-break visual-break-weather"
+        style="--visual-image: url('https://images.unsplash.com/photo-1428908728789-d2de25dbd4e2?auto=format&fit=crop&w=1400&q=80')"
+        aria-hidden="true"
+      >
+        <div class="visual-break-overlay"></div>
+        <p class="visual-break-caption">鄉鎮級天氣與降雨預測</p>
+      </div>
 
       <section class="grid weather-air-grid">
         <article class="card weather-card weather-air-card">
@@ -148,34 +204,14 @@
         </article>
       </section>
 
-      <section class="card typhoon-card typhoon-wide">
-        <div class="section-head">
-          <h2>颱風分析</h2>
-          <a
-            id="windyExternalLink"
-            href="https://www.windy.com/?23.700,121.000,6"
-            target="_blank"
-            rel="noopener noreferrer"
-            >開啟 Windy 完整版</a
-          >
-        </div>
-        <div class="typhoon-layout">
-          <div class="typhoon-panel">
-            <p id="typhoonRiskBadge" class="risk-badge risk-low">風險等級：資料讀取中</p>
-            <ul id="typhoonAnalysisList" class="analysis-list"></ul>
-          </div>
-          <div class="windy-wrap">
-            <iframe
-              id="windyEmbed"
-              class="windy-embed"
-              title="Windy 颱風 6 小時走勢圖"
-              loading="lazy"
-              referrerpolicy="no-referrer-when-downgrade"
-              allowfullscreen
-            ></iframe>
-          </div>
-        </div>
-      </section>
+      <div
+        class="visual-break visual-break-alert"
+        style="--visual-image: url('https://images.unsplash.com/photo-1466611659831-30db71a1e2ec?auto=format&fit=crop&w=1400&q=80')"
+        aria-hidden="true"
+      >
+        <div class="visual-break-overlay"></div>
+        <p class="visual-break-caption">AI 災害提醒與訂閱推播</p>
+      </div>
 
       <section class="grid">
         <article class="card ai-alert-card">
@@ -213,8 +249,23 @@
             </div>
           </form>
           <p id="subscriptionStatus" class="timestamp">尚未設定訂閱。</p>
+          <p class="subscription-mobile-hint">
+            手機請允許通知並可「加入主畫面」，背景也能同步接收通報。
+          </p>
+          <button id="enableMobilePushBtn" type="button" class="ghost-btn subscription-push-btn">
+            啟用手機同步通知
+          </button>
         </article>
       </section>
+
+      <div
+        class="visual-break visual-break-cctv"
+        style="--visual-image: url('https://images.unsplash.com/photo-1477959854737-f9dbcd076566?auto=format&fit=crop&w=1400&q=80')"
+        aria-hidden="true"
+      >
+        <div class="visual-break-overlay"></div>
+        <p class="visual-break-caption">路口即時影像監控</p>
+      </div>
 
       <section class="card camera-card">
         <div class="section-head">
@@ -275,7 +326,7 @@
 
       <section class="card map-card">
         <div class="section-head">
-          <h2>高對比精簡地圖</h2>
+          <h2>即時災害地圖</h2>
         </div>
         <div class="map-layout">
           <aside class="layer-panel map-pane">
@@ -318,7 +369,7 @@
               </ul>
             </div>
           </aside>
-          <div id="warningMap" class="warning-map map-pane" aria-label="高對比精簡地圖"></div>
+          <div id="warningMap" class="warning-map map-pane" aria-label="即時災害地圖"></div>
         </div>
       </section>
 
