@@ -284,11 +284,23 @@ label {
 }
 
 .locate-icon {
-  font-size: 15px;
+  display: inline-flex;
+  flex-shrink: 0;
   line-height: 1;
 }
 
+.locate-icon svg {
+  width: 17px;
+  height: 17px;
+  fill: #ff3b30;
+  filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.25));
+}
+
 .locate-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   width: 100%;
   min-height: 42px;
   border: 2px solid #0b7a45;
@@ -549,14 +561,17 @@ label {
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  padding: 8px 10px calc(18px + env(safe-area-inset-bottom));
+  padding: 16px 10px calc(18px + env(safe-area-inset-bottom));
+  text-align: center;
   position: relative;
   z-index: 1;
 }
 
 .site-credit {
-  margin: 0;
+  margin: 4px 0 0;
   font-size: 13px;
+  text-align: center;
+  width: 100%;
 }
 
 .site-credit a {
