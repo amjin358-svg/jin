@@ -377,7 +377,7 @@ const FREEWAY_CAMERA_REGIONS = [
   { id: "n5", label: "國道5號", lat: 24.8, lon: 121.8, radiusKm: 9999, routes: ["N5"] },
   { id: "n2-n4", label: "國道2／4號", lat: 24.9, lon: 121.2, radiusKm: 9999, routes: ["N2", "N2A", "N4"] },
   { id: "n6-n8-n10", label: "國道6／8／10號", lat: 23.8, lon: 120.6, radiusKm: 9999, routes: ["N6", "N8", "N10"] },
-  { id: "near-city", label: "靠近所選位置（50km）", lat: null, lon: null, radiusKm: 50, routes: null }
+  { id: "near-city", label: "靠近所選位置（65km）", lat: null, lon: null, radiusKm: 65, routes: null }
 ];
 
 const REGION_STORAGE_KEY = "weatherRegionPreferenceV1";
@@ -419,6 +419,7 @@ const townshipSelect = document.querySelector("#townshipSelect");
 const locateBtn = document.querySelector("#locateBtn");
 const LOCATE_BTN_LABEL = "依設備定位選區";
 const locateBtnLabel = locateBtn?.querySelector(".locate-btn-label");
+const locateStatus = document.querySelector("#locateStatus");
 
 function setLocateButtonText(text = LOCATE_BTN_LABEL) {
   if (locateBtnLabel) {
@@ -427,6 +428,16 @@ function setLocateButtonText(text = LOCATE_BTN_LABEL) {
   }
   if (locateBtn) {
     locateBtn.textContent = text;
+  }
+}
+
+function setLocateStatus(message, { isError = false } = {}) {
+  if (locateStatus) {
+    locateStatus.textContent = message || "";
+    locateStatus.classList.toggle("locate-status-error", Boolean(isError && message));
+  }
+  if (regionMemoryMeta && message) {
+    regionMemoryMeta.textContent = message.startsWith("區域偏好：") ? message : `區域偏好：${message}`;
   }
 }
 const regionMemoryMeta = document.querySelector("#regionMemoryMeta");
@@ -534,7 +545,7 @@ const VISITOR_COUNTER_NAMESPACE = "jin-weather-tw-v1";
 const VISITOR_COUNTER_KEY = "visits";
 const VISITOR_COUNTER_STORAGE_KEY = "siteVisitCountV1";
 const CITY_CCTV_RADIUS_KM = 3;
-const FREEWAY_CCTV_RADIUS_KM = 50;
+const FREEWAY_CCTV_RADIUS_KM = 65;
 const WINDY_TAIWAN_VIEW = { lat: 23.7, lon: 121.0, zoom: 5 };
 const POWER_OUTAGE_NOTIFY_RADIUS_KM = 10;
 const FLOOD_NOTIFY_RADIUS_KM = 80;
@@ -1036,25 +1047,87 @@ function findNearestTownship(lat, lon) {
   return best ? { ...best, distanceKm: bestDistance } : null;
 }
 
-function locateByDevice() {
+function getGeolocationErrorMessage(error) {
+  const code = error?.code;
+  if (code === 1 || /denied/i.test(error?.message || "")) {
+    return "定位權限被拒絕，請在瀏覽器設定允許本站使用位置資訊後再試。";
+  }
+  if (code === 2) {
+    return "目前無法取得位置資訊，請確認裝置定位已開啟。";
+  }
+  if (code === 3) {
+    return "定位逾時，請移至訊號較佳處後再試。";
+  }
+  return `定位失敗（${error?.message || "未知錯誤"}）`;
+}
+
+async function ensureGeolocationPermission() {
+  if (!window.isSecureContext) {
+    return { ok: false, message: "請以 HTTPS 開啟本站後再使用定位功能。" };
+  }
   if (!navigator.geolocation) {
-    regionMemoryMeta.textContent = "區域偏好：此裝置不支援衛星定位";
+    return { ok: false, message: "此裝置瀏覽器不支援衛星定位。" };
+  }
+  if (!navigator.permissions?.query) {
+    return { ok: true };
+  }
+  try {
+    const status = await navigator.permissions.query({ name: "geolocation" });
+    if (status.state === "denied") {
+      return {
+        ok: false,
+        message: "定位權限已封鎖，請到瀏覽器網站設定允許位置存取後再按一次。"
+      };
+    }
+  } catch {
+    // Some browsers reject geolocation permission queries; continue to request via getCurrentPosition.
+  }
+  return { ok: true };
+}
+
+function syncSelectValue(selectEl, value) {
+  if (!selectEl || value == null || value === "") {
     return;
   }
+  const hasOption = [...selectEl.options].some((option) => option.value === value);
+  if (hasOption) {
+    selectEl.value = value;
+  }
+}
+
+async function locateByDevice() {
+  const permission = await ensureGeolocationPermission();
+  if (!permission.ok) {
+    setLocateStatus(permission.message, { isError: true });
+    showInPageAlert("定位無法啟用", permission.message, { timeoutMs: 8000 });
+    return;
+  }
+
   locateBtn.disabled = true;
   setLocateButtonText("定位中...");
+  setLocateStatus("正在開啟裝置定位，請在瀏覽器提示中允許位置存取…");
+
   navigator.geolocation.getCurrentPosition(
     (position) => {
-      const { latitude, longitude } = position.coords;
+      const { latitude, longitude, accuracy } = position.coords;
       const nearest = findNearestTownship(latitude, longitude);
       if (!nearest) {
-        regionMemoryMeta.textContent = "區域偏好：定位成功，但找不到對應鄉鎮";
+        const message = "定位成功，但找不到對應鄉鎮，請改以手動選取縣市／鄉鎮。";
+        setLocateStatus(message, { isError: true });
         locateBtn.disabled = false;
         setLocateButtonText();
         return;
       }
+
       applyRegionSelection(getRegionForCity(nearest.city), nearest.city, nearest.town, { persist: true });
-      regionMemoryMeta.textContent = `區域偏好：定位完成，已選 ${nearest.city}${nearest.town}（距離約 ${nearest.distanceKm.toFixed(1)} km）`;
+      syncSelectValue(cameraCitySelect, nearest.city);
+      syncSelectValue(freewayCitySelect, nearest.city);
+
+      const accuracyText = Number.isFinite(accuracy) ? `，精度約 ${Math.round(accuracy)} 公尺` : "";
+      const message = `定位完成：已選 ${nearest.city}${nearest.town}（距離約 ${nearest.distanceKm.toFixed(1)} km${accuracyText}）`;
+      setLocateStatus(message);
+      showInPageAlert("定位成功", message, { timeoutMs: 5000 });
+
       locateBtn.disabled = false;
       setLocateButtonText();
       performFullRefresh("manual");
@@ -1062,11 +1135,17 @@ function locateByDevice() {
       updateMapForCityChange();
     },
     (error) => {
-      regionMemoryMeta.textContent = `區域偏好：定位失敗（${error.message}）`;
+      const message = getGeolocationErrorMessage(error);
+      setLocateStatus(message, { isError: true });
+      showInPageAlert("定位失敗", message, { timeoutMs: 8000 });
       locateBtn.disabled = false;
       setLocateButtonText();
     },
-    { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 }
+    {
+      enableHighAccuracy: true,
+      timeout: 20000,
+      maximumAge: 0
+    }
   );
 }
 
@@ -3325,8 +3404,16 @@ townshipSelect.addEventListener("change", () => {
   updateMapForCityChange();
 });
 
-locateBtn.addEventListener("click", () => {
-  locateByDevice();
+locateBtn?.addEventListener("click", (event) => {
+  event.preventDefault();
+  locateByDevice().catch((error) => {
+    const message = getGeolocationErrorMessage(error);
+    setLocateStatus(message, { isError: true });
+    setLocateButtonText();
+    if (locateBtn) {
+      locateBtn.disabled = false;
+    }
+  });
 });
 
 refreshBtn.addEventListener("click", () => {
