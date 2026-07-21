@@ -4,6 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>台灣即時氣象與停班停課資訊平台</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
@@ -20,19 +26,63 @@
       </header>
 
       <section class="controls card">
-        <label for="citySelect">選擇縣市</label>
-        <select id="citySelect" aria-label="選擇縣市"></select>
+        <div class="control-grid region-grid">
+          <div>
+            <label for="regionSelect">選擇區域</label>
+            <select id="regionSelect" aria-label="選擇區域"></select>
+          </div>
+          <div>
+            <label for="citySelect">選擇縣市</label>
+            <select id="citySelect" aria-label="選擇縣市"></select>
+          </div>
+          <div>
+            <label for="townshipSelect">選擇鄉鎮市區</label>
+            <select id="townshipSelect" aria-label="選擇鄉鎮市區"></select>
+          </div>
+          <div class="locate-wrap">
+            <p class="locate-label" aria-hidden="true">
+              <span class="locate-icon" aria-hidden="true">📍</span>
+              定位
+            </p>
+            <button id="locateBtn" type="button" class="locate-btn locate-btn-pulse">依設備定位選區</button>
+          </div>
+        </div>
+        <p id="regionMemoryMeta" class="timestamp">區域偏好：尚未儲存</p>
         <p id="lastUpdated" class="timestamp">尚未更新資料</p>
+        <div class="auto-refresh-row">
+          <div class="auto-refresh-controls">
+            <label for="autoRefreshInterval">自動更新間隔</label>
+            <select id="autoRefreshInterval" aria-label="選擇自動更新間隔">
+              <option value="15">每 15 分鐘</option>
+              <option value="30">每 30 分鐘</option>
+              <option value="60">每 1 小時</option>
+            </select>
+            <p id="autoRefreshMeta" class="auto-refresh-countdown">自動更新：啟用中</p>
+          </div>
+          <button id="autoRefreshToggle" type="button" class="ghost-btn">暫停自動更新</button>
+        </div>
       </section>
 
-      <section class="grid">
-        <article class="card weather-card">
+      <section class="card closure-card">
+        <div class="section-head">
+          <h2>停班停課通知</h2>
+        </div>
+        <p id="closureMeta" class="timestamp closure-meta">讀取中...</p>
+        <div id="closureList" class="closure-list"></div>
+      </section>
+
+      <section class="grid weather-air-grid">
+        <article class="card weather-card weather-air-card">
           <h2>即時天氣</h2>
           <p id="weatherSummary" class="big-text">資料讀取中...</p>
-          <dl class="metrics">
+          <dl class="metrics weather-metrics">
             <div>
               <dt>溫度</dt>
               <dd id="tempValue">--</dd>
+            </div>
+            <div>
+              <dt>體感溫度</dt>
+              <dd id="feelValue">--</dd>
             </div>
             <div>
               <dt>濕度</dt>
@@ -46,39 +96,240 @@
               <dt>降雨量</dt>
               <dd id="rainValue">--</dd>
             </div>
+            <div>
+              <dt>降雨機率</dt>
+              <dd id="rainProbValue">--</dd>
+            </div>
+            <div>
+              <dt>雲量</dt>
+              <dd id="cloudValue">--</dd>
+            </div>
+            <div>
+              <dt>氣壓</dt>
+              <dd id="pressureValue">--</dd>
+            </div>
           </dl>
+          <div id="airInline" class="air-inline">
+            <p id="airSummary" class="big-text air-inline-summary">讀取中...</p>
+            <dl class="metrics air-metrics">
+              <div id="aqiMetric" class="air-metric-item">
+                <dt>AQI (US)</dt>
+                <dd id="aqiValue">--</dd>
+              </div>
+              <div id="pm25Metric" class="air-metric-item">
+                <dt>PM2.5</dt>
+                <dd id="pm25Value">--</dd>
+              </div>
+              <div id="pm10Metric" class="air-metric-item">
+                <dt>PM10</dt>
+                <dd id="pm10Value">--</dd>
+              </div>
+              <div id="ozoneMetric" class="air-metric-item">
+                <dt>臭氧</dt>
+                <dd id="ozoneValue">--</dd>
+              </div>
+            </dl>
+          </div>
         </article>
 
         <article class="card forecast-card">
-          <h2>未來 12 小時降雨機率</h2>
+          <h2>降雨預測</h2>
           <div id="rainTimeline" class="rain-timeline" aria-live="polite"></div>
+          <p id="rainProjection" class="timestamp">未來 24 小時累積降雨預估：-- mm</p>
         </article>
       </section>
 
-      <section class="card closure-card">
+      <section class="card typhoon-card typhoon-wide">
         <div class="section-head">
-          <h2>停班停課通知（官方來源）</h2>
+          <h2>颱風分析</h2>
           <a
-            href="https://www.dgpa.gov.tw/typh/daily/nds.html"
+            id="windyExternalLink"
+            href="https://www.windy.com/?23.700,121.000,6"
             target="_blank"
             rel="noopener noreferrer"
-            >開啟行政院人事行政總處原始頁面</a
+            >開啟 Windy 完整版</a
           >
         </div>
-        <p id="closureMeta" class="timestamp">讀取中...</p>
-        <div id="closureList" class="closure-list"></div>
+        <div class="typhoon-layout">
+          <div class="typhoon-panel">
+            <p id="typhoonRiskBadge" class="risk-badge risk-low">風險等級：資料讀取中</p>
+            <ul id="typhoonAnalysisList" class="analysis-list"></ul>
+          </div>
+          <div class="windy-wrap">
+            <iframe
+              id="windyEmbed"
+              class="windy-embed"
+              title="Windy 颱風 6 小時走勢圖"
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade"
+              allowfullscreen
+            ></iframe>
+          </div>
+        </div>
+      </section>
+
+      <section class="grid">
+        <article class="card ai-alert-card">
+          <h2>AI 災害提醒</h2>
+          <ul id="aiAlertList" class="analysis-list"></ul>
+        </article>
+
+        <article class="card subscription-card">
+          <h2>預報訂閱通知</h2>
+          <form id="subscriptionForm" class="subscription-form">
+            <label for="subscriberEmail">Email</label>
+            <input id="subscriberEmail" type="email" required placeholder="you@example.com" />
+            <label class="topic-option"
+              ><input type="checkbox" name="topic" value="closure" checked /> 停班停課公告</label
+            >
+            <label class="topic-option"
+              ><input type="checkbox" name="topic" value="flood" checked /> 積淹水監測（20 公里內）</label
+            >
+            <label class="topic-option"
+              ><input type="checkbox" name="topic" value="power-outage" checked /> 停電區域（10 公里內）</label
+            >
+            <label class="topic-option"
+              ><input type="checkbox" name="topic" value="weather" checked /> 即時天氣預報</label
+            >
+            <label class="topic-option"
+              ><input type="checkbox" name="topic" value="air" checked /> 空氣品質異常</label
+            >
+            <div class="subscription-actions">
+              <button type="submit" class="refresh-btn">儲存訂閱</button>
+              <button id="testNotificationBtn" type="button" class="ghost-btn">測試通知</button>
+            </div>
+          </form>
+          <p id="subscriptionStatus" class="timestamp">尚未設定訂閱。</p>
+        </article>
+      </section>
+
+      <section class="card camera-card">
+        <div class="section-head">
+          <h2>縣市路口CCTV監控</h2>
+          <a
+            href="https://traffic.transportdata.tw/"
+            target="_blank"
+            rel="noopener noreferrer"
+            >開啟運輸資料流通服務來源</a
+          >
+        </div>
+        <p id="cameraMeta" class="timestamp">讀取中...</p>
+        <div class="camera-controls camera-controls-grid city-camera-controls">
+          <div>
+            <label for="cameraCitySelect">縣市範圍</label>
+            <select id="cameraCitySelect" aria-label="選擇 CCTV 縣市範圍"></select>
+          </div>
+          <div>
+            <label for="cameraRegionSelect">地區範圍</label>
+            <select id="cameraRegionSelect" aria-label="選擇市區 CCTV 地區範圍"></select>
+          </div>
+          <div>
+            <label for="cameraKeyword">關鍵字篩選（路口/路名/代碼）</label>
+            <input
+              id="cameraKeyword"
+              type="text"
+              placeholder="例如：中山路、市民大道、安平"
+              autocomplete="off"
+            />
+          </div>
+        </div>
+        <div id="cameraList" class="camera-list"></div>
+        <details class="freeway-details">
+          <summary>國道CCTV監控</summary>
+          <p id="freewayCameraMeta" class="timestamp">國道資料讀取中...</p>
+          <div class="camera-controls camera-controls-grid freeway-camera-controls">
+            <div>
+              <label for="freewayCitySelect">縣市範圍</label>
+              <select id="freewayCitySelect" aria-label="選擇國道 CCTV 縣市範圍"></select>
+            </div>
+            <div>
+              <label for="freewayRegionSelect">地區／國道範圍</label>
+              <select id="freewayRegionSelect" aria-label="選擇國道 CCTV 範圍"></select>
+            </div>
+            <div>
+              <label for="freewayKeyword">關鍵字篩選（路段/代碼）</label>
+              <input
+                id="freewayKeyword"
+                type="text"
+                placeholder="例如：國道1號、基隆、CCTV-N1"
+                autocomplete="off"
+              />
+            </div>
+          </div>
+          <div id="freewayCameraList" class="camera-list"></div>
+        </details>
+      </section>
+
+      <section class="card map-card">
+        <div class="section-head">
+          <h2>高對比精簡地圖</h2>
+        </div>
+        <div class="map-layout">
+          <aside class="layer-panel map-pane">
+            <ul id="mapLayerList" class="layer-list"></ul>
+            <p id="powerOutageMeta" class="timestamp">停電區域資料讀取中...</p>
+            <p id="floodLayerMeta" class="timestamp">
+              積淹水圖層改接水利署 IoW 即時感測，顏色越深代表水深越高。
+            </p>
+            <div class="map-legend" aria-label="地圖圖例對照">
+              <h4>圖例對照</h4>
+              <ul class="legend-list">
+                <li>
+                  <span class="legend-swatch flood-level-4" aria-hidden="true"></span>
+                  <span>積淹水：等級 4（嚴重）</span>
+                </li>
+                <li>
+                  <span class="legend-swatch flood-level-3" aria-hidden="true"></span>
+                  <span>積淹水：等級 3（明顯）</span>
+                </li>
+                <li>
+                  <span class="legend-swatch flood-level-2" aria-hidden="true"></span>
+                  <span>積淹水：等級 2（淺層）</span>
+                </li>
+                <li>
+                  <span class="legend-swatch flood-level-1" aria-hidden="true"></span>
+                  <span>積淹水：等級 1（輕微）</span>
+                </li>
+                <li>
+                  <span class="legend-swatch power-outage-disaster" aria-hidden="true"></span>
+                  <span>停電：災害性（台電通報）</span>
+                </li>
+                <li>
+                  <span class="legend-swatch power-outage-planned" aria-hidden="true"></span>
+                  <span>停電：計畫性（所選縣市）</span>
+                </li>
+                <li>
+                  <span class="legend-swatch cctv-point" aria-hidden="true"></span>
+                  <span>CCTV 監測點（可點選）</span>
+                </li>
+              </ul>
+            </div>
+          </aside>
+          <div id="warningMap" class="warning-map map-pane" aria-label="高對比精簡地圖"></div>
+        </div>
       </section>
 
       <section class="card notice-card">
         <h2>資料說明</h2>
         <ul>
-          <li>天氣資料：Open-Meteo（即時與短時預報）。</li>
+          <li>天氣與空氣品質：Open-Meteo（鄉鎮級即時與短時預報／AQI）。</li>
+          <li>區域記憶：瀏覽器 localStorage 保留上次選取的區域／縣市／鄉鎮。</li>
           <li>停班停課資料：行政院人事行政總處公告頁面（經公開鏡像讀取）。</li>
+          <li>縣市路口監控：交通部運輸資料流通服務（各縣市 CCTV 公開資料快照）。</li>
+          <li>國道CCTV監控：交通部公路局即時 CCTV 公開資料（部署時快照）。</li>
+          <li>積淹水警示：經濟部水利署 IoW 即時淹水深度感測（公開 API）。</li>
+          <li>颱風分析：中央氣象署颱風消息／警報頁面即時解析 + Windy 6 小時動態圖嵌入。</li>
+          <li>停電區域：台電災害停電通報（XML）與計畫性工作停電公開資料（ZIP）。</li>
           <li>若公告暫無資料或來源暫時無法連線，頁面會顯示提示並保留上一筆成功結果。</li>
         </ul>
       </section>
     </main>
 
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
     <script src="./app.js" defer></script>
   </body>
 </html>

@@ -1,0 +1,137 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "areaName": "高雄市前鎮區沿海低窪區",
+        "level": 4,
+        "waterDepthCm": 52,
+        "updatedAt": "2026-06-26 14:20",
+        "note": "短延時強降雨，抽排系統滿載"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [120.305, 22.571],
+            [120.353, 22.571],
+            [120.353, 22.616],
+            [120.305, 22.616],
+            [120.305, 22.571]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "areaName": "屏東縣東港鎮排水末端",
+        "level": 3,
+        "waterDepthCm": 38,
+        "updatedAt": "2026-06-26 14:10",
+        "note": "受潮位頂托影響，積水退散較慢"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [120.416, 22.428],
+            [120.473, 22.428],
+            [120.473, 22.482],
+            [120.416, 22.482],
+            [120.416, 22.428]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "areaName": "臺南市安南區海尾排水沿線",
+        "level": 3,
+        "waterDepthCm": 33,
+        "updatedAt": "2026-06-26 13:55",
+        "note": "道路側溝外溢，局部封閉車道"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [120.138, 23.031],
+            [120.194, 23.031],
+            [120.194, 23.083],
+            [120.138, 23.083],
+            [120.138, 23.031]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "areaName": "嘉義縣朴子市低地社區",
+        "level": 2,
+        "waterDepthCm": 24,
+        "updatedAt": "2026-06-26 13:40",
+        "note": "持續監控中，提醒慢速通行"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [120.214, 23.44],
+            [120.277, 23.44],
+            [120.277, 23.493],
+            [120.214, 23.493],
+            [120.214, 23.44]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "areaName": "雲林縣口湖鄉沿海村里",
+        "level": 2,
+        "waterDepthCm": 19,
+        "updatedAt": "2026-06-26 13:35",
+        "note": "路面積水未退，建議改道"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [120.13, 23.525],
+            [120.198, 23.525],
+            [120.198, 23.585],
+            [120.13, 23.585],
+            [120.13, 23.525]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "areaName": "臺北市社子島周邊警戒區",
+        "level": 1,
+        "waterDepthCm": 12,
+        "updatedAt": "2026-06-26 13:28",
+        "note": "預防性警示，提醒注意路況"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [121.485, 25.085],
+            [121.535, 25.085],
+            [121.535, 25.133],
+            [121.485, 25.133],
+            [121.485, 25.085]
+          ]
+        ]
+      }
+    }
+  ]
+}
