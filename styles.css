@@ -98,32 +98,56 @@ body {
 
 .visual-break {
   position: relative;
-  min-height: 112px;
-  border-radius: 14px;
+  min-height: 0;
+  border-radius: 12px;
   overflow: hidden;
   background-image: var(--visual-image);
   background-size: cover;
   background-position: center;
-  box-shadow: 0 10px 28px rgba(15, 22, 34, 0.14);
-  animation: visualKenBurns 18s ease-in-out infinite alternate;
+  box-shadow: 0 8px 20px rgba(15, 22, 34, 0.12);
+}
+
+.visual-break.section-title-bar {
+  display: flex;
+  align-items: center;
+  padding: 6px 14px;
+  min-height: 0;
+  animation: none;
 }
 
 .visual-break-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(120deg, rgba(15, 42, 92, 0.72), rgba(31, 90, 225, 0.42));
+  background: linear-gradient(120deg, rgba(15, 42, 92, 0.82), rgba(31, 90, 225, 0.62));
 }
 
 .visual-break-caption {
-  position: absolute;
-  left: 16px;
-  bottom: 14px;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35em 0.55em;
   margin: 0;
+  width: 100%;
   color: #fff;
-  font-size: 15px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
+  font-size: clamp(2.4rem, 6.5vw, 4.5rem);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: 0.01em;
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+}
+
+.visual-break-caption a {
+  color: #e8f0ff;
+  font-size: 0.32em;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.visual-break-caption a:hover {
+  text-decoration: underline;
 }
 
 @keyframes visualKenBurns {
@@ -1612,15 +1636,19 @@ input[type="checkbox"] {
     line-height: 1.35;
   }
 
-  .visual-break {
-    min-height: 88px;
-    border-radius: 12px;
+  .visual-break.section-title-bar {
+    padding: 5px 10px;
+    border-radius: 10px;
   }
 
   .visual-break-caption {
-    left: 12px;
-    bottom: 10px;
-    font-size: 13px;
+    font-size: clamp(1.55rem, 7.2vw, 2.6rem);
+    line-height: 1.12;
+  }
+
+  .visual-break-caption a {
+    font-size: 0.38em;
+    white-space: normal;
   }
 
   select,
