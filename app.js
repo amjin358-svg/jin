@@ -377,7 +377,7 @@ const FREEWAY_CAMERA_REGIONS = [
   { id: "n5", label: "國道5號", lat: 24.8, lon: 121.8, radiusKm: 9999, routes: ["N5"] },
   { id: "n2-n4", label: "國道2／4號", lat: 24.9, lon: 121.2, radiusKm: 9999, routes: ["N2", "N2A", "N4"] },
   { id: "n6-n8-n10", label: "國道6／8／10號", lat: 23.8, lon: 120.6, radiusKm: 9999, routes: ["N6", "N8", "N10"] },
-  { id: "near-city", label: "靠近所選位置（自動半徑）", lat: null, lon: null, radiusKm: null, routes: null }
+  { id: "near-city", label: "靠近所選位置（50km）", lat: null, lon: null, radiusKm: 50, routes: null }
 ];
 
 const REGION_STORAGE_KEY = "weatherRegionPreferenceV1";
@@ -492,18 +492,18 @@ let mapFloodLayer = null;
 let mapCameraLayer = null;
 let mapCityFocusLayer = null;
 let mapPowerOutageLayer = null;
-const mapLayerOrder = ["flood-warning", "power-outage", "cctv-points", "city-focus"];
+const mapLayerOrder = ["city-focus"];
 const mapLayerVisibility = {
-  "power-outage": true,
-  "flood-warning": true,
-  "cctv-points": true,
+  "power-outage": false,
+  "flood-warning": false,
+  "cctv-points": false,
   "city-focus": true
 };
 const mapLayerConfig = {
-  "power-outage": { label: "停電區域標示", pane: "outagePane" },
-  "flood-warning": { label: "即時積淹水感測", pane: "floodPane" },
-  "cctv-points": { label: "縣市路口 CCTV", pane: "cameraPane" },
-  "city-focus": { label: "縣市焦點圈", pane: "focusPane", hiddenInControl: true }
+  "power-outage": { label: "停電區域標示", pane: "outagePane", hiddenInControl: true },
+  "flood-warning": { label: "即時積淹水感測", pane: "floodPane", hiddenInControl: true },
+  "cctv-points": { label: "縣市路口 CCTV", pane: "cameraPane", hiddenInControl: true },
+  "city-focus": { label: "所選位置焦點範圍", pane: "focusPane", hiddenInControl: true }
 };
 const AUTO_REFRESH_OPTIONS = {
   15: { ms: 15 * 60 * 1000, label: "15 分鐘" },
@@ -526,7 +526,7 @@ const TYPHOON_NEWS_MIRROR = "https://r.jina.ai/https://www.cwa.gov.tw/V8/C/P/Typ
 const TYPHOON_WARN_MIRROR = "https://r.jina.ai/https://www.cwa.gov.tw/V8/C/P/Typhoon/TY_WARN.html";
 const CLOSURE_OFFICIAL_URL = "https://www.dgpa.gov.tw/typh/daily/nds.html";
 const CLOSURE_REGION_LABELS = ["北部地區", "中部地區", "南部地區", "東部地區", "外島地區"];
-const MAP_FOCUS_CIRCLE_RADIUS_M = 12000;
+const MAP_FOCUS_CIRCLE_RADIUS_M = 28000;
 const WINDY_EMBED_HEIGHT = 560;
 const WINDY_EMBED_WIDTH = 560;
 const RAIN_FORECAST_HOURS = 8;
@@ -534,11 +534,8 @@ const VISITOR_COUNTER_NAMESPACE = "jin-weather-tw-v1";
 const VISITOR_COUNTER_KEY = "visits";
 const VISITOR_COUNTER_STORAGE_KEY = "siteVisitCountV1";
 const CITY_CCTV_RADIUS_KM = 3;
-const FREEWAY_CCTV_RADIUS_STEPS_KM = [3, 5, 8, 10, 15, 20, 30, 50];
-const FREEWAY_CCTV_RADIUS_MAX_KM = 50;
-const FREEWAY_CCTV_RADIUS_FALLBACK_KM = 30;
+const FREEWAY_CCTV_RADIUS_KM = 50;
 const WINDY_TAIWAN_VIEW = { lat: 23.7, lon: 121.0, zoom: 5 };
-const freewayRadiusCache = new Map();
 const POWER_OUTAGE_NOTIFY_RADIUS_KM = 10;
 const FLOOD_NOTIFY_RADIUS_KM = 80;
 const FLOOD_SUBSCRIPTION_RADIUS_KM = 20;
@@ -1159,33 +1156,8 @@ function getFreewayCamerasBeforeRadiusFilter() {
     });
 }
 
-function resolveFreewayCctvRadiusKm(focus) {
-  const cacheKey = getFreewayRadiusCacheKey(focus);
-  if (freewayRadiusCache.has(cacheKey)) {
-    return freewayRadiusCache.get(cacheKey);
-  }
-
-  if (!Number.isFinite(focus?.lat) || !Number.isFinite(focus?.lon)) {
-    freewayRadiusCache.set(cacheKey, FREEWAY_CCTV_RADIUS_FALLBACK_KM);
-    return FREEWAY_CCTV_RADIUS_FALLBACK_KM;
-  }
-
-  const distances = getFreewayCamerasBeforeRadiusFilter()
-    .map((camera) => getDistanceKm(focus.lat, focus.lon, Number(camera.gisy), Number(camera.gisx)))
-    .filter((distanceKm) => distanceKm <= FREEWAY_CCTV_RADIUS_MAX_KM)
-    .sort((a, b) => a - b);
-
-  if (!distances.length) {
-    freewayRadiusCache.set(cacheKey, FREEWAY_CCTV_RADIUS_FALLBACK_KM);
-    return FREEWAY_CCTV_RADIUS_FALLBACK_KM;
-  }
-
-  const nearestDistanceKm = distances[0];
-  const radiusKm =
-    FREEWAY_CCTV_RADIUS_STEPS_KM.find((step) => step >= nearestDistanceKm) ??
-    FREEWAY_CCTV_RADIUS_STEPS_KM[FREEWAY_CCTV_RADIUS_STEPS_KM.length - 1];
-  freewayRadiusCache.set(cacheKey, radiusKm);
-  return radiusKm;
+function resolveFreewayCctvRadiusKm() {
+  return FREEWAY_CCTV_RADIUS_KM;
 }
 
 function getFilteredSortedCityCameras() {
@@ -1292,7 +1264,6 @@ function createCameraCard(camera, scopeLabel) {
   const streamUrl = camera.html;
   const safeStake = camera.stakenumber || camera.roadName || "未提供路口資訊";
   const distance = Number.isFinite(camera.distanceKm) ? `${camera.distanceKm.toFixed(1)} km` : "--";
-  const cityLabel = camera.city ? `${camera.city}｜` : "";
   const directImage = isLikelyDirectImageStream(streamUrl);
 
   const mediaHtml = directImage
@@ -1304,7 +1275,7 @@ function createCameraCard(camera, scopeLabel) {
     <div class="camera-body">
       <h3>${camera.id}</h3>
       <p>${safeStake}</p>
-      <p>${cityLabel}${scopeLabel}｜距離中心：約 ${distance}</p>
+      <p>定位區域：${scopeLabel}｜距離中心：約 ${distance}</p>
       <a href="${streamUrl}" target="_blank" rel="noopener noreferrer">開啟官方即時影像</a>
     </div>
   `;
@@ -1350,8 +1321,8 @@ function renderCameraList() {
     return;
   }
 
-  const selectedCity = getSelectedCameraCityName();
-  const scopeLabel = selectedCity ? `${selectedCity}市區路口` : "市區路口";
+  const focus = getCctvLocationFocus();
+  const scopeLabel = focus.label || "所選位置";
   rows.forEach((camera) => {
     cameraList.append(createCameraCard(camera, scopeLabel));
   });
@@ -1366,9 +1337,8 @@ function updateFreewayCameraMetaText() {
     : "未提供";
   const matchedCount = getFilteredSortedFreewayCameras().length;
   const focus = getCctvLocationFocus();
-  const radiusKm = resolveFreewayCctvRadiusKm(focus);
-  const regionLabel = getSelectedFreewayRegion().label;
-  freewayCameraMeta.textContent = `${focus.label} 半徑 ${radiusKm} 公里內 ${matchedCount} 支｜${regionLabel}｜快照：${freewayFetchedAt}`;
+  const radiusKm = resolveFreewayCctvRadiusKm();
+  freewayCameraMeta.textContent = `${focus.label} 半徑 ${radiusKm} 公里內 ${matchedCount} 支｜定位區域｜快照：${freewayFetchedAt}`;
 }
 
 function renderFreewayCameraList() {
@@ -1387,9 +1357,10 @@ function renderFreewayCameraList() {
     freewayCameraList.innerHTML = `<p class="status-warn">所選位置半徑 ${radiusKm} 公里內查無國道監控點，請更換鄉鎮、國道或關鍵字。</p>`;
     return;
   }
-  const freewayRegion = getSelectedFreewayRegion();
+  const focus = getCctvLocationFocus();
+  const scopeLabel = focus.label || "所選位置";
   rows.forEach((camera) => {
-    freewayCameraList.append(createCameraCard(camera, freewayRegion.label));
+    freewayCameraList.append(createCameraCard(camera, scopeLabel));
   });
 }
 
@@ -2967,8 +2938,8 @@ function fitMapToFocusArea() {
   }
   warningMap.invalidateSize();
   warningMap.fitBounds(mapCityFocusLayer.getBounds(), {
-    padding: [12, 12],
-    maxZoom: 15
+    padding: [28, 28],
+    maxZoom: 12
   });
 }
 
@@ -3100,7 +3071,6 @@ async function fetchRoadCameras() {
 
     if (freewayResponse.ok) {
       freewayCameraDataset = await freewayResponse.json();
-      freewayRadiusCache.clear();
     } else if (freewayCameraMeta) {
       freewayCameraMeta.textContent = `國道監控資料暫時無法更新：HTTP ${freewayResponse.status}`;
     }
@@ -3459,8 +3429,22 @@ updateNotificationHint();
 updateWindyTrackEmbed();
 syncNoticeDetailsOpen();
 fitHeroTexts();
-window.addEventListener("resize", scheduleHeroTextFit);
-window.addEventListener("orientationchange", scheduleHeroTextFit);
+window.addEventListener("resize", () => {
+  scheduleHeroTextFit();
+  if (warningMap) {
+    warningMap.invalidateSize();
+    fitMapToFocusArea();
+  }
+});
+window.addEventListener("orientationchange", () => {
+  scheduleHeroTextFit();
+  window.setTimeout(() => {
+    if (warningMap) {
+      warningMap.invalidateSize();
+      fitMapToFocusArea();
+    }
+  }, 250);
+});
 if (document.fonts?.ready) {
   document.fonts.ready.then(scheduleHeroTextFit).catch(() => {});
 }

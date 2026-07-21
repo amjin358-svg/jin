@@ -92,16 +92,7 @@
         style="--visual-image: url('https://images.unsplash.com/photo-1527482795447-6353af94f517?auto=format&fit=crop&w=1400&q=80')"
       >
         <div class="visual-break-overlay"></div>
-        <h2 class="visual-break-caption">
-          颱風動態與警戒資訊
-          <a
-            id="windyExternalLink"
-            href="https://www.windy.com/?23.700,121.000,5"
-            target="_blank"
-            rel="noopener noreferrer"
-            >(開啟 Windy 完整版)</a
-          >
-        </h2>
+        <h2 class="visual-break-caption">颱風動態與警戒資訊</h2>
       </div>
 
       <section class="card typhoon-card typhoon-wide" aria-label="颱風分析">
@@ -114,7 +105,7 @@
             <iframe
               id="windyEmbed"
               class="windy-embed"
-              title="Windy 颱風 6 小時走勢圖"
+              title="Windy 颱風動態圖"
               loading="lazy"
               referrerpolicy="no-referrer-when-downgrade"
               allowfullscreen
@@ -204,10 +195,10 @@
         style="--visual-image: url('https://images.unsplash.com/photo-1466611659831-30db71a1e2ec?auto=format&fit=crop&w=1400&q=80')"
       >
         <div class="visual-break-overlay"></div>
-        <h2 class="visual-break-caption">AI 災害提醒與訂閱推播</h2>
+        <h2 class="visual-break-caption">訂閱即時訊息通知</h2>
       </div>
 
-      <section class="card section-block alert-block" aria-label="AI 災害提醒與訂閱推播">
+      <section class="card section-block alert-block" aria-label="訂閱即時訊息通知">
         <div class="grid">
         <article class="card ai-alert-card" aria-label="AI 災害提醒">
           <ul id="aiAlertList" class="analysis-list"></ul>
@@ -316,8 +307,9 @@
 
       <section class="card map-card" aria-label="即時災害地圖">
         <div class="map-layout">
-          <aside class="layer-panel map-pane">
-            <ul id="mapLayerList" class="layer-list"></ul>
+          <div id="warningMap" class="warning-map map-pane" aria-label="即時災害地圖"></div>
+          <aside class="layer-panel">
+            <ul id="mapLayerList" class="layer-list" hidden></ul>
             <p id="powerOutageMeta" class="timestamp">停電區域資料讀取中...</p>
             <p id="floodLayerMeta" class="timestamp">
               積淹水圖層改接水利署 IoW 即時感測，顏色越深代表水深越高。
@@ -326,37 +318,12 @@
               <h4>圖例對照</h4>
               <ul class="legend-list">
                 <li>
-                  <span class="legend-swatch flood-level-4" aria-hidden="true"></span>
-                  <span>積淹水：等級 4（嚴重）</span>
-                </li>
-                <li>
-                  <span class="legend-swatch flood-level-3" aria-hidden="true"></span>
-                  <span>積淹水：等級 3（明顯）</span>
-                </li>
-                <li>
-                  <span class="legend-swatch flood-level-2" aria-hidden="true"></span>
-                  <span>積淹水：等級 2（淺層）</span>
-                </li>
-                <li>
-                  <span class="legend-swatch flood-level-1" aria-hidden="true"></span>
-                  <span>積淹水：等級 1（輕微）</span>
-                </li>
-                <li>
-                  <span class="legend-swatch power-outage-disaster" aria-hidden="true"></span>
-                  <span>停電：災害性（台電通報）</span>
-                </li>
-                <li>
-                  <span class="legend-swatch power-outage-planned" aria-hidden="true"></span>
-                  <span>停電：計畫性（所選縣市）</span>
-                </li>
-                <li>
-                  <span class="legend-swatch cctv-point" aria-hidden="true"></span>
-                  <span>CCTV 監測點（可點選）</span>
+                  <span class="legend-swatch city-focus-swatch" aria-hidden="true"></span>
+                  <span>所選位置焦點範圍</span>
                 </li>
               </ul>
             </div>
           </aside>
-          <div id="warningMap" class="warning-map map-pane" aria-label="即時災害地圖"></div>
         </div>
       </section>
 
