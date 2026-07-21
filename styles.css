@@ -906,7 +906,7 @@ input[type="checkbox"] {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
-  align-items: stretch;
+  align-items: start;
   min-height: 500px;
 }
 
@@ -923,13 +923,12 @@ input[type="checkbox"] {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: visible;
+  align-self: start;
 }
 
 .layer-panel .timestamp {
-  font-size: 12px;
-  line-height: 1.25;
+  display: none;
 }
 
 .layer-list {
@@ -1394,12 +1393,9 @@ input[type="checkbox"] {
 
   .layer-panel {
     min-height: 0;
-    max-height: 220px;
+    max-height: none;
     padding: 6px;
-  }
-
-  .layer-panel .timestamp {
-    display: none;
+    overflow: visible;
   }
 
   .warning-map,

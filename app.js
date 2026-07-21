@@ -367,7 +367,7 @@ const CITY_CAMERA_REGIONS = [
   { id: "central", label: "中部地區", lat: 24.15, lon: 120.67, radiusKm: 60 },
   { id: "south", label: "南部地區", lat: 22.9, lon: 120.4, radiusKm: 70 },
   { id: "east", label: "東部地區", lat: 23.8, lon: 121.5, radiusKm: 90 },
-  { id: "near-city", label: "靠近所選位置（5km）", lat: null, lon: null, radiusKm: 5 }
+  { id: "near-city", label: "靠近所選位置（30km）", lat: null, lon: null, radiusKm: 30 }
 ];
 
 const FREEWAY_CAMERA_REGIONS = [
@@ -377,7 +377,7 @@ const FREEWAY_CAMERA_REGIONS = [
   { id: "n5", label: "國道5號", lat: 24.8, lon: 121.8, radiusKm: 9999, routes: ["N5"] },
   { id: "n2-n4", label: "國道2／4號", lat: 24.9, lon: 121.2, radiusKm: 9999, routes: ["N2", "N2A", "N4"] },
   { id: "n6-n8-n10", label: "國道6／8／10號", lat: 23.8, lon: 120.6, radiusKm: 9999, routes: ["N6", "N8", "N10"] },
-  { id: "near-city", label: "靠近所選位置（65km）", lat: null, lon: null, radiusKm: 65, routes: null }
+  { id: "near-city", label: "靠近所選位置（30km）", lat: null, lon: null, radiusKm: 30, routes: null }
 ];
 
 const REGION_STORAGE_KEY = "weatherRegionPreferenceV1";
@@ -517,8 +517,8 @@ const RAIN_FORECAST_HOURS = 8;
 const VISITOR_COUNTER_NAMESPACE = "jin-weather-tw-v1";
 const VISITOR_COUNTER_KEY = "visits";
 const VISITOR_COUNTER_STORAGE_KEY = "siteVisitCountV1";
-const CITY_CCTV_RADIUS_KM = 5;
-const FREEWAY_CCTV_RADIUS_KM = 65;
+const CITY_CCTV_RADIUS_KM = 30;
+const FREEWAY_CCTV_RADIUS_KM = 30;
 const POWER_OUTAGE_NOTIFY_RADIUS_KM = 10;
 const FLOOD_NOTIFY_RADIUS_KM = 80;
 const FLOOD_SUBSCRIPTION_RADIUS_KM = 20;
@@ -1298,11 +1298,10 @@ function updateFreewayCameraMetaText() {
   const freewayFetchedAt = freewayCameraDataset.fetchedAt
     ? formatDateTime(freewayCameraDataset.fetchedAt)
     : "未提供";
-  const totalCount = freewayCameraDataset.count ?? freewayCameraDataset.cameras?.length ?? 0;
   const matchedCount = getFilteredSortedFreewayCameras().length;
   const focus = getCctvLocationFocus();
   const regionLabel = getSelectedFreewayRegion().label;
-  freewayCameraMeta.textContent = `資料來源：交通部公路局（國道 CCTV）｜全台 ${totalCount} 支｜${focus.label} 半徑 ${FREEWAY_CCTV_RADIUS_KM} 公里內 ${matchedCount} 支｜${regionLabel}｜快照時間：${freewayFetchedAt}`;
+  freewayCameraMeta.textContent = `${focus.label} 半徑 ${FREEWAY_CCTV_RADIUS_KM} 公里內 ${matchedCount} 支｜${regionLabel}｜快照：${freewayFetchedAt}`;
 }
 
 function renderFreewayCameraList() {
