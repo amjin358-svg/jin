@@ -91,7 +91,7 @@ body {
   width: min(1240px, 94vw);
   margin: 24px auto 48px;
   display: grid;
-  gap: 16px;
+  gap: 12px;
   position: relative;
   z-index: 1;
 }
@@ -202,7 +202,8 @@ body {
   display: block;
   margin: 0 0 6px;
   line-height: 1.25;
-  font-size: clamp(1.35rem, 3.2vw, 2.15rem);
+  width: 100%;
+  font-size: clamp(1.75rem, 4.5vw, 2.9rem);
   font-weight: 700;
 }
 
@@ -210,7 +211,8 @@ body {
   display: block;
   margin: 0;
   line-height: 1.45;
-  font-size: clamp(12px, 1.8vw, 14px);
+  width: 100%;
+  font-size: clamp(13px, 2vw, 15px);
   opacity: 0.95;
 }
 
@@ -251,13 +253,13 @@ h2 {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 14px;
-  padding: 16px;
+  padding: 12px;
   box-shadow: 0 8px 24px rgba(31, 69, 142, 0.08);
 }
 
 .controls {
   display: grid;
-  gap: 8px;
+  gap: 6px;
 }
 
 label {
@@ -676,15 +678,15 @@ label {
   max-height: 320px;
   overflow: auto;
   display: grid;
-  gap: 6px;
+  gap: 4px;
   margin-top: 6px;
 }
 
 .auto-refresh-row {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 6px;
   flex-wrap: wrap;
 }
 
@@ -719,6 +721,11 @@ label {
   font-size: 13px;
   white-space: nowrap;
   flex-shrink: 0;
+}
+
+.auto-refresh-row .ghost-btn {
+  flex-basis: 100%;
+  width: fit-content;
 }
 
 .ghost-btn {
@@ -886,6 +893,7 @@ input[type="checkbox"] {
 
 .section-block > .grid {
   margin: 0;
+  gap: 12px;
 }
 
 .section-head a {
@@ -1238,7 +1246,7 @@ input[type="checkbox"] {
     width: 100%;
     max-width: 100vw;
     margin: 0 auto 24px;
-    gap: 10px;
+    gap: 8px;
     padding: 8px 10px calc(16px + env(safe-area-inset-bottom));
     overflow-x: hidden;
   }
@@ -1258,14 +1266,14 @@ input[type="checkbox"] {
   }
 
   .hero h1 {
-    font-size: clamp(1.1rem, 4.4vw, 1.25rem);
+    font-size: clamp(1.45rem, 6vw, 1.8rem);
     margin-bottom: 4px;
     line-height: 1.3;
   }
 
   .hero .subtitle {
-    font-size: 10px;
-    line-height: 1.35;
+    font-size: 11px;
+    line-height: 1.4;
   }
 
   .hero .refresh-btn {
@@ -1311,7 +1319,7 @@ input[type="checkbox"] {
 
   .grid {
     grid-template-columns: 1fr;
-    gap: 10px;
+    gap: 8px;
   }
 
   .control-grid,
@@ -1364,9 +1372,9 @@ input[type="checkbox"] {
 
   .auto-refresh-row {
     flex-direction: row;
-    align-items: center;
+    align-items: flex-start;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 6px;
   }
 
   .auto-refresh-controls {
@@ -1394,6 +1402,10 @@ input[type="checkbox"] {
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+
+  .auto-refresh-row .ghost-btn {
+    width: 100%;
   }
 
   .closure-list {

@@ -532,7 +532,7 @@ const CITY_CCTV_RADIUS_KM = 3;
 const FREEWAY_CCTV_RADIUS_STEPS_KM = [3, 5, 8, 10, 15, 20, 30, 50];
 const FREEWAY_CCTV_RADIUS_MAX_KM = 50;
 const FREEWAY_CCTV_RADIUS_FALLBACK_KM = 30;
-const WINDY_TAIWAN_VIEW = { lat: 23.7, lon: 121.0, zoom: 5 };
+const WINDY_TAIWAN_VIEW = { lat: 23.7, lon: 121.0, zoom: 2 };
 const freewayRadiusCache = new Map();
 const POWER_OUTAGE_NOTIFY_RADIUS_KM = 10;
 const FLOOD_NOTIFY_RADIUS_KM = 80;
@@ -1571,7 +1571,7 @@ async function fetchWeather() {
   rainProbValue.textContent = `${Math.round(rainProb)}%`;
   cloudValue.textContent = `${Math.round(current.cloud_cover)}%`;
   pressureValue.textContent = `${Math.round(current.pressure_msl)} hPa`;
-  rainProjection.textContent = `未來 24 小時累積降雨預估：${rain24.toFixed(1)} mm`;
+  rainProjection.textContent = `未來 ${RAIN_FORECAST_HOURS} 小時累積降雨預估：${rain24.toFixed(1)} mm`;
   renderRainTimeline(next8Hours);
 
   appState.weather = {
@@ -2036,7 +2036,7 @@ function calculateTyphoonRisk() {
   const messages = [
     ...(official?.messages ?? []),
     `本地觀測：風速 ${wind.toFixed(1)} km/h，陣風 ${gust.toFixed(1)} km/h，氣壓 ${Math.round(pressure)} hPa。`,
-    `本地降雨：12 小時平均降雨機率 ${Math.round(rainProbAvg)}%，24 小時雨量預估 ${rain24.toFixed(1)} mm。`
+    `本地降雨：12 小時平均降雨機率 ${Math.round(rainProbAvg)}%，${RAIN_FORECAST_HOURS} 小時雨量預估 ${rain24.toFixed(1)} mm。`
   ];
   return { level, score, messages, hasWarning: Boolean(official?.hasWarning) };
 }
