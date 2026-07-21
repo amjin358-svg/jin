@@ -1,4 +1,4 @@
-const SW_VERSION = "jin-v1";
+const SW_VERSION = "jin-v2-notify-fallback";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(self.skipWaiting());
