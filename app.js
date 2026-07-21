@@ -464,7 +464,6 @@ const subscriptionForm = document.querySelector("#subscriptionForm");
 const subscriberEmail = document.querySelector("#subscriberEmail");
 const subscriptionStatus = document.querySelector("#subscriptionStatus");
 const testNotificationBtn = document.querySelector("#testNotificationBtn");
-const enableMobilePushBtn = document.querySelector("#enableMobilePushBtn");
 const autoRefreshMeta = document.querySelector("#autoRefreshMeta");
 const autoRefreshToggle = document.querySelector("#autoRefreshToggle");
 const autoRefreshIntervalSelect = document.querySelector("#autoRefreshInterval");
@@ -3142,30 +3141,18 @@ subscriptionForm.addEventListener("submit", async (event) => {
     township: townshipSelect.value
   };
   localStorage.setItem(SUBSCRIPTION_STORAGE_KEY, JSON.stringify(appState.subscription));
+  await initServiceWorker();
   const permissionGranted = await ensureNotificationPermission();
-  renderSubscriptionStatus(
-    permissionGranted
-      ? "訂閱設定已儲存，瀏覽器通知已啟用，可使用「測試通知」立即驗證。"
-      : "訂閱設定已儲存，但尚未取得通知權限。"
-  );
+  if (permissionGranted) {
+    await sendSubscriptionNotification({ force: true });
+    renderSubscriptionStatus("訂閱已儲存，所有裝置將自動接收更新通知。");
+  } else {
+    renderSubscriptionStatus("訂閱設定已儲存，但尚未取得通知權限，請允許通知後重新儲存。");
+  }
 });
 
 testNotificationBtn?.addEventListener("click", async () => {
   await sendSubscriptionNotification({ force: true });
-});
-
-enableMobilePushBtn?.addEventListener("click", async () => {
-  await initServiceWorker();
-  const permissionGranted = await ensureNotificationPermission();
-  if (!permissionGranted) {
-    return;
-  }
-  if (appState.subscription?.email) {
-    await sendSubscriptionNotification({ force: true });
-    renderSubscriptionStatus("手機同步通知已啟用，背景更新時也會推播提醒。");
-    return;
-  }
-  renderSubscriptionStatus("請先儲存訂閱，再啟用手機同步通知。");
 });
 
 document.addEventListener("visibilitychange", () => {
