@@ -31,6 +31,7 @@ html {
   overflow-x: hidden;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  hanging-punctuation: none;
 }
 
 body {
@@ -38,9 +39,14 @@ body {
   font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
   background: radial-gradient(circle at top right, #dfeaff, var(--bg) 45%);
   color: var(--text);
-  max-width: 100vw;
+  max-width: 100%;
+  width: 100%;
   position: relative;
   overflow-x: hidden;
+  font-size: clamp(14px, 0.35vw + 13px, 16px);
+  line-height: 1.45;
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
 }
 
 .ambient-bg {
@@ -95,12 +101,14 @@ body {
 }
 
 .app {
-  width: min(1240px, 94vw);
+  width: min(1240px, calc(100% - 24px), 94vw);
+  max-width: 100%;
   margin: 24px auto 48px;
   display: grid;
   gap: 12px;
   position: relative;
   z-index: 1;
+  overflow-x: clip;
 }
 
 .visual-break {
@@ -1125,17 +1133,41 @@ input[type="checkbox"] {
   padding: 10px;
   display: grid;
   gap: 6px;
+  min-width: 0;
 }
 
 .camera-body h3 {
   margin: 0;
   font-size: 15px;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .camera-body p {
   margin: 0;
   font-size: 13px;
   color: #2d3856;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.camera-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  align-items: center;
+}
+
+.camera-links a,
+.camera-maps-link {
+  color: #1f5ae1;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.camera-maps-link {
+  font-weight: 600;
 }
 
 .camera-body a {
@@ -1424,7 +1456,7 @@ input[type="checkbox"] {
 @media (max-width: 860px) {
   .app {
     width: 100%;
-    max-width: 100vw;
+    max-width: 100%;
     margin: 0 auto 24px;
     gap: 8px;
     padding: 8px 10px calc(16px + env(safe-area-inset-bottom));
@@ -1669,8 +1701,8 @@ input[type="checkbox"] {
 
   .map-pane,
   .warning-map {
-    min-height: min(58vh, 520px);
-    height: min(58vh, 520px);
+    min-height: min(58dvh, 520px);
+    height: min(58dvh, 520px);
   }
 
   .layer-panel {
@@ -1705,8 +1737,13 @@ input[type="checkbox"] {
   }
 
   .camera-body p,
-  .camera-body a {
+  .camera-body a,
+  .camera-links a {
     font-size: 12px;
+  }
+
+  .camera-links {
+    gap: 6px 10px;
   }
 
   .subscription-form {
@@ -1744,23 +1781,39 @@ input[type="checkbox"] {
     font-size: 16px; /* avoid iOS zoom */
     padding: 8px;
   }
+
+  .card,
+  .hero,
+  .section-head,
+  .camera-item,
+  .closure-item {
+    max-width: 100%;
+  }
+
+  .hero h1,
+  .hero-fit-text {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
 }
 
 @media (max-width: 480px) {
   .app {
-    padding: 6px 8px 16px;
+    padding: 6px 8px calc(14px + env(safe-area-inset-bottom));
     gap: 8px;
+    width: 100%;
+    max-width: 100%;
   }
 
   h1 {
-    font-size: 1.05rem;
+    font-size: clamp(0.95rem, 4.8vw, 1.05rem);
   }
 
   .windy-wrap-large {
     width: min(100%, 100%);
     max-width: 100%;
-    min-height: 320px;
-    max-height: 420px;
+    min-height: min(72vw, 320px);
+    max-height: min(100vw, 420px);
     aspect-ratio: 1 / 1;
   }
 
@@ -1783,8 +1836,8 @@ input[type="checkbox"] {
   .map-pane,
   .warning-map,
   .typhoon-wind-map {
-    min-height: min(52vh, 420px);
-    height: min(52vh, 420px);
+    min-height: min(48dvh, 400px);
+    height: min(48dvh, 400px);
   }
 
   .closure-list {
@@ -1792,14 +1845,58 @@ input[type="checkbox"] {
   }
 
   .metrics dd {
-    font-size: 28px;
+    font-size: clamp(22px, 7vw, 28px);
   }
 
   .big-text {
-    font-size: 28px;
+    font-size: clamp(22px, 7vw, 28px);
   }
 
   .visual-break-caption {
-    font-size: clamp(1.45rem, 6.4vw, 1.95rem);
+    font-size: clamp(1.25rem, 6.2vw, 1.95rem);
+  }
+
+  .card-section-title h2 {
+    font-size: 13px;
+  }
+
+  .camera-item img,
+  .camera-frame,
+  .camera-fallback {
+    aspect-ratio: 16 / 10;
+  }
+}
+
+@media (max-width: 360px) {
+  .app {
+    padding: 4px 6px calc(12px + env(safe-area-inset-bottom));
+    gap: 6px;
+  }
+
+  .card {
+    padding: 8px;
+  }
+
+  .metrics dd {
+    font-size: 20px;
+  }
+
+  .risk-badge {
+    font-size: 18px;
+    padding: 6px 10px;
+  }
+
+  .auto-refresh-controls label,
+  .timestamp,
+  .camera-body p,
+  .camera-links a {
+    font-size: 11px;
+  }
+
+  .map-pane,
+  .warning-map,
+  .typhoon-wind-map {
+    min-height: min(44dvh, 340px);
+    height: min(44dvh, 340px);
   }
 }
