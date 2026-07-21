@@ -284,11 +284,23 @@ label {
 }
 
 .locate-icon {
-  font-size: 15px;
+  display: inline-flex;
+  flex-shrink: 0;
   line-height: 1;
 }
 
+.locate-icon svg {
+  width: 17px;
+  height: 17px;
+  fill: #ff3b30;
+  filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.25));
+}
+
 .locate-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   width: 100%;
   min-height: 42px;
   border: 2px solid #0b7a45;

@@ -417,6 +417,18 @@ const regionSelect = null;
 const citySelect = document.querySelector("#citySelect");
 const townshipSelect = document.querySelector("#townshipSelect");
 const locateBtn = document.querySelector("#locateBtn");
+const LOCATE_BTN_LABEL = "依設備定位選區";
+const locateBtnLabel = locateBtn?.querySelector(".locate-btn-label");
+
+function setLocateButtonText(text = LOCATE_BTN_LABEL) {
+  if (locateBtnLabel) {
+    locateBtnLabel.textContent = text;
+    return;
+  }
+  if (locateBtn) {
+    locateBtn.textContent = text;
+  }
+}
 const regionMemoryMeta = document.querySelector("#regionMemoryMeta");
 const refreshBtn = document.querySelector("#refreshBtn");
 const lastUpdated = document.querySelector("#lastUpdated");
@@ -1028,7 +1040,7 @@ function locateByDevice() {
     return;
   }
   locateBtn.disabled = true;
-  locateBtn.textContent = "定位中...";
+  setLocateButtonText("定位中...");
   navigator.geolocation.getCurrentPosition(
     (position) => {
       const { latitude, longitude } = position.coords;
@@ -1036,13 +1048,13 @@ function locateByDevice() {
       if (!nearest) {
         regionMemoryMeta.textContent = "區域偏好：定位成功，但找不到對應鄉鎮";
         locateBtn.disabled = false;
-        locateBtn.textContent = "所在地定位";
+        setLocateButtonText();
         return;
       }
       applyRegionSelection(getRegionForCity(nearest.city), nearest.city, nearest.town, { persist: true });
       regionMemoryMeta.textContent = `區域偏好：定位完成，已選 ${nearest.city}${nearest.town}（距離約 ${nearest.distanceKm.toFixed(1)} km）`;
       locateBtn.disabled = false;
-      locateBtn.textContent = "所在地定位";
+      setLocateButtonText();
       performFullRefresh("manual");
       renderAllCameraLists();
       updateMapForCityChange();
@@ -1050,7 +1062,7 @@ function locateByDevice() {
     (error) => {
       regionMemoryMeta.textContent = `區域偏好：定位失敗（${error.message}）`;
       locateBtn.disabled = false;
-      locateBtn.textContent = "所在地定位";
+      setLocateButtonText();
     },
     { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 }
   );
