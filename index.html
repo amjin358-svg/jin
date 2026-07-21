@@ -119,7 +119,7 @@
         style="--visual-image: url('https://images.unsplash.com/photo-1428908728789-d2de25dbd4e2?auto=format&fit=crop&w=1400&q=80')"
       >
         <div class="visual-break-overlay"></div>
-        <h2 class="visual-break-caption">鄉鎮天氣＋8小時降雨預測</h2>
+        <h2 class="visual-break-caption">鄉鎮天氣</h2>
       </div>
 
       <section class="card section-block weather-block" aria-label="鄉鎮天氣與 8 小時降雨預測">
@@ -160,6 +160,11 @@
               <dd id="pressureValue">--</dd>
             </div>
           </dl>
+          <div class="rain-forecast-inline" aria-label="8小時降雨預測">
+            <h3 class="weather-subheading">8小時降雨預測</h3>
+            <div id="rainTimeline" class="rain-timeline" aria-live="polite"></div>
+            <p id="rainProjection" class="timestamp">未來 8 小時累積降雨預估：-- mm</p>
+          </div>
           <div id="airInline" class="air-inline">
             <p id="airSummary" class="big-text air-inline-summary">讀取中...</p>
             <dl class="metrics air-metrics">
@@ -181,11 +186,6 @@
               </div>
             </dl>
           </div>
-        </article>
-
-        <article class="card forecast-card" aria-label="降雨預測">
-          <div id="rainTimeline" class="rain-timeline" aria-live="polite"></div>
-          <p id="rainProjection" class="timestamp">未來 8 小時累積降雨預估：-- mm</p>
         </article>
         </div>
       </section>
