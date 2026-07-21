@@ -527,7 +527,8 @@ const TYPHOON_WARN_MIRROR = "https://r.jina.ai/https://www.cwa.gov.tw/V8/C/P/Typ
 const CLOSURE_OFFICIAL_URL = "https://www.dgpa.gov.tw/typh/daily/nds.html";
 const CLOSURE_REGION_LABELS = ["北部地區", "中部地區", "南部地區", "東部地區", "外島地區"];
 const MAP_FOCUS_CIRCLE_RADIUS_M = 12000;
-const WINDY_EMBED_HEIGHT = 820;
+const WINDY_EMBED_HEIGHT = 560;
+const WINDY_EMBED_WIDTH = 560;
 const RAIN_FORECAST_HOURS = 8;
 const VISITOR_COUNTER_NAMESPACE = "jin-weather-tw-v1";
 const VISITOR_COUNTER_KEY = "visits";
@@ -536,7 +537,7 @@ const CITY_CCTV_RADIUS_KM = 3;
 const FREEWAY_CCTV_RADIUS_STEPS_KM = [3, 5, 8, 10, 15, 20, 30, 50];
 const FREEWAY_CCTV_RADIUS_MAX_KM = 50;
 const FREEWAY_CCTV_RADIUS_FALLBACK_KM = 30;
-const WINDY_TAIWAN_VIEW = { lat: 23.7, lon: 121.0, zoom: 2 };
+const WINDY_TAIWAN_VIEW = { lat: 23.7, lon: 121.0, zoom: 5 };
 const freewayRadiusCache = new Map();
 const POWER_OUTAGE_NOTIFY_RADIUS_KM = 10;
 const FLOOD_NOTIFY_RADIUS_KM = 80;
@@ -1917,22 +1918,22 @@ function buildWindyEmbedUrl(lat, lon, zoom = 6) {
     lon: Number(lon).toFixed(3),
     detailLat: Number(lat).toFixed(3),
     detailLon: Number(lon).toFixed(3),
-    width: "900",
+    width: String(WINDY_EMBED_WIDTH),
     height: String(WINDY_EMBED_HEIGHT),
     zoom: String(zoom),
     level: "surface",
     overlay: "wind",
     product: "ecmwf",
-    menu: "false",
-    message: "false",
+    menu: "",
+    message: "true",
     marker: "true",
-    calendar: "6",
+    calendar: "12",
     pressure: "false",
     type: "map",
     location: "coordinates",
-    detail: "false",
-    metricWind: "default",
-    metricTemp: "default",
+    detail: "",
+    metricWind: "kt",
+    metricTemp: "°C",
     radarRange: "-1"
   });
   return `https://embed.windy.com/embed2.html?${params.toString()}`;
@@ -1966,7 +1967,8 @@ function updateWindyTrackEmbed() {
   if (!currentSrc || normalizeSrc(currentSrc) !== normalizeSrc(embedUrl)) {
     windyEmbed.src = embedUrl;
   }
-  windyEmbed.style.height = `${WINDY_EMBED_HEIGHT}px`;
+  windyEmbed.style.height = "100%";
+  windyEmbed.style.minHeight = "100%";
   if (windyExternalLink) {
     windyExternalLink.href = `https://www.windy.com/?${focus.lat.toFixed(3)},${focus.lon.toFixed(3)},${focus.zoom},i:pressure`;
   }
