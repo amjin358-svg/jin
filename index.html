@@ -77,6 +77,9 @@
       </section>
 
       <section class="card closure-card" aria-label="停班停課通知">
+        <div class="section-head card-section-title">
+          <h2>停班停課資訊</h2>
+        </div>
         <p id="closureMeta" class="timestamp closure-meta">讀取中...</p>
         <div id="closureList" class="closure-list"></div>
       </section>
@@ -92,10 +95,10 @@
       <section class="card typhoon-card typhoon-wide" aria-label="颱風分析">
         <div class="section-head card-section-title">
           <h2>
-            即時掌握颱風動態與警戒資訊.
+            颱風動態與警戒資訊
             <a
               id="windyExternalLink"
-              href="https://www.windy.com/?23.700,121.000,5"
+              href="https://www.windy.com/?23.700,121.000,2"
               target="_blank"
               rel="noopener noreferrer"
               >(開啟 Windy 完整版)</a
@@ -128,9 +131,9 @@
         <div class="visual-break-overlay"></div>
       </div>
 
-      <section class="card section-block weather-block" aria-label="鄉鎮級天氣與降雨預測">
+      <section class="card section-block weather-block" aria-label="鄉鎮天氣與 8 小時降雨預測">
         <div class="section-head card-section-title">
-          <h2>鄉鎮級天氣與降雨預測.</h2>
+          <h2>鄉鎮天氣＋8小時降雨預測</h2>
         </div>
         <div class="grid weather-air-grid">
         <article class="card weather-card weather-air-card" aria-label="即時天氣">
@@ -194,7 +197,7 @@
 
         <article class="card forecast-card" aria-label="降雨預測">
           <div id="rainTimeline" class="rain-timeline" aria-live="polite"></div>
-          <p id="rainProjection" class="timestamp">未來 24 小時累積降雨預估：-- mm</p>
+          <p id="rainProjection" class="timestamp">未來 8 小時累積降雨預估：-- mm</p>
         </article>
         </div>
       </section>
@@ -384,7 +387,10 @@
     </main>
 
     <footer class="site-footer">
-      <p id="visitorCounter" class="visitor-counter">觀看總人數：讀取中...</p>
+      <p id="visitorCounter" class="visitor-counter">
+        <span class="visitor-counter-label">觀看人數：</span>
+        <span id="visitorCounterValue" class="visitor-counter-value">0000000</span>
+      </p>
       <p class="site-credit">
         <a href="mailto:amjin358@gmail.com">Copyright © 2026 弘泰科技</a>
       </p>
