@@ -3393,6 +3393,59 @@ function syncNoticeDetailsOpen() {
   noticeDetails.open = window.matchMedia("(min-width: 861px)").matches;
 }
 
+function fitSingleLineText(element, { maxPx, minPx } = {}) {
+  if (!element) {
+    return;
+  }
+  const parent = element.parentElement;
+  if (!parent) {
+    return;
+  }
+  const available = Math.max(0, parent.clientWidth);
+  if (!available) {
+    return;
+  }
+  const upper = Number.isFinite(maxPx) ? maxPx : Math.max(16, Math.floor(available * 0.12));
+  const lower = Number.isFinite(minPx) ? minPx : 10;
+  let low = lower;
+  let high = upper;
+  let best = lower;
+  element.style.whiteSpace = "nowrap";
+  element.style.width = "100%";
+  while (low <= high) {
+    const mid = Math.floor((low + high) / 2);
+    element.style.fontSize = `${mid}px`;
+    if (element.scrollWidth <= available + 0.5) {
+      best = mid;
+      low = mid + 1;
+    } else {
+      high = mid - 1;
+    }
+  }
+  element.style.fontSize = `${best}px`;
+}
+
+function fitHeroTexts() {
+  const title = document.querySelector(".hero h1.hero-fit-text");
+  const subtitle = document.querySelector(".hero .subtitle.hero-fit-text");
+  const content = document.querySelector(".hero-content");
+  const width = content?.clientWidth || window.innerWidth;
+  fitSingleLineText(title, {
+    maxPx: Math.min(52, Math.floor(width * 0.095)),
+    minPx: 12
+  });
+  fitSingleLineText(subtitle, {
+    maxPx: Math.min(18, Math.floor(width * 0.038)),
+    minPx: 9
+  });
+}
+
+let heroFitRaf = 0;
+function scheduleHeroTextFit() {
+  window.cancelAnimationFrame(heroFitRaf);
+  heroFitRaf = window.requestAnimationFrame(fitHeroTexts);
+}
+
 initRegionSelectors();
 initCameraRegionSelect();
 initCameraCitySelect();
@@ -3403,6 +3456,12 @@ renderSubscriptionStatus();
 updateNotificationHint();
 updateWindyTrackEmbed();
 syncNoticeDetailsOpen();
+fitHeroTexts();
+window.addEventListener("resize", scheduleHeroTextFit);
+window.addEventListener("orientationchange", scheduleHeroTextFit);
+if (document.fonts?.ready) {
+  document.fonts.ready.then(scheduleHeroTextFit).catch(() => {});
+}
 window.matchMedia("(min-width: 861px)").addEventListener("change", syncNoticeDetailsOpen);
 initServiceWorker().then(() => updateNotificationHint());
 initVisitorCounter();
