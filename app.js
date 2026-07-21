@@ -1454,23 +1454,12 @@ function renderCameraList() {
 
   updateCameraMetaText();
   const rows = getFilteredSortedCityCameras().slice(0, 16);
-  const focus = getCctvLocationFocus();
-  const feedback = document.createElement("p");
-  feedback.className = "camera-distance-feedback";
   if (!rows.length) {
-    feedback.textContent = `定位點 ${focus.label}：半徑 ${CITY_CCTV_RADIUS_KM} 公里內查無路口 CCTV，請調整定位或關鍵字。`;
-    cameraList.append(feedback);
-    cameraList.insertAdjacentHTML(
-      "beforeend",
-      `<p class="status-warn">所選位置半徑 ${CITY_CCTV_RADIUS_KM} 公里內查無市區路口監控點，請更換鄉鎮或關鍵字。</p>`
-    );
+    cameraList.innerHTML = `<p class="status-warn">所選位置半徑 ${CITY_CCTV_RADIUS_KM} 公里內查無市區路口監控點，請更換鄉鎮或關鍵字。</p>`;
     return;
   }
 
-  const nearestKm = Number.isFinite(rows[0]?.distanceKm) ? rows[0].distanceKm.toFixed(1) : "--";
-  feedback.textContent = `距離測試回饋：定位點 ${focus.label}，最近 CCTV ${nearestKm} km（篩選半徑 ${CITY_CCTV_RADIUS_KM} 公里）。`;
-  cameraList.append(feedback);
-
+  const focus = getCctvLocationFocus();
   const scopeLabel = focus.label || "所選位置";
   rows.forEach((camera) => {
     cameraList.append(createCameraCard(camera, scopeLabel));
