@@ -1408,7 +1408,7 @@ function updateFreewayCameraMetaText() {
   const matchedCount = getFilteredSortedFreewayCameras().length;
   const focus = getCctvLocationFocus();
   const radiusKm = resolveFreewayCctvRadiusKm();
-  freewayCameraMeta.textContent = `${focus.label} 半徑 ${radiusKm} 公里內 ${matchedCount} 支｜定位區域｜快照：${freewayFetchedAt}`;
+  freewayCameraMeta.textContent = `定位所在地：${focus.label}｜半徑 ${radiusKm} 公里｜${matchedCount} 支｜快照：${freewayFetchedAt}`;
 }
 
 function renderFreewayCameraList() {
