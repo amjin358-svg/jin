@@ -3294,17 +3294,17 @@ function updateAutoRefreshMeta() {
   }
   if (!appState.autoRefreshEnabled) {
     autoRefreshMeta.textContent = "自動更新：已暫停";
-    setDualLabelText(autoRefreshToggle, "恢復自動更新", "恢復");
+    setDualLabelText(autoRefreshToggle, "自動更新恢復按鍵", "自動更新恢復");
     return;
   }
   if (appState.autoRefreshRunning) {
     autoRefreshMeta.textContent = "自動更新：資料更新中...";
-    setDualLabelText(autoRefreshToggle, "暫停自動更新", "暫停");
+    setDualLabelText(autoRefreshToggle, "自動更新暫停按鍵", "自動更新暫停");
     return;
   }
   const remainingMs = Math.max(0, appState.nextAutoRefreshAt - Date.now());
   autoRefreshMeta.textContent = `自動更新：啟用中（${formatAutoRefreshCountdown(remainingMs)} 後）`;
-  setDualLabelText(autoRefreshToggle, "暫停自動更新", "暫停");
+  setDualLabelText(autoRefreshToggle, "自動更新暫停按鍵", "自動更新暫停");
 }
 
 async function tickAutoRefreshCountdown() {
