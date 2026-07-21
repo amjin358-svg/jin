@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <title>台灣即時預報＋停班停課通知平台</title>
+    <title>台灣即時預報與停班停課通知平台</title>
     <link
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -23,18 +23,15 @@
       <span class="ambient-orb ambient-orb-c"></span>
     </div>
     <main class="app">
-      <header class="hero hero-centered">
+      <header class="hero">
         <div class="hero-content">
-          <p class="eyebrow desktop-only">Taiwan Weather + Closure Notice</p>
-          <h1>台灣即時預報＋停班停課通知平台</h1>
-          <p class="subtitle desktop-only">
+          <p class="eyebrow">Taiwan Weather + Closure Notice</p>
+          <h1>台灣即時預報與停班停課通知平台</h1>
+          <p class="subtitle">
             整合即時天氣、短時預報與官方停班停課資訊，颱風天可快速掌握最新動態。
           </p>
         </div>
-        <button id="refreshBtn" type="button" class="refresh-btn">
-          <span class="text-full">立即更新資料</span>
-          <span class="text-short">更新</span>
-        </button>
+        <button id="refreshBtn" type="button" class="refresh-btn">立即更新資料</button>
       </header>
 
       <section class="controls card">
@@ -48,22 +45,15 @@
             <select id="townshipSelect" aria-label="選擇鄉鎮市區"></select>
           </div>
           <div class="locate-wrap">
-            <p class="locate-label" aria-hidden="true">
-              <span class="locate-icon" aria-hidden="true">📍</span>
-              定位
-            </p>
-            <button id="locateBtn" type="button" class="locate-btn locate-btn-pulse">
-              <span class="text-full">依設備定位選區</span>
-              <span class="text-short">定位</span>
-            </button>
+            <button id="locateBtn" type="button" class="locate-btn locate-btn-pulse">所在地定位</button>
           </div>
         </div>
         <p id="regionMemoryMeta" class="timestamp desktop-only">區域偏好：尚未儲存</p>
         <p id="lastUpdated" class="timestamp">尚未更新資料</p>
         <div class="auto-refresh-row">
           <div class="auto-refresh-controls">
-            <label for="autoRefreshInterval">自動更新間隔</label>
-            <select id="autoRefreshInterval" aria-label="選擇自動更新間隔">
+            <label for="autoRefreshInterval">更新間隔</label>
+            <select id="autoRefreshInterval" aria-label="選擇更新間隔">
               <option value="15">每 15 分鐘</option>
               <option value="30">每 30 分鐘</option>
               <option value="60">每 1 小時</option>
@@ -77,10 +67,7 @@
         </div>
       </section>
 
-      <section class="card closure-card">
-        <div class="section-head">
-          <h2>停班停課通知</h2>
-        </div>
+      <section class="card closure-card" aria-label="停班停課通知">
         <p id="closureMeta" class="timestamp closure-meta">讀取中...</p>
         <div id="closureList" class="closure-list"></div>
       </section>
@@ -94,9 +81,8 @@
         <p class="visual-break-caption">即時掌握颱風動態與警戒資訊</p>
       </div>
 
-      <section class="card typhoon-card typhoon-wide">
-        <div class="section-head">
-          <h2>颱風分析</h2>
+      <section class="card typhoon-card typhoon-wide" aria-label="颱風分析">
+        <div class="section-head section-head-link-only">
           <a
             id="windyExternalLink"
             href="https://www.windy.com/?23.700,121.000,6"
@@ -133,8 +119,7 @@
       </div>
 
       <section class="grid weather-air-grid">
-        <article class="card weather-card weather-air-card">
-          <h2>即時天氣</h2>
+        <article class="card weather-card weather-air-card" aria-label="即時天氣">
           <p id="weatherSummary" class="big-text">資料讀取中...</p>
           <dl class="metrics weather-metrics">
             <div>
@@ -193,8 +178,7 @@
           </div>
         </article>
 
-        <article class="card forecast-card">
-          <h2>降雨預測（未來 8 小時）</h2>
+        <article class="card forecast-card" aria-label="降雨預測">
           <div id="rainTimeline" class="rain-timeline" aria-live="polite"></div>
           <p id="rainProjection" class="timestamp">未來 24 小時累積降雨預估：-- mm</p>
         </article>
@@ -210,13 +194,11 @@
       </div>
 
       <section class="grid">
-        <article class="card ai-alert-card">
-          <h2>AI 災害提醒</h2>
+        <article class="card ai-alert-card" aria-label="AI 災害提醒">
           <ul id="aiAlertList" class="analysis-list"></ul>
         </article>
 
-        <article class="card subscription-card">
-          <h2>預報訂閱通知</h2>
+        <article class="card subscription-card" aria-label="預報訂閱通知">
           <form id="subscriptionForm" class="subscription-form">
             <label for="subscriberEmail">Email</label>
             <input id="subscriberEmail" type="email" required placeholder="you@example.com" />
@@ -263,9 +245,8 @@
         <p class="visual-break-caption">路口即時影像監控</p>
       </div>
 
-      <section class="card camera-card">
-        <div class="section-head">
-          <h2>縣市路口CCTV監控</h2>
+      <section class="card camera-card" aria-label="縣市路口 CCTV 監控">
+        <div class="section-head section-head-link-only">
           <a
             href="https://traffic.transportdata.tw/"
             target="_blank"
@@ -320,10 +301,7 @@
         </details>
       </section>
 
-      <section class="card map-card">
-        <div class="section-head">
-          <h2>即時災害地圖</h2>
-        </div>
+      <section class="card map-card" aria-label="即時災害地圖">
         <div class="map-layout">
           <aside class="layer-panel map-pane">
             <ul id="mapLayerList" class="layer-list"></ul>
@@ -372,7 +350,7 @@
       <section class="card notice-card">
         <details id="noticeDetails" class="notice-details">
           <summary>
-            <h2>資料說明</h2>
+            <span class="notice-summary-title">資料說明</span>
             <span class="notice-hint mobile-only">點擊展開</span>
           </summary>
           <ul>
@@ -392,6 +370,9 @@
 
     <footer class="site-footer">
       <p id="visitorCounter" class="visitor-counter">觀看總人數：讀取中...</p>
+      <p class="site-credit">
+        <a href="mailto:amjin358@gmail.com">弘泰科技</a>
+      </p>
     </footer>
 
     <script

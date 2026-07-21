@@ -1025,7 +1025,7 @@ function locateByDevice() {
     return;
   }
   locateBtn.disabled = true;
-  setDualLabelText(locateBtn, "定位中...", "定位中");
+  locateBtn.textContent = "定位中...";
   navigator.geolocation.getCurrentPosition(
     (position) => {
       const { latitude, longitude } = position.coords;
@@ -1033,13 +1033,13 @@ function locateByDevice() {
       if (!nearest) {
         regionMemoryMeta.textContent = "區域偏好：定位成功，但找不到對應鄉鎮";
         locateBtn.disabled = false;
-        setDualLabelText(locateBtn, "依設備定位選區", "定位");
+        locateBtn.textContent = "所在地定位";
         return;
       }
       applyRegionSelection(getRegionForCity(nearest.city), nearest.city, nearest.town, { persist: true });
       regionMemoryMeta.textContent = `區域偏好：定位完成，已選 ${nearest.city}${nearest.town}（距離約 ${nearest.distanceKm.toFixed(1)} km）`;
       locateBtn.disabled = false;
-      setDualLabelText(locateBtn, "依設備定位選區", "定位");
+      locateBtn.textContent = "所在地定位";
       performFullRefresh("manual");
       renderAllCameraLists();
       updateMapForCityChange();
@@ -1047,7 +1047,7 @@ function locateByDevice() {
     (error) => {
       regionMemoryMeta.textContent = `區域偏好：定位失敗（${error.message}）`;
       locateBtn.disabled = false;
-      setDualLabelText(locateBtn, "依設備定位選區", "定位");
+      locateBtn.textContent = "所在地定位";
     },
     { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 }
   );
@@ -2941,11 +2941,7 @@ function setDualLabelText(element, fullText, shortText = fullText) {
 
 function setRefreshButtonLoading(isLoading) {
   refreshBtn.disabled = isLoading;
-  if (isLoading) {
-    setDualLabelText(refreshBtn, "更新中...", "更新中");
-  } else {
-    setDualLabelText(refreshBtn, "立即更新資料", "更新");
-  }
+  refreshBtn.textContent = isLoading ? "更新中..." : "立即更新資料";
 }
 
 function getAutoRefreshIntervalMs() {
