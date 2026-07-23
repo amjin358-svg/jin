@@ -5617,7 +5617,7 @@ subscriptionForm.addEventListener("submit", async (event) => {
   };
   localStorage.setItem(SUBSCRIPTION_STORAGE_KEY, JSON.stringify(appState.subscription));
   await initServiceWorker();
-  const permissionMode = await ensureNotificationPermission();
+  await ensureNotificationPermission();
   if (topics.includes("weather")) {
     try {
       if (!appState.weather?.current) {
