@@ -1199,9 +1199,10 @@ async function locateByDevice() {
     windyLocateFocus = {
       lat: latitude,
       lon: longitude,
-      zoom: 9
+      zoom: resolveWindyLocateZoom(accuracy),
+      precision: 6
     };
-    updateWindyTrackEmbed();
+    updateWindyTrackEmbed({ force: true });
 
     const accuracyText = Number.isFinite(accuracy) ? `，精度約 ${Math.round(accuracy)} 公尺` : "";
     const message = `定位完成：已選 ${nearest.city}${nearest.town}（距離約 ${nearest.distanceKm.toFixed(1)} km${accuracyText}）`;
