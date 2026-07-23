@@ -231,7 +231,9 @@
             <label for="subscriberEmail">Email</label>
             <input id="subscriberEmail" type="email" required placeholder="you@example.com" />
             <label class="topic-option"
-              ><input type="checkbox" name="topic" value="weather" checked /> 即時天氣預報</label
+              ><input type="checkbox" name="topic" value="weather" checked />
+              <span class="text-full">每日天氣預報（Email，每天一次）</span>
+              <span class="text-short">每日天氣預報 Email</span></label
             >
             <label class="topic-option"
               ><input type="checkbox" name="topic" value="air" checked /> 空氣品質異常</label
@@ -260,6 +262,9 @@
             </div>
           </form>
           <p id="subscriptionStatus" class="timestamp subscription-status-box">尚未設定訂閱。</p>
+          <p class="timestamp subscription-email-note">
+            勾選「每日天氣預報」並儲存後，會寄到您的 Email（每天一次）。若是第一次，請先完成信箱確認連結。
+          </p>
           <p id="notificationHint" class="timestamp notification-hint" hidden></p>
         </article>
         </div>

@@ -560,7 +560,10 @@ const AUTO_REFRESH_STORAGE_KEY = "autoRefreshIntervalMinutesV1";
 const DEFAULT_AUTO_REFRESH_MINUTES = 15;
 const SUBSCRIPTION_STORAGE_KEY = "weatherMemberSubscriptionV1";
 const NOTIFICATION_DIGEST_STORAGE_KEY = "subscriptionNotificationDigestV1";
+const DAILY_WEATHER_EMAIL_DATE_KEY = "dailyWeatherEmailDateV1";
 const SUBSCRIPTION_TOPIC_ORDER = ["weather", "air", "closure", "flood", "power-outage", "water-outage"];
+const SITE_PUBLIC_URL = "https://amjin358-svg.github.io/jin/";
+const SUBSCRIBE_OWNER_INBOX = "amjin358@gmail.com";
 const RECOVERY_STATE_STORAGE_KEY = "subscriptionRecoveryStateV1";
 const FLOOD_LATEST_API =
   "https://opendata.wra.gov.tw/api/v2/1b991bbb-ad85-4e7a-b931-06ce8749d3ed?format=JSON";
@@ -3732,6 +3735,12 @@ function renderSubscriptionStatus(message) {
     subscriptionStatus.textContent = "尚未設定訂閱。";
     return;
   }
+  const topics = new Set(appState.subscription?.topics ?? []);
+  if (topics.has("weather")) {
+    subscriptionStatus.textContent =
+      "訂閱完成：每日天氣預報會寄到您的信箱（每天一次），並依所選主題啟用即時訊息通知。";
+    return;
+  }
   subscriptionStatus.textContent = "訂閱完成，已依所選主題啟用即時訊息通知。";
 }
 
@@ -4041,6 +4050,234 @@ function getSubscriptionWeatherMessage() {
   return `【即時天氣】${appState.weather.label} ${Math.round(appState.weather.current.temperature_2m)}°C，降雨機率 ${Math.round(appState.weather.rainProb ?? 0)}%。`;
 }
 
+function getTaipeiDateKey(date = new Date()) {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Taipei",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).format(date);
+}
+
+function buildDailyWeatherEmailBody() {
+  const weather = appState.weather;
+  const locationLabel = weather?.label || getSubscriptionLocationLabel();
+  if (!weather?.current) {
+    return `【每日天氣預報】${locationLabel}\n目前天氣資料暫時無法讀取，請稍後至平台查看：${SITE_PUBLIC_URL}`;
+  }
+  const current = weather.current;
+  const rain8 = (weather.next8Hours || []).reduce((sum, row) => sum + Number(row.precipitation || 0), 0);
+  const rainLines = (weather.next8Hours || [])
+    .map((row) => `${row.time} 降雨機率 ${Math.round(row.probability)}%`)
+    .join("\n");
+  return [
+    `【每日天氣預報】${locationLabel}`,
+    `日期：${getTaipeiDateKey()}（台北時間）`,
+    `天氣：${WEATHER_CODE_LABEL[current.weather_code] ?? "天氣狀態更新中"}`,
+    `氣溫：${Math.round(current.temperature_2m)}°C（體感 ${Math.round(current.apparent_temperature)}°C）`,
+    `濕度：${Math.round(current.relative_humidity_2m)}%`,
+    `風速：${Math.round(current.wind_speed_10m)} km/h`,
+    `雲量：${Math.round(current.cloud_cover)}%`,
+    `目前降雨機率：${Math.round(weather.rainProb ?? 0)}%`,
+    `未來 ${RAIN_FORECAST_HOURS} 小時累積降雨預估：${rain8.toFixed(1)} mm`,
+    "",
+    "未來 8 小時降雨機率：",
+    rainLines || "（暫無預報資料）",
+    "",
+    `平台：${SITE_PUBLIC_URL}`,
+    "本信為每日一次天氣預報。若要停止接收，請於網站取消「每日天氣預報」主題後重新儲存訂閱。"
+  ].join("\n");
+}
+
+async function sendEmailToInbox(toEmail, subject, message) {
+  const email = String(toEmail || "").trim().toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    throw new Error("Email 格式不正確");
+  }
+  const response = await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(email)}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json"
+    },
+    body: JSON.stringify({
+      _subject: subject,
+      _template: "box",
+      _captcha: "false",
+      _honey: "",
+      message: String(message || ""),
+      platform: SITE_PUBLIC_URL
+    })
+  });
+  const raw = await response.text();
+  let payload = null;
+  try {
+    payload = JSON.parse(raw);
+  } catch {
+    payload = null;
+  }
+  if (!response.ok) {
+    throw new Error(payload?.message || `郵件發送失敗（HTTP ${response.status}）`);
+  }
+  return payload || { success: true };
+}
+
+function buildSubscriberRecord(subscription = appState.subscription) {
+  const location = getSubscriptionWeatherLocation();
+  return {
+    email: String(subscription?.email || "")
+      .trim()
+      .toLowerCase(),
+    topics: Array.isArray(subscription?.topics) ? subscription.topics : [],
+    city: subscription?.city || "",
+    township: subscription?.township || "",
+    lat: Number(location?.lat),
+    lon: Number(location?.lon),
+    updatedAt: new Date().toISOString()
+  };
+}
+
+async function upsertSubscriberOnServer(record) {
+  // Best-effort mirror to repo list used by the daily Actions job.
+  // Requires public Contents API write token configured by the site owner.
+  const token = String(window.JIN_SUBSCRIBE_GITHUB_TOKEN || "").trim();
+  if (!token || !record?.email) {
+    return { synced: false, reason: "no-token" };
+  }
+  const apiBase = "https://api.github.com/repos/amjin358-svg/jin/contents/data/subscribers.json";
+  const currentResponse = await fetch(`${apiBase}?ref=main`, {
+    headers: {
+      Accept: "application/vnd.github+json",
+      Authorization: `Bearer ${token}`
+    }
+  });
+  if (!currentResponse.ok) {
+    throw new Error(`讀取訂閱名單失敗（HTTP ${currentResponse.status}）`);
+  }
+  const currentPayload = await currentResponse.json();
+  const decoded = new TextDecoder().decode(
+    Uint8Array.from(atob(String(currentPayload.content || "").replace(/\n/g, "")), (char) =>
+      char.charCodeAt(0)
+    )
+  );
+  let parsed;
+  try {
+    parsed = JSON.parse(decoded);
+  } catch {
+    parsed = { subscribers: [] };
+  }
+  const list = Array.isArray(parsed.subscribers) ? parsed.subscribers : [];
+  const nextList = [
+    ...list.filter((item) => String(item?.email || "").trim().toLowerCase() !== record.email),
+    record
+  ];
+  const nextDoc = {
+    updatedAt: new Date().toISOString(),
+    subscribers: nextList
+  };
+  const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(nextDoc, null, 2))));
+  const saveResponse = await fetch(apiBase, {
+    method: "PUT",
+    headers: {
+      Accept: "application/vnd.github+json",
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      message: `chore: upsert weather subscriber ${record.email}`,
+      content: encoded,
+      sha: currentPayload.sha,
+      branch: "main"
+    })
+  });
+  if (!saveResponse.ok) {
+    const raw = await saveResponse.text();
+    throw new Error(`同步訂閱名單失敗（HTTP ${saveResponse.status}）${raw.slice(0, 120)}`);
+  }
+  return { synced: true };
+}
+
+async function notifyOwnerNewSubscriber(record) {
+  try {
+    await sendEmailToInbox(
+      SUBSCRIBE_OWNER_INBOX,
+      `【新訂閱】${record.email}`,
+      [
+        "有新的每日天氣預報訂閱：",
+        `Email：${record.email}`,
+        `地區：${record.city}${record.township || ""}`,
+        `主題：${(record.topics || []).join(", ")}`,
+        `座標：${record.lat}, ${record.lon}`,
+        "",
+        "請確認 data/subscribers.json 已包含此訂閱者，供 GitHub Actions 每日寄送。"
+      ].join("\n")
+    );
+  } catch {
+    // Owner mirror is best-effort only.
+  }
+}
+
+async function sendDailyWeatherEmail({ force = false } = {}) {
+  const subscription = appState.subscription;
+  const email = String(subscription?.email || "").trim();
+  const topics = new Set(subscription?.topics || []);
+  if (!email || !topics.has("weather")) {
+    return { sent: false, reason: "not-subscribed" };
+  }
+  const today = getTaipeiDateKey();
+  const lastSent = localStorage.getItem(DAILY_WEATHER_EMAIL_DATE_KEY);
+  if (!force && lastSent === today) {
+    return { sent: false, reason: "already-sent-today" };
+  }
+  if (!appState.weather?.current) {
+    return { sent: false, reason: "no-weather" };
+  }
+  const locationLabel = appState.weather.label || getSubscriptionLocationLabel();
+  const subject = `【每日天氣預報】${locationLabel}｜${today}`;
+  await sendEmailToInbox(email, subject, buildDailyWeatherEmailBody());
+  localStorage.setItem(DAILY_WEATHER_EMAIL_DATE_KEY, today);
+  return { sent: true, date: today };
+}
+
+async function registerSubscriptionEmailDelivery(subscription) {
+  const record = buildSubscriberRecord(subscription);
+  const results = {
+    confirmationSent: false,
+    dailySent: false,
+    serverSynced: false,
+    activationHint: false
+  };
+  try {
+    await sendEmailToInbox(
+      record.email,
+      `【訂閱確認】每日天氣預報｜${record.city}${record.township || ""}`,
+      [
+        "感謝訂閱「停班停課+即時災害通報平台」。",
+        "已為您啟用【每天一次】天氣預報 Email。",
+        "",
+        buildDailyWeatherEmailBody(),
+        "",
+        "若這是第一次收到本平台郵件，請先點選服務商寄出的確認連結，之後即可穩定接收每日預報。"
+      ].join("\n")
+    );
+    results.confirmationSent = true;
+    results.dailySent = true;
+    localStorage.setItem(DAILY_WEATHER_EMAIL_DATE_KEY, getTaipeiDateKey());
+  } catch (error) {
+    const message = String(error?.message || error);
+    results.activationHint = /confirm|activation|驗證|確認|Make sure you confirm/i.test(message);
+    throw error;
+  }
+  notifyOwnerNewSubscriber(record);
+  try {
+    const sync = await upsertSubscriberOnServer(record);
+    results.serverSynced = Boolean(sync?.synced);
+  } catch {
+    results.serverSynced = false;
+  }
+  return results;
+}
+
 function getSubscriptionAirQualityMessage() {
   const locationLabel = getSubscriptionLocationLabel();
   if (!appState.airQuality) {
@@ -4266,6 +4503,12 @@ async function sendSubscriptionNotification({ force = false } = {}) {
 async function maybeNotifySubscribers(triggerSource, recoveryMessages = []) {
   if (!appState.subscription?.email) {
     return;
+  }
+  // Daily weather email: once per Taipei calendar day, independent of browser notifications.
+  try {
+    await sendDailyWeatherEmail({ force: false });
+  } catch (error) {
+    console.warn("每日天氣預報 Email 發送失敗：", error);
   }
   const shouldNotify =
     triggerSource === "auto" || (triggerSource === "manual" && document.hidden) || recoveryMessages.length > 0;
@@ -5129,11 +5372,29 @@ subscriptionForm.addEventListener("submit", async (event) => {
   localStorage.setItem(SUBSCRIPTION_STORAGE_KEY, JSON.stringify(appState.subscription));
   await initServiceWorker();
   const permissionMode = await ensureNotificationPermission();
+  let emailStatus = "";
+  if (topics.includes("weather")) {
+    try {
+      if (!appState.weather?.current) {
+        await fetchWeather();
+      }
+      await registerSubscriptionEmailDelivery(appState.subscription);
+      emailStatus = "已寄送訂閱確認與今日天氣預報至您的信箱（每天一次）。";
+    } catch (error) {
+      emailStatus = `郵件寄送尚未完成：${error.message || "請查看信箱是否有第一次啟用確認信"}。`;
+    }
+  }
   await sendSubscriptionNotification({ force: true });
   if (permissionMode === "granted") {
-    renderSubscriptionStatus("訂閱完成，已啟用系統通知與頁面內提醒。");
+    renderSubscriptionStatus(
+      emailStatus
+        ? `訂閱完成。${emailStatus} 已啟用系統通知與頁面內提醒。`
+        : "訂閱完成，已啟用系統通知與頁面內提醒。"
+    );
   } else {
-    renderSubscriptionStatus("訂閱完成，已啟用頁面內即時訊息通知。");
+    renderSubscriptionStatus(
+      emailStatus ? `訂閱完成。${emailStatus}` : "訂閱完成，已啟用頁面內即時訊息通知。"
+    );
   }
   clearSubscriptionHint();
 });

@@ -1,0 +1,32 @@
+name: Daily weather forecast email
+
+on:
+  schedule:
+    # 07:00 Asia/Taipei (UTC+8) ≈ 23:00 UTC previous day
+    - cron: "0 23 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: daily-weather-email
+  cancel-in-progress: false
+
+jobs:
+  send-daily-weather:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Send daily weather emails
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          MAIL_FROM: ${{ secrets.MAIL_FROM }}
+        run: node ./scripts/send-daily-weather-email.mjs

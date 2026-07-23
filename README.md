@@ -28,6 +28,21 @@ python3 -m http.server 4173
 
 **https://amjin358-svg.github.io/jin/**
 
+### 訂閱通知（每日天氣預報 Email）
+
+勾選「每日天氣預報（Email，每天一次）」並儲存訂閱後：
+
+1. 系統會立即寄送**訂閱確認＋今日天氣預報**到訂閱者信箱  
+2. 之後**每天一次**寄送該地區天氣預報  
+3. 首次寄送到新信箱時，請先點選服務商（FormSubmit）的確認信，之後才會穩定收信
+
+伺服器端每日排程（即使用戶未開啟網站也會寄）：
+
+- 工作流程：`.github/workflows/daily-weather-email.yml`（每天約台北時間 07:00）
+- 訂閱名單：`data/subscribers.json`
+- 手動登錄訂閱者：Actions → **Register weather subscriber**
+- 可選強化寄信品質：於 Repo Secrets 設定 `RESEND_API_KEY`（以及可選 `MAIL_FROM`）
+
 ### 一次性啟用（倉庫擁有者必做，約 30 秒）
 
 目前 Actions 無法代替擁有者「第一次」開啟 Pages（權限限制）。請用擁有者帳號完成：
