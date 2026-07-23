@@ -1051,7 +1051,7 @@ label {
   align-items: center;
   justify-content: flex-start;
   gap: 8px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   max-width: 100%;
   min-width: 0;
 }
@@ -1064,6 +1064,7 @@ label {
   flex: 1 1 auto;
   min-width: 0;
   max-width: 100%;
+  width: 100%;
 }
 
 .auto-refresh-controls label {
@@ -1106,10 +1107,13 @@ label {
   text-overflow: ellipsis;
 }
 
-.auto-refresh-row .ghost-btn {
+.auto-refresh-row .ghost-btn,
+.auto-refresh-controls .auto-refresh-toggle {
   flex: 0 0 auto;
   width: auto;
   max-width: 100%;
+  height: 42px;
+  white-space: nowrap;
 }
 
 .ghost-btn {
@@ -2392,15 +2396,15 @@ input[type="checkbox"] {
   }
 
   .auto-refresh-row {
-    flex-direction: column;
-    align-items: stretch;
+    flex-direction: row;
+    align-items: center;
     flex-wrap: nowrap;
     gap: 6px;
   }
 
   .auto-refresh-controls {
     width: 100%;
-    flex: 0 0 auto;
+    flex: 1 1 auto;
     min-width: 0;
     max-width: 100%;
     gap: 6px;
@@ -2413,18 +2417,18 @@ input[type="checkbox"] {
   }
 
   .auto-refresh-controls select {
-    min-width: 96px;
-    flex: 0 1 120px;
-    max-width: 130px;
+    min-width: 84px;
+    flex: 0 1 110px;
+    max-width: 120px;
     width: auto;
     height: 40px;
     padding: 6px 8px;
   }
 
   .auto-refresh-countdown {
-    flex: 0 1 120px;
-    min-width: 96px;
-    max-width: 130px;
+    flex: 1 1 96px;
+    min-width: 0;
+    max-width: 120px;
     width: auto;
     height: 40px;
     font-size: 12px;
@@ -2434,8 +2438,13 @@ input[type="checkbox"] {
     white-space: nowrap;
   }
 
-  .auto-refresh-row .ghost-btn {
-    width: 100%;
+  .auto-refresh-row .ghost-btn,
+  .auto-refresh-controls .auto-refresh-toggle {
+    width: auto;
+    flex: 0 0 auto;
+    height: 40px;
+    padding: 6px 8px;
+    font-size: 12px;
   }
 
   .closure-list {
