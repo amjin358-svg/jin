@@ -560,7 +560,9 @@ const UTILITY_ALERT_REPEAT_COUNT = 2;
 const PENDING_UTILITY_ALERT_STORAGE_KEY = "pendingUtilityAlertNotificationsV1";
 const WATER_OUTAGE_STATE_STORAGE_KEY = "waterOutageTrackingStateV1";
 const BLACK_SCREEN_CCTV_STORAGE_KEY = "blackScreenCctvIdsV1";
-const CCTV_BLACK_LUMINANCE_THRESHOLD = 18;
+const CCTV_BLACK_LUMINANCE_THRESHOLD = 28;
+const CCTV_VISIBLE_LIMIT = 16;
+const CCTV_VERIFY_POOL_SIZE = 48;
 let jsZipModulePromise = null;
 const appState = {
   weather: null,
@@ -1119,26 +1121,26 @@ function syncSelectValue(selectEl, value) {
 }
 
 async function locateByDevice() {
-  const permission = await ensureGeolocationPermission();
-  if (!permission.ok) {
-    setLocateStatus(permission.message, { isError: true });
-    showInPageAlert("定位無法啟用", permission.message, { timeoutMs: 9000 });
+  if (!locateBtn) {
     return;
   }
 
-  if (!locateBtn) {
+  if (!window.isSecureContext) {
+    const message = "請以 HTTPS（或本機安全環境）開啟本站後再使用定位功能。";
+    setLocateStatus(message, { isError: true });
+    showInPageAlert("定位無法啟用", message, { timeoutMs: 9000 });
+    return;
+  }
+  if (!navigator.geolocation?.getCurrentPosition) {
+    const message = "此裝置瀏覽器不支援衛星定位。";
+    setLocateStatus(message, { isError: true });
+    showInPageAlert("定位無法啟用", message, { timeoutMs: 9000 });
     return;
   }
 
   locateBtn.disabled = true;
   setLocateButtonText("定位中...");
-  if (permission.state === "prompt" || permission.state === "unknown") {
-    setLocateStatus("正在請求定位權限，請在系統／瀏覽器提示中選擇「允許」…");
-  } else if (permission.state === "denied") {
-    setLocateStatus("偵測到先前曾拒絕定位，仍會再嘗試一次；若失敗請到網站設定重新允許位置存取。");
-  } else {
-    setLocateStatus("正在開啟裝置定位…");
-  }
+  setLocateStatus("正在強制開啟裝置定位，請在系統提示中選擇「允許」…");
 
   const applySuccess = (position) => {
     const { latitude, longitude, accuracy } = position.coords;
@@ -1167,31 +1169,35 @@ async function locateByDevice() {
     updateMapForCityChange();
   };
 
-  try {
-    // First pass: faster, allows recent cache — more reliable on mobile browsers.
-    const position = await requestDevicePosition({
-      enableHighAccuracy: false,
-      timeout: 15000,
-      maximumAge: 60000
-    });
-    applySuccess(position);
-  } catch (firstError) {
-    try {
-      // Second pass: high accuracy with longer timeout.
-      const position = await requestDevicePosition({
-        enableHighAccuracy: true,
-        timeout: 25000,
-        maximumAge: 0
-      });
-      applySuccess(position);
-    } catch (secondError) {
-      const message = getGeolocationErrorMessage(secondError || firstError);
-      setLocateStatus(message, { isError: true });
-      showInPageAlert("定位無法啟用", message, { timeoutMs: 10000 });
-      locateBtn.disabled = false;
-      setLocateButtonText();
+  const failWith = (error) => {
+    const message = getGeolocationErrorMessage(error);
+    setLocateStatus(message, { isError: true });
+    showInPageAlert("定位無法啟用", message, { timeoutMs: 10000 });
+    locateBtn.disabled = false;
+    setLocateButtonText();
+  };
+
+  // Must call getCurrentPosition directly inside the user gesture (click).
+  // Awaiting Permissions API first can break the activation chain on mobile Safari/Chrome.
+  navigator.geolocation.getCurrentPosition(
+    (position) => applySuccess(position),
+    (firstError) => {
+      navigator.geolocation.getCurrentPosition(
+        (position) => applySuccess(position),
+        (secondError) => failWith(secondError || firstError),
+        {
+          enableHighAccuracy: true,
+          timeout: 30000,
+          maximumAge: 0
+        }
+      );
+    },
+    {
+      enableHighAccuracy: true,
+      timeout: 20000,
+      maximumAge: 0
     }
-  }
+  );
 }
 
 function getCameraRouteCode(cameraId = "") {
@@ -1818,148 +1824,6 @@ function scheduleCameraCrossRoadEnrichment(card, camera) {
   });
 }
 
-function createCameraCard(camera, scopeLabel, { radiusKm = CITY_CCTV_RADIUS_KM } = {}) {
-  const card = document.createElement("article");
-  card.className = "camera-item";
-  card.dataset.cameraId = camera.id || "";
-  const streamUrl = camera.html;
-  const [roadA, roadB] = getCameraIntersectionRoads(camera);
-  const distance = Number.isFinite(camera.distanceKm) ? `${camera.distanceKm.toFixed(1)} km` : "--";
-  const inRange =
-    Number.isFinite(camera.distanceKm) && camera.distanceKm <= radiusKm
-      ? `（${radiusKm} 公里範圍內）`
-      : `（超出 ${radiusKm} 公里）`;
-  const directImage = isLikelyDirectImageStream(streamUrl);
-  const lat = Number(camera.gisy);
-  const lon = Number(camera.gisx);
-  const mapsUrl =
-    Number.isFinite(lat) && Number.isFinite(lon)
-      ? `https://www.google.com/maps?q=${lat},${lon}&z=18`
-      : "";
-
-  const mediaHtml = directImage
-    ? `<img src="${streamUrl}" alt="${camera.id} 即時影像" loading="lazy" />`
-    : `<iframe class="camera-frame" src="${streamUrl}" title="${camera.id} 即時影像" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>`;
-
-  card.innerHTML = `
-    ${mediaHtml}
-    <div class="camera-body">
-      <h3>${camera.id}</h3>
-      <p data-cross-roads>交叉路口：${roadA} × ${roadB}</p>
-      <p>定位所在地：${scopeLabel}｜距離定位點：${distance} ${inRange}</p>
-      <div class="camera-links">
-        <a href="${streamUrl}" target="_blank" rel="noopener noreferrer">開啟官方即時影像</a>
-        ${
-          mapsUrl
-            ? `<a class="camera-maps-link" href="${mapsUrl}" target="_blank" rel="noopener noreferrer">Google 地圖核對位置</a>`
-            : ""
-        }
-      </div>
-    </div>
-  `;
-  const hideBlackScreenCard = () => {
-    markCameraAsBlackScreen(camera.id);
-    card.remove();
-  };
-  const img = card.querySelector("img");
-  img?.addEventListener("error", () => {
-    hideBlackScreenCard();
-  });
-  img?.addEventListener("load", () => {
-    window.setTimeout(() => {
-      const luminance = analyzeImageDarkness(img);
-      if (luminance !== null && luminance <= CCTV_BLACK_LUMINANCE_THRESHOLD) {
-        hideBlackScreenCard();
-      }
-    }, 700);
-  });
-  const frame = card.querySelector("iframe");
-  frame?.addEventListener("error", () => {
-    hideBlackScreenCard();
-  });
-  scheduleCameraCrossRoadEnrichment(card, camera);
-  return card;
-}
-
-function updateCameraMetaText() {
-  if (!cameraMeta || !cityCameraDataset) {
-    return;
-  }
-  const cityFetchedAt = cityCameraDataset.fetchedAt ? formatDateTime(cityCameraDataset.fetchedAt) : "未提供";
-  const rows = getFilteredSortedCityCameras();
-  const matchedCount = rows.length;
-  const focusPoint = getCityCameraFocusPoint();
-  const focusLabel = getCctvLocationFocus().label;
-  const nearestKm = Number.isFinite(rows[0]?.distanceKm) ? rows[0].distanceKm.toFixed(1) : "--";
-  cameraMeta.textContent = `定位所在地：${focusLabel}｜半徑 ${CITY_CCTV_RADIUS_KM} 公里｜${matchedCount} 支｜最近距離 ${nearestKm} km｜快照：${cityFetchedAt}${
-    Number.isFinite(focusPoint?.lat) ? `｜基準 ${focusPoint.lat.toFixed(4)}, ${focusPoint.lon.toFixed(4)}` : ""
-  }`;
-}
-
-function renderCameraList() {
-  cameraList.innerHTML = "";
-
-  if (!cityCameraDataset || !Array.isArray(cityCameraDataset.cameras)) {
-    cameraList.innerHTML = `<p class="status-warn">目前無法載入各縣市市區路口監控資料。</p>`;
-    return;
-  }
-
-  updateCameraMetaText();
-  const rows = getFilteredSortedCityCameras().slice(0, 16);
-  if (!rows.length) {
-    cameraList.innerHTML = `<p class="status-warn">所選位置半徑 ${CITY_CCTV_RADIUS_KM} 公里內查無市區路口監控點，請更換鄉鎮或關鍵字。</p>`;
-    return;
-  }
-
-  const scopeLabel = getCctvLocationFocus().label || "所選位置";
-  rows.forEach((camera) => {
-    cameraList.append(createCameraCard(camera, scopeLabel));
-  });
-}
-
-function updateFreewayCameraMetaText() {
-  if (!freewayCameraMeta || !freewayCameraDataset) {
-    return;
-  }
-  const freewayFetchedAt = freewayCameraDataset.fetchedAt
-    ? formatDateTime(freewayCameraDataset.fetchedAt)
-    : "未提供";
-  const matchedCount = getFilteredSortedFreewayCameras().length;
-  const selectedCity = getSelectedFreewayCityName() || getCctvLocationFocus().label;
-  const radiusKm = FREEWAY_INTERCHANGE_BASE_RADIUS_KM;
-  const interchangeCount = getFreewayInterchangesForCity(getSelectedFreewayCityName()).length;
-  freewayCameraMeta.textContent = `交流道基準：${selectedCity || "所選縣市"}（${interchangeCount} 處）｜半徑 ${radiusKm} 公里｜${matchedCount} 支｜快照：${freewayFetchedAt}`;
-}
-
-function renderFreewayCameraList() {
-  if (!freewayCameraList) {
-    return;
-  }
-  freewayCameraList.innerHTML = "";
-  if (!freewayCameraDataset || !Array.isArray(freewayCameraDataset.cameras)) {
-    freewayCameraList.innerHTML = `<p class="status-warn">目前無法載入國道監控資料。</p>`;
-    return;
-  }
-  const rows = getFilteredSortedFreewayCameras().slice(0, 16);
-  updateFreewayCameraMetaText();
-  if (!rows.length) {
-    freewayCameraList.innerHTML = `<p class="status-warn">所選縣市交流道半徑 ${FREEWAY_INTERCHANGE_BASE_RADIUS_KM} 公里內查無國道監控點，請更換縣市、國道或關鍵字。</p>`;
-    return;
-  }
-  const selectedCity = getSelectedFreewayCityName();
-  const scopeLabel = selectedCity ? `${selectedCity}交流道基準` : getCctvLocationFocus().label || "所選位置";
-  rows.forEach((camera) => {
-    freewayCameraList.append(
-      createCameraCard(camera, scopeLabel, { radiusKm: FREEWAY_INTERCHANGE_BASE_RADIUS_KM })
-    );
-  });
-}
-
-function renderAllCameraLists() {
-  renderCameraList();
-  renderFreewayCameraList();
-}
-
 function formatDateTime(value) {
   return new Date(value).toLocaleString("zh-TW", {
     hour12: false,
@@ -2017,14 +1881,16 @@ function isCameraMarkedBlackScreen(camera) {
 }
 
 function isCameraMaintenanceText(camera = {}) {
-  const text = `${camera.description || ""} ${camera.stakenumber || ""} ${camera.roadName || ""}`;
-  return /維修|施工中|暫停|故障|無訊號|黑畫面|測試中/.test(text);
+  const text = `${camera.description || ""} ${camera.stakenumber || ""} ${camera.roadName || ""} ${camera.id || ""}`;
+  return /維修|施工中|暫停|故障|無訊號|黑畫面|無畫面|測試中|停用|關閉|offline|off[\s_-]?line|out[\s_-]?of[\s_-]?service/i.test(
+    text
+  );
 }
 
 function analyzeImageDarkness(img) {
   try {
     const canvas = document.createElement("canvas");
-    const size = 48;
+    const size = 64;
     canvas.width = size;
     canvas.height = size;
     const ctx = canvas.getContext("2d", { willReadFrequently: true });
@@ -2034,18 +1900,344 @@ function analyzeImageDarkness(img) {
     ctx.drawImage(img, 0, 0, size, size);
     const { data } = ctx.getImageData(0, 0, size, size);
     let total = 0;
+    let darkPixels = 0;
     let count = 0;
-    for (let i = 0; i < data.length; i += 16) {
+    for (let i = 0; i < data.length; i += 4) {
       const r = data[i];
       const g = data[i + 1];
       const b = data[i + 2];
-      total += 0.2126 * r + 0.7152 * g + 0.0722 * b;
+      const a = data[i + 3];
+      if (a < 8) {
+        continue;
+      }
+      const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+      total += luminance;
+      if (luminance <= 22) {
+        darkPixels += 1;
+      }
       count += 1;
     }
-    return count ? total / count : null;
+    if (!count) {
+      return null;
+    }
+    return {
+      average: total / count,
+      darkRatio: darkPixels / count
+    };
   } catch {
     return null;
   }
+}
+
+function isLikelyBlackFrame(analysis) {
+  if (!analysis) {
+    return false;
+  }
+  return analysis.average <= CCTV_BLACK_LUMINANCE_THRESHOLD || analysis.darkRatio >= 0.92;
+}
+
+function probeImageStream(url, { timeoutMs = 8000 } = {}) {
+  return new Promise((resolve) => {
+    if (!url) {
+      resolve({ ok: false, reason: "empty" });
+      return;
+    }
+    const img = new Image();
+    let settled = false;
+    const finish = (result) => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      window.clearTimeout(timer);
+      resolve(result);
+    };
+    const timer = window.setTimeout(() => finish({ ok: false, reason: "timeout" }), timeoutMs);
+    img.decoding = "async";
+    img.onload = () => {
+      // Allow one frame paint before sampling.
+      window.setTimeout(() => {
+        const analysis = analyzeImageDarkness(img);
+        if (isLikelyBlackFrame(analysis)) {
+          finish({ ok: false, reason: "black", analysis });
+          return;
+        }
+        // If canvas is tainted (CORS), analysis is null — treat loaded image as usable.
+        finish({ ok: true, analysis });
+      }, 120);
+    };
+    img.onerror = () => finish({ ok: false, reason: "error" });
+    img.src = url;
+  });
+}
+
+function createCameraCard(camera, scopeLabel, { radiusKm = CITY_CCTV_RADIUS_KM } = {}) {
+  const card = document.createElement("article");
+  card.className = "camera-item camera-item-pending";
+  card.hidden = true;
+  card.dataset.cameraId = camera.id || "";
+  const streamUrl = camera.html;
+  const [roadA, roadB] = getCameraIntersectionRoads(camera);
+  const distance = Number.isFinite(camera.distanceKm) ? `${camera.distanceKm.toFixed(1)} km` : "--";
+  const inRange =
+    Number.isFinite(camera.distanceKm) && camera.distanceKm <= radiusKm
+      ? `（${radiusKm} 公里範圍內）`
+      : `（超出 ${radiusKm} 公里）`;
+  const directImage = isLikelyDirectImageStream(streamUrl);
+  const lat = Number(camera.gisy);
+  const lon = Number(camera.gisx);
+  const mapsUrl =
+    Number.isFinite(lat) && Number.isFinite(lon)
+      ? `https://www.google.com/maps?q=${lat},${lon}&z=18`
+      : "";
+
+  const mediaHtml = directImage
+    ? `<img src="${streamUrl}" alt="${camera.id} 即時影像" loading="eager" />`
+    : `<iframe class="camera-frame" src="${streamUrl}" title="${camera.id} 即時影像" loading="eager" referrerpolicy="no-referrer-when-downgrade"></iframe>`;
+
+  card.innerHTML = `
+    ${mediaHtml}
+    <div class="camera-body">
+      <h3>${camera.id}</h3>
+      <p data-cross-roads>交叉路口：${roadA} × ${roadB}</p>
+      <p>定位所在地：${scopeLabel}｜距離定位點：${distance} ${inRange}</p>
+      <div class="camera-links">
+        <a href="${streamUrl}" target="_blank" rel="noopener noreferrer">開啟官方即時影像</a>
+        ${
+          mapsUrl
+            ? `<a class="camera-maps-link" href="${mapsUrl}" target="_blank" rel="noopener noreferrer">Google 地圖核對位置</a>`
+            : ""
+        }
+      </div>
+    </div>
+  `;
+
+  const revealCard = () => {
+    card.hidden = false;
+    card.classList.remove("camera-item-pending");
+    card.classList.add("camera-item-live");
+  };
+  const hideDeadCard = (reason = "dead") => {
+    markCameraAsBlackScreen(camera.id);
+    card.dataset.deadReason = reason;
+    card.remove();
+  };
+
+  const img = card.querySelector("img");
+  if (img) {
+    img.addEventListener("error", () => hideDeadCard("img-error"));
+    img.addEventListener("load", () => {
+      window.setTimeout(() => {
+        const analysis = analyzeImageDarkness(img);
+        if (isLikelyBlackFrame(analysis)) {
+          hideDeadCard("black");
+          return;
+        }
+        revealCard();
+      }, 180);
+    });
+  }
+
+  const frame = card.querySelector("iframe");
+  if (frame) {
+    let settled = false;
+    const fail = (reason) => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      hideDeadCard(reason);
+    };
+    const pass = () => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      revealCard();
+    };
+    frame.addEventListener("error", () => fail("iframe-error"));
+    frame.addEventListener("load", () => {
+      // Cross-origin iframe content cannot be inspected; only reject clearly black image streams.
+      if (isLikelyDirectImageStream(streamUrl)) {
+        probeImageStream(streamUrl, { timeoutMs: 5000 }).then((result) => {
+          if (result.reason === "black") {
+            fail("black");
+            return;
+          }
+          if (result.reason === "error") {
+            fail("img-error");
+            return;
+          }
+          pass();
+        });
+        return;
+      }
+      // HTML player pages: keep if iframe loaded; hide only on later timeout without load.
+      pass();
+    });
+    window.setTimeout(() => {
+      if (!settled) {
+        fail("iframe-timeout");
+      }
+    }, 12000);
+  }
+
+  scheduleCameraCrossRoadEnrichment(card, camera);
+  return card;
+}
+
+async function appendVerifiedCameraCards(listEl, cameras, scopeLabel, { radiusKm = CITY_CCTV_RADIUS_KM } = {}) {
+  if (!listEl) {
+    return 0;
+  }
+  let shown = 0;
+  for (const camera of cameras) {
+    if (shown >= CCTV_VISIBLE_LIMIT) {
+      break;
+    }
+    if (isCameraMarkedBlackScreen(camera) || isCameraMaintenanceText(camera) || !isCameraUrlUsable(camera.html)) {
+      continue;
+    }
+
+    if (isLikelyDirectImageStream(camera.html)) {
+      const probe = await probeImageStream(camera.html, { timeoutMs: 7000 });
+      if (!probe.ok) {
+        markCameraAsBlackScreen(camera.id);
+        continue;
+      }
+    }
+
+    const card = createCameraCard(camera, scopeLabel, { radiusKm });
+    listEl.append(card);
+    const ok = await waitForCameraCardDecision(card, 10000);
+    if (ok) {
+      shown += 1;
+    }
+  }
+  return shown;
+}
+
+function waitForCameraCardDecision(card, timeoutMs = 10000) {
+  return new Promise((resolve) => {
+    if (!card) {
+      resolve(false);
+      return;
+    }
+    if (!card.hidden && card.classList.contains("camera-item-live")) {
+      resolve(true);
+      return;
+    }
+    if (!card.isConnected) {
+      resolve(false);
+      return;
+    }
+    const started = Date.now();
+    const timer = window.setInterval(() => {
+      if (!card.isConnected) {
+        window.clearInterval(timer);
+        resolve(false);
+        return;
+      }
+      if (!card.hidden && card.classList.contains("camera-item-live")) {
+        window.clearInterval(timer);
+        resolve(true);
+        return;
+      }
+      if (Date.now() - started >= timeoutMs) {
+        window.clearInterval(timer);
+        if (card.isConnected && card.hidden) {
+          markCameraAsBlackScreen(card.dataset.cameraId);
+          card.remove();
+        }
+        resolve(false);
+      }
+    }, 200);
+  });
+}
+
+function updateCameraMetaText() {
+  if (!cameraMeta || !cityCameraDataset) {
+    return;
+  }
+  const cityFetchedAt = cityCameraDataset.fetchedAt ? formatDateTime(cityCameraDataset.fetchedAt) : "未提供";
+  const rows = getFilteredSortedCityCameras();
+  const matchedCount = rows.length;
+  const focusPoint = getCityCameraFocusPoint();
+  const focusLabel = getCctvLocationFocus().label;
+  const nearestKm = Number.isFinite(rows[0]?.distanceKm) ? rows[0].distanceKm.toFixed(1) : "--";
+  const visibleCount = cameraList?.querySelectorAll(".camera-item-live").length ?? 0;
+  cameraMeta.textContent = `定位所在地：${focusLabel}｜半徑 ${CITY_CCTV_RADIUS_KM} 公里｜候選 ${matchedCount} 支｜正常顯示 ${visibleCount} 支｜最近距離 ${nearestKm} km｜快照：${cityFetchedAt}${
+    Number.isFinite(focusPoint?.lat) ? `｜基準 ${focusPoint.lat.toFixed(4)}, ${focusPoint.lon.toFixed(4)}` : ""
+  }`;
+}
+
+async function renderCameraList() {
+  cameraList.innerHTML = "";
+
+  if (!cityCameraDataset || !Array.isArray(cityCameraDataset.cameras)) {
+    cameraList.innerHTML = `<p class="status-warn">目前無法載入各縣市市區路口監控資料。</p>`;
+    return;
+  }
+
+  updateCameraMetaText();
+  const rows = getFilteredSortedCityCameras().slice(0, CCTV_VERIFY_POOL_SIZE);
+  if (!rows.length) {
+    cameraList.innerHTML = `<p class="status-warn">所選位置半徑 ${CITY_CCTV_RADIUS_KM} 公里內查無市區路口監控點，請更換鄉鎮或關鍵字。</p>`;
+    return;
+  }
+
+  const scopeLabel = getCctvLocationFocus().label || "所選位置";
+  const shown = await appendVerifiedCameraCards(cameraList, rows, scopeLabel);
+  updateCameraMetaText();
+  if (!shown && !cameraList.querySelector(".camera-item-live")) {
+    cameraList.innerHTML = `<p class="status-warn">附近監控目前多為維修／無畫面，暫無正常顯示的路口影像。</p>`;
+  }
+}
+
+function updateFreewayCameraMetaText() {
+  if (!freewayCameraMeta || !freewayCameraDataset) {
+    return;
+  }
+  const freewayFetchedAt = freewayCameraDataset.fetchedAt
+    ? formatDateTime(freewayCameraDataset.fetchedAt)
+    : "未提供";
+  const matchedCount = getFilteredSortedFreewayCameras().length;
+  const selectedCity = getSelectedFreewayCityName() || getCctvLocationFocus().label;
+  const radiusKm = FREEWAY_INTERCHANGE_BASE_RADIUS_KM;
+  const interchangeCount = getFreewayInterchangesForCity(getSelectedFreewayCityName()).length;
+  const visibleCount = freewayCameraList?.querySelectorAll(".camera-item-live").length ?? 0;
+  freewayCameraMeta.textContent = `交流道基準：${selectedCity || "所選縣市"}（${interchangeCount} 處）｜半徑 ${radiusKm} 公里｜候選 ${matchedCount} 支｜正常顯示 ${visibleCount} 支｜快照：${freewayFetchedAt}`;
+}
+
+async function renderFreewayCameraList() {
+  if (!freewayCameraList) {
+    return;
+  }
+  freewayCameraList.innerHTML = "";
+  if (!freewayCameraDataset || !Array.isArray(freewayCameraDataset.cameras)) {
+    freewayCameraList.innerHTML = `<p class="status-warn">目前無法載入國道監控資料。</p>`;
+    return;
+  }
+  const rows = getFilteredSortedFreewayCameras().slice(0, CCTV_VERIFY_POOL_SIZE);
+  updateFreewayCameraMetaText();
+  if (!rows.length) {
+    freewayCameraList.innerHTML = `<p class="status-warn">所選縣市交流道半徑 ${FREEWAY_INTERCHANGE_BASE_RADIUS_KM} 公里內查無國道監控點，請更換縣市、國道或關鍵字。</p>`;
+    return;
+  }
+  const selectedCity = getSelectedFreewayCityName();
+  const scopeLabel = selectedCity ? `${selectedCity}交流道基準` : getCctvLocationFocus().label || "所選位置";
+  const shown = await appendVerifiedCameraCards(freewayCameraList, rows, scopeLabel, {
+    radiusKm: FREEWAY_INTERCHANGE_BASE_RADIUS_KM
+  });
+  updateFreewayCameraMetaText();
+  if (!shown && !freewayCameraList.querySelector(".camera-item-live")) {
+    freewayCameraList.innerHTML = `<p class="status-warn">附近國道監控目前多為維修／無畫面，暫無正常顯示影像。</p>`;
+  }
+}
+
+async function renderAllCameraLists() {
+  await renderCameraList();
+  await renderFreewayCameraList();
 }
 
 function getWeatherIconSvg(code) {
@@ -4276,14 +4468,8 @@ townshipSelect.addEventListener("change", () => {
 
 locateBtn?.addEventListener("click", (event) => {
   event.preventDefault();
-  locateByDevice().catch((error) => {
-    const message = getGeolocationErrorMessage(error);
-    setLocateStatus(message, { isError: true });
-    setLocateButtonText();
-    if (locateBtn) {
-      locateBtn.disabled = false;
-    }
-  });
+  // Keep this handler synchronous so the browser treats geolocation as a user gesture.
+  locateByDevice();
 });
 
 refreshBtn.addEventListener("click", () => {
