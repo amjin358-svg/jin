@@ -1383,8 +1383,18 @@ input[type="checkbox"] {
 .subscription-email-note {
   margin: 8px 0 0;
   color: var(--muted);
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.45;
+}
+
+.alert-block .topic-option,
+.alert-block .subscription-form > label,
+.alert-block .ai-alert-item,
+.alert-block .ai-alert-tag,
+.alert-block .ai-alert-body,
+.alert-block .subscription-status-box,
+.alert-block .subscription-email-note {
+  font-size: 14px;
 }
 
 #notificationHint.subscription-status-box {
@@ -1484,19 +1494,21 @@ input[type="checkbox"] {
 }
 
 .camera-source-link {
-  margin: 0 0 8px;
-  font-size: 11px;
-  line-height: 1.35;
-  color: var(--muted);
+  display: none;
 }
 
-.camera-source-link a {
+.camera-meta-source {
+  font-size: inherit;
+  color: inherit;
+}
+
+.camera-meta-source a {
   color: #1f5ae1;
   font-weight: 600;
   text-decoration: none;
 }
 
-.camera-source-link a:hover {
+.camera-meta-source a:hover {
   text-decoration: underline;
 }
 
@@ -1957,13 +1969,20 @@ input[type="checkbox"] {
 }
 
 .risk-badge {
-  display: inline-block;
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   margin: 0 0 10px;
   padding: 10px 14px;
-  border-radius: 999px;
-  font-size: 26px;
+  border-radius: 12px;
+  font-size: clamp(14px, 4.2vw, 26px);
   font-weight: 800;
   line-height: 1.25;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: clip;
 }
 
 .risk-low {
@@ -2004,12 +2023,12 @@ input[type="checkbox"] {
   border-radius: 10px;
   background: #f7f9fc;
   color: #243047;
-  font-size: 15px;
+  font-size: 14px;
   line-height: 1.55;
 }
 
 .ai-alert-item.ai-alert-top {
-  font-size: 17px;
+  font-size: 14px;
 }
 
 .ai-alert-item.ai-alert-top .ai-alert-tag,
@@ -2031,7 +2050,7 @@ input[type="checkbox"] {
 
 .ai-alert-body {
   display: block;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   overflow-wrap: anywhere;
 }
@@ -2534,21 +2553,32 @@ input[type="checkbox"] {
   }
 
   .ai-alert-item.ai-alert-top {
-    font-size: 16px;
+    font-size: 14px;
   }
 
   .ai-alert-tag {
-    font-size: 13px;
+    font-size: 14px;
   }
 
   .ai-alert-body {
     font-size: 14px;
   }
 
+  .alert-block .topic-option,
+  .alert-block .subscription-form > label,
+  .alert-block .ai-alert-item,
+  .alert-block .ai-alert-tag,
+  .alert-block .ai-alert-body,
+  .alert-block .subscription-status-box,
+  .alert-block .subscription-email-note {
+    font-size: 14px;
+  }
+
   .risk-badge {
-    font-size: 22px;
+    font-size: clamp(12px, 3.8vw, 22px);
     padding: 8px 12px;
     margin-bottom: 6px;
+    width: 100%;
   }
 
   .map-layout {
@@ -2751,8 +2781,9 @@ input[type="checkbox"] {
   }
 
   .risk-badge {
-    font-size: 18px;
+    font-size: clamp(11px, 3.6vw, 18px);
     padding: 6px 10px;
+    width: 100%;
   }
 
   .auto-refresh-controls label,

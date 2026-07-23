@@ -2363,11 +2363,19 @@ function updateCameraMetaText() {
   }
   const cityFetchedAt = cityCameraDataset.fetchedAt ? formatDateTime(cityCameraDataset.fetchedAt) : "未提供";
   const focusLabel = getCctvLocationFocus().label || "所選位置";
-  const region = getSelectedCameraRegion();
-  const radiusKm = getActiveCityCctvRadiusKm();
-  const cityName = getSelectedCameraCityName() || "全部縣市";
-  const matchedCount = getCityCamerasForDisasterMap().length;
-  cameraMeta.textContent = `定位點：${focusLabel}｜地區：${region?.label || "地區範圍"}｜縣市：${cityName}｜半徑 ${radiusKm} 公里｜地圖標示 ${matchedCount} 支｜快照：${cityFetchedAt}`;
+  cameraMeta.textContent = "";
+  cameraMeta.append(`定位點：${focusLabel} 快照：${cityFetchedAt}`);
+  const source = document.createElement("span");
+  source.className = "camera-meta-source";
+  source.append("（來源：");
+  const link = document.createElement("a");
+  link.href = "https://traffic.transportdata.tw/";
+  link.target = "_blank";
+  link.rel = "noopener noreferrer";
+  link.textContent = "運輸資料流通服務";
+  source.append(link);
+  source.append("）");
+  cameraMeta.append(source);
 }
 
 function resetCityCameraLists() {
@@ -3424,14 +3432,15 @@ function renderTyphoonAnalysis() {
   const result = calculateTyphoonRisk();
   if (!result) {
     typhoonRiskBadge.textContent = "風險等級：資料不足";
-    typhoonRiskBadge.className = "risk-badge risk-low";
+    typhoonRiskBadge.className = "risk-badge risk-low hero-fit-text";
     typhoonAnalysisList.innerHTML = "<li>等待氣象資料。</li>";
     updateWindyTrackEmbed();
+    scheduleHeroTextFit();
     return;
   }
   appState.typhoon = result;
   const className = result.level === "高" ? "risk-high" : result.level === "中" ? "risk-medium" : "risk-low";
-  typhoonRiskBadge.className = `risk-badge ${className}`;
+  typhoonRiskBadge.className = `risk-badge ${className} hero-fit-text`;
   typhoonRiskBadge.textContent = `風險等級：${result.level}（指數 ${result.score}/100）`;
   typhoonAnalysisList.innerHTML = "";
   result.messages.forEach((message) => {
@@ -3440,6 +3449,7 @@ function renderTyphoonAnalysis() {
     typhoonAnalysisList.append(item);
   });
   updateWindyTrackEmbed();
+  scheduleHeroTextFit();
 }
 
 function decodeHtmlEntities(text) {
@@ -5602,7 +5612,14 @@ function fitSingleLineText(element, { maxPx, minPx } = {}) {
   if (!parent) {
     return;
   }
-  const available = Math.max(0, Math.floor(parent.getBoundingClientRect().width));
+  element.style.whiteSpace = "nowrap";
+  element.style.width = "100%";
+  element.style.maxWidth = "100%";
+  element.style.minWidth = "0";
+  element.style.boxSizing = "border-box";
+  const parentWidth = Math.floor(parent.getBoundingClientRect().width);
+  const selfWidth = Math.floor(element.getBoundingClientRect().width);
+  const available = Math.max(0, selfWidth || parentWidth);
   if (!available) {
     return;
   }
@@ -5611,11 +5628,6 @@ function fitSingleLineText(element, { maxPx, minPx } = {}) {
   let low = lower;
   let high = Math.max(lower, upper);
   let best = lower;
-  element.style.whiteSpace = "nowrap";
-  element.style.width = "100%";
-  element.style.maxWidth = "100%";
-  element.style.minWidth = "0";
-  element.style.boxSizing = "border-box";
   while (low <= high) {
     const mid = Math.floor((low + high) / 2);
     element.style.fontSize = `${mid}px`;
@@ -5633,6 +5645,7 @@ function fitHeroTexts() {
   const eyebrow = document.querySelector(".hero .eyebrow.hero-fit-text");
   const title = document.querySelector(".hero h1.hero-fit-text");
   const subtitle = document.querySelector(".hero .subtitle.hero-fit-text");
+  const riskBadge = document.querySelector("#typhoonRiskBadge.hero-fit-text");
   const content = document.querySelector(".hero-content");
   const width = Math.floor(content?.getBoundingClientRect().width || document.documentElement.clientWidth || 0);
   fitSingleLineText(eyebrow, {
@@ -5646,6 +5659,13 @@ function fitHeroTexts() {
   fitSingleLineText(subtitle, {
     maxPx: Math.min(18, Math.floor(width * 0.038)),
     minPx: 9
+  });
+  const riskParentWidth = Math.floor(
+    riskBadge?.parentElement?.getBoundingClientRect().width || document.documentElement.clientWidth || 0
+  );
+  fitSingleLineText(riskBadge, {
+    maxPx: Math.min(28, Math.floor(riskParentWidth * 0.08)),
+    minPx: 11
   });
 }
 
