@@ -719,6 +719,99 @@ label {
   z-index: 1;
 }
 
+.footer-stats {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.visitor-counter {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+  padding: 6px 10px;
+  border: 0.5px solid #b8c4dc;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 13px;
+  color: #35538f;
+  font-weight: 600;
+}
+
+.visitor-counter-label {
+  white-space: nowrap;
+}
+
+.visitor-counter-value {
+  display: inline-block;
+  min-width: 7ch;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.like-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 6px 12px;
+  border: 1px solid #e2a3b0;
+  border-radius: 8px;
+  background: #fff5f7;
+  color: #b42318;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  line-height: 1.2;
+}
+
+.like-btn:hover,
+.like-btn:focus-visible {
+  background: #ffe8ed;
+  outline: none;
+}
+
+.like-btn.is-liked {
+  background: #e53935;
+  border-color: #c62828;
+  color: #fff;
+}
+
+.like-btn:disabled {
+  cursor: default;
+  opacity: 0.92;
+}
+
+.like-icon {
+  display: inline-flex;
+  width: 16px;
+  height: 16px;
+}
+
+.like-icon svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+.like-btn-label {
+  white-space: nowrap;
+}
+
+.like-count-value {
+  display: inline-block;
+  min-width: 7ch;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
 .site-credit {
   margin: 4px 0 0;
   font-size: 13px;
@@ -801,33 +894,6 @@ label {
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-.visitor-counter {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  margin: 0;
-  padding: 6px 10px;
-  border: 0.5px solid #b8c4dc;
-  border-radius: 8px;
-  background: #fff;
-  font-size: 13px;
-  color: #35538f;
-  font-weight: 600;
-}
-
-.visitor-counter-label {
-  white-space: nowrap;
-}
-
-.visitor-counter-value {
-  display: inline-block;
-  min-width: 7ch;
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-  font-weight: 700;
-  letter-spacing: 0.04em;
 }
 
 .notice-hint {

@@ -499,6 +499,9 @@ const windyEmbed = document.querySelector("#windyEmbed");
 const windyExternalLink = document.querySelector("#windyExternalLink");
 const visitorCounter = document.querySelector("#visitorCounter");
 const visitorCounterValue = document.querySelector("#visitorCounterValue");
+const likeBtn = document.querySelector("#likeBtn");
+const likeBtnLabel = likeBtn?.querySelector(".like-btn-label");
+const likeCountValue = document.querySelector("#likeCountValue");
 const powerOutageMeta = document.querySelector("#powerOutageMeta");
 const mapFloodCountBtn = document.querySelector("#mapFloodCountBtn");
 const mapFloodCountValue = document.querySelector("#mapFloodCountValue");
@@ -576,6 +579,9 @@ const RAIN_FORECAST_HOURS = 8;
 const VISITOR_COUNTER_NAMESPACE = "jin-weather-tw-v1";
 const VISITOR_COUNTER_KEY = "visits";
 const VISITOR_COUNTER_STORAGE_KEY = "siteVisitCountV1";
+const LIKE_COUNTER_KEY = "likes";
+const LIKE_COUNTER_STORAGE_KEY = "siteLikeCountV1";
+const LIKE_VOTED_STORAGE_KEY = "siteLikedV1";
 const CITY_CCTV_RADIUS_KM = 2;
 const CITY_CCTV_PREVIEW_LIMIT = 8;
 const FREEWAY_CCTV_RADIUS_KM = 40;
@@ -3237,6 +3243,51 @@ function setVisitorCountDisplay(count) {
   }
 }
 
+function setLikeCountDisplay(count) {
+  if (likeCountValue) {
+    likeCountValue.textContent = formatVisitorCount(count);
+  }
+}
+
+function hasUserLiked() {
+  return localStorage.getItem(LIKE_VOTED_STORAGE_KEY) === "1";
+}
+
+function markUserLiked() {
+  localStorage.setItem(LIKE_VOTED_STORAGE_KEY, "1");
+}
+
+function syncLikeButtonState(liked = hasUserLiked()) {
+  if (!likeBtn) {
+    return;
+  }
+  likeBtn.classList.toggle("is-liked", liked);
+  likeBtn.disabled = liked;
+  likeBtn.setAttribute("aria-pressed", liked ? "true" : "false");
+  if (likeBtnLabel) {
+    likeBtnLabel.textContent = liked ? "已按讚" : "按讚";
+  }
+}
+
+async function fetchCountApi(path, { timeoutMs = 5000 } = {}) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(`https://api.countapi.xyz/${path}`, {
+      signal: controller.signal
+    });
+    if (!response.ok) {
+      return null;
+    }
+    const payload = await response.json();
+    return Number.isFinite(payload?.value) ? Number(payload.value) : null;
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
 async function initVisitorCounter() {
   if (!visitorCounter) {
     return;
@@ -3246,27 +3297,53 @@ async function initVisitorCounter() {
   localStorage.setItem(VISITOR_COUNTER_STORAGE_KEY, String(totalCount));
   setVisitorCountDisplay(totalCount);
 
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
-    const response = await fetch(
-      `https://api.countapi.xyz/hit/${VISITOR_COUNTER_NAMESPACE}/${VISITOR_COUNTER_KEY}`,
-      { signal: controller.signal }
-    );
-    clearTimeout(timeoutId);
-    if (!response.ok) {
-      return;
-    }
-    const payload = await response.json();
-    if (Number.isFinite(payload.value)) {
-      // Keep a monotonic cumulative count across local and remote sources.
-      totalCount = Math.max(totalCount, Number(payload.value));
-      localStorage.setItem(VISITOR_COUNTER_STORAGE_KEY, String(totalCount));
-      setVisitorCountDisplay(totalCount);
-    }
-  } catch {
+  const remoteCount = await fetchCountApi(
+    `hit/${VISITOR_COUNTER_NAMESPACE}/${VISITOR_COUNTER_KEY}`
+  );
+  if (Number.isFinite(remoteCount)) {
+    totalCount = Math.max(totalCount, remoteCount);
+    localStorage.setItem(VISITOR_COUNTER_STORAGE_KEY, String(totalCount));
+    setVisitorCountDisplay(totalCount);
+  } else {
     setVisitorCountDisplay(totalCount);
   }
+}
+
+async function initLikeCounter() {
+  if (!likeBtn || !likeCountValue) {
+    return;
+  }
+
+  const localCount = Number(localStorage.getItem(LIKE_COUNTER_STORAGE_KEY) || 0);
+  setLikeCountDisplay(localCount);
+  syncLikeButtonState();
+
+  const remoteCount = await fetchCountApi(`get/${VISITOR_COUNTER_NAMESPACE}/${LIKE_COUNTER_KEY}`);
+  if (Number.isFinite(remoteCount)) {
+    const totalCount = Math.max(localCount, remoteCount);
+    localStorage.setItem(LIKE_COUNTER_STORAGE_KEY, String(totalCount));
+    setLikeCountDisplay(totalCount);
+  }
+
+  likeBtn.addEventListener("click", async () => {
+    if (hasUserLiked() || likeBtn.disabled) {
+      return;
+    }
+    likeBtn.disabled = true;
+    const previous = Number(localStorage.getItem(LIKE_COUNTER_STORAGE_KEY) || 0);
+    let nextCount = previous + 1;
+    localStorage.setItem(LIKE_COUNTER_STORAGE_KEY, String(nextCount));
+    markUserLiked();
+    setLikeCountDisplay(nextCount);
+    syncLikeButtonState(true);
+
+    const remoteHit = await fetchCountApi(`hit/${VISITOR_COUNTER_NAMESPACE}/${LIKE_COUNTER_KEY}`);
+    if (Number.isFinite(remoteHit)) {
+      nextCount = Math.max(nextCount, remoteHit);
+      localStorage.setItem(LIKE_COUNTER_STORAGE_KEY, String(nextCount));
+      setLikeCountDisplay(nextCount);
+    }
+  });
 }
 
 function calculateTyphoonRisk() {
@@ -5143,6 +5220,7 @@ document.querySelector("#airDetails")?.addEventListener("toggle", () => {
   syncAirDetailsSummaryLabel();
 });
 initVisitorCounter();
+initLikeCounter();
 performFullRefresh("manual");
 fetchRoadCameras();
 initWarningMap();
