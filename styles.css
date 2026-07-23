@@ -264,16 +264,17 @@ body {
 
 .hero .eyebrow {
   display: block;
+  box-sizing: border-box;
   width: 100%;
   max-width: 100%;
   margin: 0 0 6px;
-  letter-spacing: 0.04em;
-  font-size: clamp(12px, 2.6vw, 16px);
-  line-height: 1.35;
+  letter-spacing: 0.02em;
+  font-size: clamp(8px, 2.35vw, 15px);
+  line-height: 1.25;
   opacity: 0.95;
-  white-space: normal;
-  overflow-wrap: anywhere;
-  word-break: break-word;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: clip;
 }
 
 .hero h1,
@@ -304,6 +305,10 @@ body {
   width: 100%;
   max-width: 100%;
   white-space: nowrap;
+  font-size: 18px;
+  font-weight: 800;
+  padding: 12px 16px;
+  line-height: 1.25;
 }
 
 h2 {
@@ -2260,10 +2265,14 @@ input[type="checkbox"] {
   }
 
   .hero .eyebrow {
-    font-size: clamp(11px, 3.2vw, 14px);
+    font-size: clamp(7px, 2.8vw, 12px);
     margin-bottom: 4px;
     width: 100%;
-    white-space: normal;
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: clip;
+    letter-spacing: 0.01em;
   }
 
   .hero h1 {
@@ -2276,9 +2285,10 @@ input[type="checkbox"] {
 
   .hero .refresh-btn {
     width: 100%;
-    padding: 8px 10px;
-    font-size: 13px;
-    line-height: 1.2;
+    padding: 11px 12px;
+    font-size: 16px;
+    line-height: 1.25;
+    font-weight: 800;
   }
 
   .card {
@@ -2615,6 +2625,11 @@ input[type="checkbox"] {
   .hero-fit-text {
     max-width: 100%;
     overflow-wrap: anywhere;
+  }
+
+  .hero .eyebrow.hero-fit-text {
+    overflow-wrap: normal;
+    word-break: keep-all;
   }
 }
 

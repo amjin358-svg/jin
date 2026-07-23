@@ -3387,6 +3387,29 @@ function renderTyphoonAnalysis() {
   updateWindyTrackEmbed();
 }
 
+function decodeHtmlEntities(text) {
+  const raw = String(text ?? "");
+  if (!raw || !raw.includes("&")) {
+    return raw;
+  }
+  const textarea = document.createElement("textarea");
+  textarea.innerHTML = raw;
+  return textarea.value;
+}
+
+function formatFloodStationLabel(point = {}) {
+  const name = decodeHtmlEntities(point.name || point.areaName || "");
+  const numberMatch = name.match(/編號\s*([0-9]+)/);
+  if (numberMatch) {
+    return `編號${numberMatch[1]}`;
+  }
+  const cleaned = name.replace(/\s+/g, " ").trim();
+  if (cleaned) {
+    return cleaned;
+  }
+  return `${point.county || ""}${point.town || ""}`.trim() || "感測點";
+}
+
 function getNearbyFloodWarnings() {
   const location = getActiveWeatherLocation();
   if (!location || !appState.floodLivePoints.length) {
@@ -3401,7 +3424,7 @@ function getNearbyFloodPoints(location, radiusKm = FLOOD_NOTIFY_RADIUS_KM) {
   }
   return appState.floodLivePoints
     .map((point) => ({
-      areaName: `${point.county}${point.town} ${point.name}`,
+      areaName: formatFloodStationLabel(point),
       sensorid: point.sensorid,
       level: point.level,
       waterDepthCm: point.depthCm,
@@ -4462,7 +4485,10 @@ async function loadFloodStations() {
     throw new Error(`淹水測站資料讀取失敗：${response.status}`);
   }
   const payload = await response.json();
-  appState.floodStations = payload.stations ?? [];
+  appState.floodStations = (payload.stations ?? []).map((station) => ({
+    ...station,
+    name: decodeHtmlEntities(station?.name)
+  }));
 }
 
 async function fetchLiveFloodData() {
@@ -4509,7 +4535,7 @@ async function fetchLiveFloodData() {
   appState.floodFeatures = livePoints.map((point) => ({
     type: "Feature",
     properties: {
-      areaName: `${point.county}${point.town} ${point.name}`,
+      areaName: formatFloodStationLabel(point),
       level: point.level,
       waterDepthCm: point.depthCm,
       updatedAt: point.updatedAt,
@@ -5184,10 +5210,15 @@ function fitSingleLineText(element, { maxPx, minPx } = {}) {
 }
 
 function fitHeroTexts() {
+  const eyebrow = document.querySelector(".hero .eyebrow.hero-fit-text");
   const title = document.querySelector(".hero h1.hero-fit-text");
   const subtitle = document.querySelector(".hero .subtitle.hero-fit-text");
   const content = document.querySelector(".hero-content");
   const width = Math.floor(content?.getBoundingClientRect().width || document.documentElement.clientWidth || 0);
+  fitSingleLineText(eyebrow, {
+    maxPx: Math.min(16, Math.floor(width * 0.032)),
+    minPx: 7
+  });
   fitSingleLineText(title, {
     maxPx: Math.min(48, Math.floor(width * 0.088)),
     minPx: 11
