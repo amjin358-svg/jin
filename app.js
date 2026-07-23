@@ -1496,35 +1496,9 @@ function getFilteredSortedCityCameras() {
 }
 
 function getCityCamerasForDisasterMap() {
-  if (!cityCameraDataset || !Array.isArray(cityCameraDataset.cameras)) {
-    return [];
-  }
-  const selectedCity =
-    getSelectedCameraCityName() || getActiveWeatherLocation()?.cityName || citySelect?.value || "";
-  const focusPoint = getCityCameraFocusPoint();
-  const focus = {
-    lat: Number(focusPoint?.lat),
-    lon: Number(focusPoint?.lon)
-  };
-
-  return dedupeCamerasByIdentity(
-    cityCameraDataset.cameras
-      .filter((camera) => isCameraUrlUsable(camera.html))
-      .filter((camera) => {
-        if (!selectedCity) {
-          return true;
-        }
-        return camera.city === selectedCity;
-      })
-      .filter((camera) => Number.isFinite(Number(camera.gisy)) && Number.isFinite(Number(camera.gisx)))
-      .map((camera) => {
-        const distanceKm =
-          Number.isFinite(focus.lat) && Number.isFinite(focus.lon)
-            ? getDistanceKm(focus.lat, focus.lon, Number(camera.gisy), Number(camera.gisx))
-            : Infinity;
-        return { ...camera, distanceKm };
-      })
-      .sort((a, b) => a.distanceKm - b.distanceKm)
+  // Match the CCTV list shown above the disaster map (selected city + focus radius).
+  return getFilteredSortedCityCameras().filter(
+    (camera) => Number.isFinite(Number(camera.gisy)) && Number.isFinite(Number(camera.gisx))
   );
 }
 
@@ -3611,6 +3585,39 @@ function updateRecoveryTrackingState() {
     .filter((item) => item?.text);
 }
 
+function parseAiAlertPresentation(text) {
+  const raw = String(text || "").trim();
+  const tagMatch = raw.match(/^【([^】]+)】\s*(.*)$/);
+  const tag = tagMatch ? tagMatch[1] : "";
+  const body = tagMatch ? tagMatch[2] : raw;
+  const levelMatch = raw.match(/等級\s*([1-4])/);
+  const floodLevel = levelMatch ? Number(levelMatch[1]) : 0;
+
+  let tone = "neutral";
+  if (tag.includes("高風險") || tag.includes("積淹水警戒")) {
+    tone = "high";
+  } else if (tag.includes("積淹水警示") || tag.includes("積淹水監測")) {
+    tone = floodLevel >= 1 ? `flood-${floodLevel}` : "flood-1";
+  } else if (tag.includes("注意")) {
+    tone = "watch";
+  } else if (tag.includes("空品")) {
+    tone = "air";
+  } else if (tag.includes("停班停課")) {
+    tone = "closure";
+  } else if (tag.includes("一般") || tag.includes("解除") || tag.includes("消退")) {
+    tone = "general";
+  } else if (floodLevel >= 1) {
+    tone = `flood-${floodLevel}`;
+  }
+
+  return {
+    tag: tag ? `【${tag}】` : "",
+    body,
+    tone,
+    text: raw
+  };
+}
+
 function renderAiAlerts() {
   const alerts = [];
   const typhoon = appState.typhoon;
@@ -3650,9 +3657,23 @@ function renderAiAlerts() {
   }
   appState.aiAlerts = alerts;
   aiAlertList.innerHTML = "";
-  alerts.forEach((text) => {
+  alerts.forEach((text, index) => {
+    const presentation = parseAiAlertPresentation(text);
     const item = document.createElement("li");
-    item.textContent = text;
+    item.className = `ai-alert-item ai-alert-${presentation.tone}`;
+    if (index === 0) {
+      item.classList.add("ai-alert-top");
+    }
+    if (presentation.tag) {
+      const tagEl = document.createElement("span");
+      tagEl.className = "ai-alert-tag";
+      tagEl.textContent = presentation.tag;
+      item.append(tagEl);
+    }
+    const bodyEl = document.createElement("span");
+    bodyEl.className = "ai-alert-body";
+    bodyEl.textContent = presentation.body || presentation.text;
+    item.append(bodyEl);
     aiAlertList.append(item);
   });
 }
@@ -4637,8 +4658,14 @@ function updateCameraMapLayer() {
   }
   mapCameraLayer.clearLayers();
   mapLegendMarkers.cctv = [];
-  // Plot every city CCTV in the selected county so legend count matches map points.
-  getCityCamerasForDisasterMap().forEach((camera) => {
+  const liveIds = getLiveCityCameraIds();
+  const nearbyCameras = getCityCamerasForDisasterMap();
+  // Prefer live cards from the monitor section above the map; fall back to nearby candidates.
+  const camerasToPlot =
+    liveIds.size > 0
+      ? nearbyCameras.filter((camera) => liveIds.has(String(camera.id || "")))
+      : nearbyCameras;
+  camerasToPlot.forEach((camera) => {
     const lat = Number(camera.gisy);
     const lon = Number(camera.gisx);
     if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
@@ -4651,11 +4678,11 @@ function updateCameraMapLayer() {
     const mapsUrl = `https://www.google.com/maps?q=${lat},${lon}&z=18`;
     const marker = L.circleMarker([lat, lon], {
       pane: "cameraPane",
-      radius: 6,
-      color: "#66d9ff",
+      radius: 8,
+      color: "#b8f2ff",
       fillColor: "#0096c7",
-      fillOpacity: 0.85,
-      weight: 2
+      fillOpacity: 0.95,
+      weight: 3
     });
     marker.bindPopup(
       `

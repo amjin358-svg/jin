@@ -1973,6 +1973,153 @@ input[type="checkbox"] {
   gap: 6px;
 }
 
+.ai-alert-card .analysis-list {
+  list-style: none;
+  padding: 0;
+  gap: 10px;
+}
+
+.ai-alert-item {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 12px 14px;
+  border: 2px solid #9aa7c2;
+  border-radius: 10px;
+  background: #f7f9fc;
+  color: #243047;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.ai-alert-item.ai-alert-top {
+  font-size: 17px;
+}
+
+.ai-alert-item.ai-alert-top .ai-alert-tag,
+.ai-alert-item.ai-alert-top .ai-alert-body {
+  font-size: inherit;
+}
+
+.ai-alert-tag {
+  display: inline-block;
+  width: fit-content;
+  max-width: 100%;
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  line-height: 1.35;
+}
+
+.ai-alert-body {
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.ai-alert-general {
+  border-color: #5a9f74;
+  background: #eef8f1;
+}
+
+.ai-alert-general .ai-alert-tag {
+  background: #0f9d58;
+  color: #fff;
+}
+
+.ai-alert-watch {
+  border-color: #d4a017;
+  background: #fff8e8;
+}
+
+.ai-alert-watch .ai-alert-tag {
+  background: #c46b00;
+  color: #fff;
+}
+
+.ai-alert-high {
+  border-color: #c1121f;
+  background: #ffe8e8;
+}
+
+.ai-alert-high .ai-alert-tag {
+  background: #c1121f;
+  color: #fff;
+}
+
+.ai-alert-air {
+  border-color: #2a9d8f;
+  background: #e8f7f5;
+}
+
+.ai-alert-air .ai-alert-tag {
+  background: #2a9d8f;
+  color: #fff;
+}
+
+.ai-alert-closure {
+  border-color: #5c4d7a;
+  background: #f3eef8;
+}
+
+.ai-alert-closure .ai-alert-tag {
+  background: #5c4d7a;
+  color: #fff;
+}
+
+.ai-alert-flood-1 {
+  border-color: #c9a227;
+  background: #fff8df;
+}
+
+.ai-alert-flood-1 .ai-alert-tag {
+  background: #ffd166;
+  color: #4a3b00;
+}
+
+.ai-alert-flood-2 {
+  border-color: #d4a017;
+  background: #fff4d6;
+}
+
+.ai-alert-flood-2 .ai-alert-tag {
+  background: #ffba08;
+  color: #4a3b00;
+}
+
+.ai-alert-flood-3 {
+  border-color: #e85d04;
+  background: #ffe8d6;
+}
+
+.ai-alert-flood-3 .ai-alert-tag {
+  background: #e85d04;
+  color: #fff;
+}
+
+.ai-alert-flood-4 {
+  border-color: #d00000;
+  background: #ffe0e0;
+}
+
+.ai-alert-flood-4 .ai-alert-tag {
+  background: #d00000;
+  color: #fff;
+}
+
+.ai-alert-neutral {
+  border-color: #8a97b3;
+  background: #f4f6fb;
+}
+
+.ai-alert-neutral .ai-alert-tag {
+  background: #5a6787;
+  color: #fff;
+}
+
 .subscription-form {
   display: grid;
   gap: 8px;
@@ -2336,6 +2483,28 @@ input[type="checkbox"] {
     font-size: 13px;
     line-height: 1.35;
     padding-left: 16px;
+  }
+
+  .ai-alert-card .analysis-list {
+    padding-left: 0;
+    gap: 8px;
+  }
+
+  .ai-alert-item {
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+
+  .ai-alert-item.ai-alert-top {
+    font-size: 16px;
+  }
+
+  .ai-alert-tag {
+    font-size: 13px;
+  }
+
+  .ai-alert-body {
+    font-size: 14px;
   }
 
   .risk-badge {
