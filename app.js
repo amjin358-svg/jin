@@ -3865,7 +3865,7 @@ function updateCityFocusLayer() {
     return;
   }
 
-  mapCityFocusLayer = L.layerGroup();
+  mapCityFocusLayer = L.featureGroup();
   const ring = L.circle([location.lat, location.lon], {
     radius: MAP_FOCUS_CIRCLE_RADIUS_M,
     color: "#00d4ff",
@@ -3885,7 +3885,6 @@ function updateCityFocusLayer() {
   });
   mapCityFocusLayer.addLayer(ring);
   mapCityFocusLayer.addLayer(center);
-  mapCityFocusLayer.bindTooltip?.(`${location.label} 焦點區`);
 
   mapLayerVisibility["city-focus"] = true;
   mapCityFocusLayer.addTo(warningMap);
