@@ -564,6 +564,8 @@ const DAILY_WEATHER_EMAIL_DATE_KEY = "dailyWeatherEmailDateV1";
 const SUBSCRIPTION_TOPIC_ORDER = ["weather", "air", "closure", "flood", "power-outage", "water-outage"];
 const SITE_PUBLIC_URL = "https://amjin358-svg.github.io/jin/";
 const SUBSCRIBE_OWNER_INBOX = "amjin358@gmail.com";
+const VAPID_PUBLIC_KEY =
+  "BJXXT1l-q5eu0Obt6DDDndh1NeVqGL9jR3mS8aoH1-cB6W3Cqk_UM9jLLF9PLyc1RguSVPmki1bxbOsNcYeOVbI";
 const RECOVERY_STATE_STORAGE_KEY = "subscriptionRecoveryStateV1";
 const FLOOD_LATEST_API =
   "https://opendata.wra.gov.tw/api/v2/1b991bbb-ad85-4e7a-b931-06ce8749d3ed?format=JSON";
@@ -2149,7 +2151,7 @@ function createCameraCard(camera, scopeLabel, { forceImage = false } = {}) {
       <h3>${camera.id}</h3>
       <p data-cross-roads>交叉路口：${roadA} × ${roadB}</p>
       <p>監控區域：${camera.city || "未提供"}</p>
-      <p>定位所在地：${scopeLabel}</p>
+      <p>定位點：${scopeLabel}</p>
       <div class="camera-links">
         <a href="${streamUrl}" target="_blank" rel="noopener noreferrer">即時影像</a>
         ${
@@ -2365,7 +2367,7 @@ function updateCameraMetaText() {
   const radiusKm = getActiveCityCctvRadiusKm();
   const cityName = getSelectedCameraCityName() || "全部縣市";
   const matchedCount = getCityCamerasForDisasterMap().length;
-  cameraMeta.textContent = `定位所在地：${focusLabel}｜地區：${region?.label || "地區範圍"}｜縣市：${cityName}｜半徑 ${radiusKm} 公里｜地圖標示 ${matchedCount} 支｜快照：${cityFetchedAt}`;
+  cameraMeta.textContent = `定位點：${focusLabel}｜地區：${region?.label || "地區範圍"}｜縣市：${cityName}｜半徑 ${radiusKm} 公里｜地圖標示 ${matchedCount} 支｜快照：${cityFetchedAt}`;
 }
 
 function resetCityCameraLists() {
@@ -3788,10 +3790,10 @@ function renderSubscriptionStatus(message) {
   const topics = new Set(appState.subscription?.topics ?? []);
   if (topics.has("weather")) {
     subscriptionStatus.textContent =
-      "訂閱完成：每日天氣預報會寄到您的信箱（每天一次），並依所選主題啟用即時訊息通知。";
+      "訂閱完成：每日天氣預報會寄到您的信箱（每天一次），關閉頁面後仍可收到背景通知。";
     return;
   }
-  subscriptionStatus.textContent = "訂閱完成，已依所選主題啟用即時訊息通知。";
+  subscriptionStatus.textContent = "訂閱完成，已依所選主題啟用即時訊息與背景通知。";
 }
 
 function clearSubscriptionHint() {
@@ -3876,6 +3878,105 @@ async function initServiceWorker() {
   } catch {
     return null;
   }
+}
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const raw = atob(base64);
+  return Uint8Array.from(raw, (char) => char.charCodeAt(0));
+}
+
+function buildBackgroundSubscriptionPrefs(subscription = appState.subscription) {
+  const location = getSubscriptionWeatherLocation();
+  return {
+    email: String(subscription?.email || "")
+      .trim()
+      .toLowerCase(),
+    topics: Array.isArray(subscription?.topics) ? subscription.topics : [],
+    city: subscription?.city || "",
+    township: subscription?.township || "",
+    label: location?.label || `${subscription?.city || ""}${subscription?.township || ""}`,
+    lat: Number(location?.lat),
+    lon: Number(location?.lon),
+    updatedAt: new Date().toISOString()
+  };
+}
+
+async function postToServiceWorker(message) {
+  const registration = await getNotificationRegistration();
+  const worker = registration?.active || registration?.waiting || registration?.installing;
+  if (!worker) {
+    return false;
+  }
+  worker.postMessage(message);
+  return true;
+}
+
+async function persistSubscriptionForBackground(subscription = appState.subscription) {
+  const prefs = buildBackgroundSubscriptionPrefs(subscription);
+  await initServiceWorker();
+  await postToServiceWorker({ type: "SAVE_SUBSCRIPTION_PREFS", payload: prefs });
+  return prefs;
+}
+
+async function enableBackgroundNotifications(subscription = appState.subscription) {
+  const registration = await initServiceWorker();
+  if (!registration) {
+    return { enabled: false, reason: "no-sw" };
+  }
+  await persistSubscriptionForBackground(subscription);
+
+  let pushSubscribed = false;
+  try {
+    if (registration.pushManager && Notification.permission === "granted") {
+      const existing = await registration.pushManager.getSubscription();
+      const pushSubscription =
+        existing ||
+        (await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+        }));
+      pushSubscribed = Boolean(pushSubscription);
+      await postToServiceWorker({
+        type: "SAVE_SUBSCRIPTION_PREFS",
+        payload: {
+          ...buildBackgroundSubscriptionPrefs(subscription),
+          pushSubscription: pushSubscription?.toJSON?.() || null
+        }
+      });
+    }
+  } catch {
+    pushSubscribed = false;
+  }
+
+  let periodicSync = false;
+  try {
+    if ("periodicSync" in registration) {
+      const status = await navigator.permissions?.query?.({ name: "periodic-background-sync" });
+      if (!status || status.state === "granted") {
+        await registration.periodicSync.register("jin-disaster-check", {
+          minInterval: 15 * 60 * 1000
+        });
+        periodicSync = true;
+      }
+    }
+  } catch {
+    periodicSync = false;
+  }
+
+  try {
+    if ("sync" in registration) {
+      await registration.sync.register("jin-disaster-check-once");
+    }
+  } catch {
+    /* one-off sync is best-effort */
+  }
+
+  // Kick an immediate background check so SW path is warm after subscribe.
+  await postToServiceWorker({ type: "RUN_BACKGROUND_CHECK" });
+
+  return { enabled: true, pushSubscribed, periodicSync };
 }
 
 async function getNotificationRegistration() {
@@ -5423,6 +5524,7 @@ subscriptionForm.addEventListener("submit", async (event) => {
   await initServiceWorker();
   const permissionMode = await ensureNotificationPermission();
   let emailStatus = "";
+  let backgroundStatus = "";
   if (topics.includes("weather")) {
     try {
       if (!appState.weather?.current) {
@@ -5434,17 +5536,24 @@ subscriptionForm.addEventListener("submit", async (event) => {
       emailStatus = `郵件寄送尚未完成：${error.message || "請查看信箱是否有第一次啟用確認信"}。`;
     }
   }
+  try {
+    const bg = await enableBackgroundNotifications(appState.subscription);
+    if (bg.enabled) {
+      backgroundStatus = bg.periodicSync
+        ? "已啟用關閉頁面後的背景通知。"
+        : "已啟用背景通知（部分瀏覽器需將網站加到主畫面以穩定收訊）。";
+    }
+  } catch {
+    backgroundStatus = "";
+  }
   await sendSubscriptionNotification({ force: true });
+  const extra = [emailStatus, backgroundStatus].filter(Boolean).join(" ");
   if (permissionMode === "granted") {
     renderSubscriptionStatus(
-      emailStatus
-        ? `訂閱完成。${emailStatus} 已啟用系統通知與頁面內提醒。`
-        : "訂閱完成，已啟用系統通知與頁面內提醒。"
+      extra ? `訂閱完成。${extra} 已啟用系統通知與頁面內提醒。` : "訂閱完成，已啟用系統通知與頁面內提醒。"
     );
   } else {
-    renderSubscriptionStatus(
-      emailStatus ? `訂閱完成。${emailStatus}` : "訂閱完成，已啟用頁面內即時訊息通知。"
-    );
+    renderSubscriptionStatus(extra ? `訂閱完成。${extra}` : "訂閱完成，已啟用頁面內即時訊息通知。");
   }
   clearSubscriptionHint();
 });
@@ -5579,8 +5688,11 @@ if (document.fonts?.ready) {
 window.matchMedia("(min-width: 861px)").addEventListener("change", syncNoticeDetailsOpen);
 initServiceWorker()
   .then(() => ensureNotificationPermission())
-  .then(() => {
+  .then(async () => {
     updateNotificationHint();
+    if (appState.subscription?.email) {
+      await enableBackgroundNotifications(appState.subscription).catch(() => {});
+    }
     return flushPendingUtilityAlerts();
   })
   .catch(() => updateNotificationHint());
