@@ -1062,39 +1062,50 @@ function findNearestTownship(lat, lon) {
 function getGeolocationErrorMessage(error) {
   const code = error?.code;
   if (code === 1 || /denied/i.test(error?.message || "")) {
-    return "定位權限被拒絕，請在瀏覽器設定允許本站使用位置資訊後再試。";
+    return "定位權限未允許。請到瀏覽器「網站設定／權限」開啟位置存取，或重新整理後再按一次並選擇「允許」。";
   }
   if (code === 2) {
-    return "目前無法取得位置資訊，請確認裝置定位已開啟。";
+    return "目前無法取得位置資訊，請確認手機定位（GPS／定位服務）已開啟後再試。";
   }
   if (code === 3) {
-    return "定位逾時，請移至訊號較佳處後再試。";
+    return "定位逾時，請移至空曠處或確認定位服務已開啟後再試。";
   }
   return `定位失敗（${error?.message || "未知錯誤"}）`;
 }
 
+async function readGeolocationPermissionState() {
+  if (!navigator.permissions?.query) {
+    return "unknown";
+  }
+  try {
+    const status = await navigator.permissions.query({ name: "geolocation" });
+    return status?.state || "unknown";
+  } catch {
+    return "unknown";
+  }
+}
+
+function requestDevicePosition(options) {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation?.getCurrentPosition) {
+      reject(Object.assign(new Error("unsupported"), { code: 0 }));
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(resolve, reject, options);
+  });
+}
+
 async function ensureGeolocationPermission() {
   if (!window.isSecureContext) {
-    return { ok: false, message: "請以 HTTPS 開啟本站後再使用定位功能。" };
+    return { ok: false, message: "請以 HTTPS（或本機安全環境）開啟本站後再使用定位功能。" };
   }
   if (!navigator.geolocation) {
     return { ok: false, message: "此裝置瀏覽器不支援衛星定位。" };
   }
-  if (!navigator.permissions?.query) {
-    return { ok: true };
-  }
-  try {
-    const status = await navigator.permissions.query({ name: "geolocation" });
-    if (status.state === "denied") {
-      return {
-        ok: false,
-        message: "定位權限已封鎖，請到瀏覽器網站設定允許位置存取後再按一次。"
-      };
-    }
-  } catch {
-    // Some browsers reject geolocation permission queries; continue to request via getCurrentPosition.
-  }
-  return { ok: true };
+  // Never hard-block on Permissions API "denied" alone: some mobile browsers
+  // mis-report state, and only getCurrentPosition can surface the system prompt.
+  const state = await readGeolocationPermissionState();
+  return { ok: true, state };
 }
 
 function syncSelectValue(selectEl, value) {
@@ -1111,54 +1122,76 @@ async function locateByDevice() {
   const permission = await ensureGeolocationPermission();
   if (!permission.ok) {
     setLocateStatus(permission.message, { isError: true });
-    showInPageAlert("定位無法啟用", permission.message, { timeoutMs: 8000 });
+    showInPageAlert("定位無法啟用", permission.message, { timeoutMs: 9000 });
+    return;
+  }
+
+  if (!locateBtn) {
     return;
   }
 
   locateBtn.disabled = true;
   setLocateButtonText("定位中...");
-  setLocateStatus("正在開啟裝置定位，請在瀏覽器提示中允許位置存取…");
+  if (permission.state === "prompt" || permission.state === "unknown") {
+    setLocateStatus("正在請求定位權限，請在系統／瀏覽器提示中選擇「允許」…");
+  } else if (permission.state === "denied") {
+    setLocateStatus("偵測到先前曾拒絕定位，仍會再嘗試一次；若失敗請到網站設定重新允許位置存取。");
+  } else {
+    setLocateStatus("正在開啟裝置定位…");
+  }
 
-  navigator.geolocation.getCurrentPosition(
-    (position) => {
-      const { latitude, longitude, accuracy } = position.coords;
-      const nearest = findNearestTownship(latitude, longitude);
-      if (!nearest) {
-        const message = "定位成功，但找不到對應鄉鎮，請改以手動選取縣市／鄉鎮。";
-        setLocateStatus(message, { isError: true });
-        locateBtn.disabled = false;
-        setLocateButtonText();
-        return;
-      }
-
-      applyRegionSelection(getRegionForCity(nearest.city), nearest.city, nearest.town, { persist: true });
-      syncSelectValue(cameraCitySelect, nearest.city);
-      syncSelectValue(freewayCitySelect, nearest.city);
-
-      const accuracyText = Number.isFinite(accuracy) ? `，精度約 ${Math.round(accuracy)} 公尺` : "";
-      const message = `定位完成：已選 ${nearest.city}${nearest.town}（距離約 ${nearest.distanceKm.toFixed(1)} km${accuracyText}）`;
-      setLocateStatus(message);
-      showInPageAlert("定位成功", message, { timeoutMs: 5000 });
-
-      locateBtn.disabled = false;
-      setLocateButtonText();
-      performFullRefresh("manual");
-      renderAllCameraLists();
-      updateMapForCityChange();
-    },
-    (error) => {
-      const message = getGeolocationErrorMessage(error);
+  const applySuccess = (position) => {
+    const { latitude, longitude, accuracy } = position.coords;
+    const nearest = findNearestTownship(latitude, longitude);
+    if (!nearest) {
+      const message = "定位成功，但找不到對應鄉鎮，請改以手動選取縣市／鄉鎮。";
       setLocateStatus(message, { isError: true });
-      showInPageAlert("定位失敗", message, { timeoutMs: 8000 });
       locateBtn.disabled = false;
       setLocateButtonText();
-    },
-    {
-      enableHighAccuracy: true,
-      timeout: 20000,
-      maximumAge: 0
+      return;
     }
-  );
+
+    applyRegionSelection(getRegionForCity(nearest.city), nearest.city, nearest.town, { persist: true });
+    syncSelectValue(cameraCitySelect, nearest.city);
+    syncSelectValue(freewayCitySelect, nearest.city);
+
+    const accuracyText = Number.isFinite(accuracy) ? `，精度約 ${Math.round(accuracy)} 公尺` : "";
+    const message = `定位完成：已選 ${nearest.city}${nearest.town}（距離約 ${nearest.distanceKm.toFixed(1)} km${accuracyText}）`;
+    setLocateStatus(message);
+    showInPageAlert("定位成功", message, { timeoutMs: 5000 });
+
+    locateBtn.disabled = false;
+    setLocateButtonText();
+    performFullRefresh("manual");
+    renderAllCameraLists();
+    updateMapForCityChange();
+  };
+
+  try {
+    // First pass: faster, allows recent cache — more reliable on mobile browsers.
+    const position = await requestDevicePosition({
+      enableHighAccuracy: false,
+      timeout: 15000,
+      maximumAge: 60000
+    });
+    applySuccess(position);
+  } catch (firstError) {
+    try {
+      // Second pass: high accuracy with longer timeout.
+      const position = await requestDevicePosition({
+        enableHighAccuracy: true,
+        timeout: 25000,
+        maximumAge: 0
+      });
+      applySuccess(position);
+    } catch (secondError) {
+      const message = getGeolocationErrorMessage(secondError || firstError);
+      setLocateStatus(message, { isError: true });
+      showInPageAlert("定位無法啟用", message, { timeoutMs: 10000 });
+      locateBtn.disabled = false;
+      setLocateButtonText();
+    }
+  }
 }
 
 function getCameraRouteCode(cameraId = "") {
@@ -2152,7 +2185,9 @@ function setAirLevelClass(element, levelKey) {
 }
 
 function renderAirQualityLevelStyles({ aqi, pm25, pm10, ozone }) {
+  const airDetails = document.querySelector("#airDetails");
   setAirLevelClass(airSummary, getAirQualityLevelKey(aqi, "aqi"));
+  setAirLevelClass(airDetails, getAirQualityLevelKey(aqi, "aqi"));
   setAirLevelClass(aqiMetric, getAirQualityLevelKey(aqi, "aqi"));
   setAirLevelClass(pm25Metric, getAirQualityLevelKey(pm25, "pm25"));
   setAirLevelClass(pm10Metric, getAirQualityLevelKey(pm10, "pm10"));
@@ -2496,7 +2531,7 @@ async function fetchAirQuality() {
   const pm10 = Number(payload.hourly.pm10[index] ?? 0);
   const ozone = Number(payload.hourly.ozone[index] ?? 0);
 
-  airSummary.textContent = `當地空氣品質：${getAqiLabel(aqi)}`;
+  airSummary.textContent = `當地空氣品質：${getAqiLabel(aqi)}（點擊展開完整資訊）`;
   aqiValue.textContent = `${Math.round(aqi)}`;
   pm25Value.textContent = `${pm25.toFixed(1)} μg/m³`;
   pm10Value.textContent = `${pm10.toFixed(1)} μg/m³`;

@@ -168,27 +168,29 @@
             <div id="rainTimeline" class="rain-timeline" aria-live="polite"></div>
             <p id="rainProjection" class="timestamp">未來 8 小時累積降雨預估：-- mm</p>
           </div>
-          <div id="airInline" class="air-inline">
-            <p id="airSummary" class="big-text air-inline-summary">讀取中...</p>
-            <dl class="metrics air-metrics">
-              <div id="aqiMetric" class="air-metric-item">
-                <dt>AQI (US)</dt>
-                <dd id="aqiValue">--</dd>
-              </div>
-              <div id="pm25Metric" class="air-metric-item">
-                <dt>PM2.5</dt>
-                <dd id="pm25Value">--</dd>
-              </div>
-              <div id="pm10Metric" class="air-metric-item">
-                <dt>PM10</dt>
-                <dd id="pm10Value">--</dd>
-              </div>
-              <div id="ozoneMetric" class="air-metric-item">
-                <dt>臭氧</dt>
-                <dd id="ozoneValue">--</dd>
-              </div>
-            </dl>
-          </div>
+          <details id="airDetails" class="air-details">
+            <summary id="airSummary" class="air-inline-summary">當地空氣品質：讀取中...</summary>
+            <div class="air-details-body">
+              <dl class="metrics air-metrics">
+                <div id="aqiMetric" class="air-metric-item">
+                  <dt>AQI (US)</dt>
+                  <dd id="aqiValue">--</dd>
+                </div>
+                <div id="pm25Metric" class="air-metric-item">
+                  <dt>PM2.5</dt>
+                  <dd id="pm25Value">--</dd>
+                </div>
+                <div id="pm10Metric" class="air-metric-item">
+                  <dt>PM10</dt>
+                  <dd id="pm10Value">--</dd>
+                </div>
+                <div id="ozoneMetric" class="air-metric-item">
+                  <dt>臭氧</dt>
+                  <dd id="ozoneValue">--</dd>
+                </div>
+              </dl>
+            </div>
+          </details>
         </article>
         </div>
       </section>
