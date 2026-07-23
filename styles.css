@@ -1380,6 +1380,13 @@ input[type="checkbox"] {
   display: none;
 }
 
+.subscription-email-note {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
 #notificationHint.subscription-status-box {
   margin-top: 8px;
   border-color: #64748b;
