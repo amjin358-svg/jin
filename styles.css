@@ -606,24 +606,27 @@ label {
 
 .windy-locate-btn {
   position: absolute;
-  top: 12px;
-  right: 12px;
-  z-index: 5;
+  top: 0;
+  left: 0;
+  z-index: 6;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  min-height: 38px;
-  padding: 8px 12px;
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  border-radius: 999px;
-  background: rgba(15, 157, 88, 0.94);
+  gap: 6px;
+  width: 118px;
+  height: 42px;
+  min-height: 42px;
+  padding: 0 10px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 0 0 10px 0;
+  background: #e53935;
   color: #fff;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 800;
   line-height: 1;
   cursor: pointer;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.28);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  animation: windyLocateBlink 1.8s ease-in-out infinite;
 }
 
 .windy-locate-btn .locate-icon svg {
@@ -635,13 +638,26 @@ label {
 
 .windy-locate-btn:hover,
 .windy-locate-btn:focus-visible {
-  background: #0b7a45;
+  background: #c62828;
   outline: none;
 }
 
 .windy-locate-btn:disabled {
   opacity: 0.72;
   cursor: wait;
+  animation: none;
+}
+
+@keyframes windyLocateBlink {
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 4px 14px rgba(229, 57, 53, 0.45);
+  }
+  50% {
+    opacity: 0.78;
+    box-shadow: 0 4px 18px rgba(229, 57, 53, 0.75);
+  }
 }
 
 .typhoon-wind-map {
@@ -1577,6 +1593,12 @@ input[type="checkbox"] {
   align-items: stretch;
 }
 
+.map-pane-wrap {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+
 .map-pane,
 .warning-map {
   border: 1px solid var(--border);
@@ -1586,6 +1608,43 @@ input[type="checkbox"] {
   width: 100%;
   position: relative;
   overflow: hidden;
+}
+
+.map-live-count-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 999px;
+  background: rgba(208, 0, 0, 0.92);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.2;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.28);
+}
+
+.map-live-count-btn strong {
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.map-live-count-btn:hover,
+.map-live-count-btn:focus-visible {
+  background: #9d0208;
+  outline: none;
+}
+
+.map-live-count-btn.is-empty {
+  background: rgba(71, 85, 105, 0.92);
+  cursor: default;
 }
 
 .leaflet-focus-frame {

@@ -500,6 +500,8 @@ const windyExternalLink = document.querySelector("#windyExternalLink");
 const visitorCounter = document.querySelector("#visitorCounter");
 const visitorCounterValue = document.querySelector("#visitorCounterValue");
 const powerOutageMeta = document.querySelector("#powerOutageMeta");
+const mapFloodCountBtn = document.querySelector("#mapFloodCountBtn");
+const mapFloodCountValue = document.querySelector("#mapFloodCountValue");
 const aiAlertList = document.querySelector("#aiAlertList");
 const rainProjection = document.querySelector("#rainProjection");
 const subscriptionForm = document.querySelector("#subscriptionForm");
@@ -4203,9 +4205,20 @@ function updateFloodMapLayer() {
   syncMapLegendState();
 }
 
+function getFloodMarkersOnMap() {
+  return [
+    ...(mapLegendMarkers["flood-4"] || []),
+    ...(mapLegendMarkers["flood-3"] || []),
+    ...(mapLegendMarkers["flood-2"] || []),
+    ...(mapLegendMarkers["flood-1"] || [])
+  ];
+}
+
 function updateFloodLayerMetaText() {
   const floodedCount = appState.floodLivePoints.length;
   const stationCount = appState.floodStations.length;
+  const mappedCount = getFloodMarkersOnMap().length;
+  const displayCount = floodedCount > 0 ? floodedCount : mappedCount;
   appState.floodMetaText =
     floodedCount > 0
       ? `即時積水感測點 ${floodedCount} 處（測站總數 ${stationCount}）。`
@@ -4215,6 +4228,47 @@ function updateFloodLayerMetaText() {
   if (note) {
     note.textContent = `${appState.floodMetaText} 顏色越深代表水深越高。`;
   }
+  syncMapFloodCountBadge(displayCount, floodedCount > 0);
+}
+
+function syncMapFloodCountBadge(count, hasLiveFlood = false) {
+  const value = Math.max(0, Number(count) || 0);
+  if (mapFloodCountValue) {
+    mapFloodCountValue.textContent = String(value);
+  }
+  if (!mapFloodCountBtn) {
+    return;
+  }
+  mapFloodCountBtn.classList.toggle("is-empty", value <= 0 || !hasLiveFlood);
+  mapFloodCountBtn.disabled = value <= 0;
+  mapFloodCountBtn.setAttribute(
+    "aria-label",
+    value > 0 ? `即時感測點 ${value} 處，點選檢視細節` : "目前無即時感測點"
+  );
+}
+
+function focusAllFloodMarkers() {
+  if (!warningMap) {
+    return;
+  }
+  const markers = getFloodMarkersOnMap();
+  if (!markers.length) {
+    return;
+  }
+  const group = L.featureGroup(markers);
+  const bounds = group.getBounds?.();
+  if (bounds?.isValid?.()) {
+    warningMap.fitBounds(bounds, {
+      padding: [28, 28],
+      maxZoom: 12,
+      animate: true
+    });
+  } else {
+    warningMap.setView(markers[0].getLatLng(), Math.max(warningMap.getZoom(), 11), { animate: true });
+  }
+  window.setTimeout(() => {
+    markers[0]?.openPopup?.();
+  }, 280);
 }
 
 async function loadFloodStations() {
@@ -4465,10 +4519,12 @@ function syncMapLegendState() {
     const countEl = item.querySelector("[data-legend-count]");
     if (countEl) {
       countEl.textContent = markers.length ? String(markers.length) : "0";
+      countEl.removeAttribute("aria-hidden");
     }
     item.classList.toggle("legend-item-empty", markers.length === 0);
     item.setAttribute("aria-disabled", markers.length === 0 ? "true" : "false");
   });
+  syncMapFloodCountBadge(appState.floodLivePoints.length, appState.floodLivePoints.length > 0);
 }
 
 function focusMapLegendMarkers(legendKey) {
@@ -4518,6 +4574,13 @@ function initMapLegendInteractions() {
     }
     event.preventDefault();
     focusMapLegendMarkers(item.dataset.legendKey);
+  });
+  mapFloodCountBtn?.addEventListener("click", (event) => {
+    event.preventDefault();
+    if (mapFloodCountBtn.disabled) {
+      return;
+    }
+    focusAllFloodMarkers();
   });
 }
 

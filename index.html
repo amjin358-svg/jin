@@ -346,7 +346,17 @@
 
       <section class="card map-card" aria-label="災害警示圖">
         <div class="map-layout">
-          <div id="warningMap" class="warning-map map-pane" aria-label="災害警示圖"></div>
+          <div class="map-pane-wrap">
+            <div id="warningMap" class="warning-map map-pane" aria-label="災害警示圖"></div>
+            <button
+              id="mapFloodCountBtn"
+              type="button"
+              class="map-live-count-btn is-empty"
+              aria-label="即時感測點數量，點選檢視細節"
+            >
+              即時感測點 <strong id="mapFloodCountValue">0</strong>
+            </button>
+          </div>
           <aside class="layer-panel">
             <ul id="mapLayerList" class="layer-list" hidden></ul>
             <p id="powerOutageMeta" class="timestamp">停電區域資料讀取中...</p>
@@ -431,7 +441,8 @@
             <li>縣市路口監控：交通部運輸資料流通服務（各縣市 CCTV 公開資料快照）。</li>
             <li>國道CCTV監控：交通部公路局即時 CCTV 公開資料（部署時快照）。</li>
             <li>積淹水警示：經濟部水利署 IoW 即時淹水深度感測（公開 API）。</li>
-            <li>颱風分析：中央氣象署颱風消息／警報頁面即時解析 + Windy 6 小時動態圖嵌入。</li>
+            <li>颱風分析：中央氣象署颱風消息／警報頁面即時解析。</li>
+            <li>Windy颱風走勢圖：Windy.com 颱風／氣象動態圖嵌入。</li>
             <li>停電區域：台電災害停電通報（XML）與計畫性工作停電公開資料（ZIP）。</li>
             <li>若公告暫無資料或來源暫時無法連線，頁面會顯示提示並保留上一筆成功結果。</li>
           </ul>
