@@ -604,6 +604,46 @@ label {
   pointer-events: auto;
 }
 
+.windy-locate-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 38px;
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 999px;
+  background: rgba(15, 157, 88, 0.94);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.28);
+}
+
+.windy-locate-btn .locate-icon svg {
+  width: 16px;
+  height: 16px;
+  fill: #fff;
+  filter: none;
+}
+
+.windy-locate-btn:hover,
+.windy-locate-btn:focus-visible {
+  background: #0b7a45;
+  outline: none;
+}
+
+.windy-locate-btn:disabled {
+  opacity: 0.72;
+  cursor: wait;
+}
+
 .typhoon-wind-map {
   width: 100%;
   min-height: 580px;

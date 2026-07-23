@@ -417,17 +417,31 @@ const regionSelect = null;
 const citySelect = document.querySelector("#citySelect");
 const townshipSelect = document.querySelector("#townshipSelect");
 const locateBtn = document.querySelector("#locateBtn");
+const windyLocateBtn = document.querySelector("#windyLocateBtn");
+const windyLocateBtnLabel = windyLocateBtn?.querySelector(".windy-locate-btn-label");
 const LOCATE_BTN_LABEL = "依設備定位選區";
+const WINDY_LOCATE_BTN_LABEL = "定位";
 const locateBtnLabel = locateBtn?.querySelector(".locate-btn-label");
 const locateStatus = document.querySelector("#locateStatus");
+let windyLocateFocus = null;
+
+function setLocateButtonsDisabled(disabled) {
+  if (locateBtn) {
+    locateBtn.disabled = Boolean(disabled);
+  }
+  if (windyLocateBtn) {
+    windyLocateBtn.disabled = Boolean(disabled);
+  }
+}
 
 function setLocateButtonText(text = LOCATE_BTN_LABEL) {
   if (locateBtnLabel) {
     locateBtnLabel.textContent = text;
-    return;
-  }
-  if (locateBtn) {
+  } else if (locateBtn) {
     locateBtn.textContent = text;
+  }
+  if (windyLocateBtnLabel) {
+    windyLocateBtnLabel.textContent = text === LOCATE_BTN_LABEL ? WINDY_LOCATE_BTN_LABEL : "定位中";
   }
 }
 
@@ -1139,7 +1153,7 @@ function syncSelectValue(selectEl, value) {
 }
 
 async function locateByDevice() {
-  if (!locateBtn) {
+  if (!locateBtn && !windyLocateBtn) {
     return;
   }
 
@@ -1156,7 +1170,7 @@ async function locateByDevice() {
     return;
   }
 
-  locateBtn.disabled = true;
+  setLocateButtonsDisabled(true);
   setLocateButtonText("定位中...");
   setLocateStatus("正在強制開啟裝置定位，請在系統提示中選擇「允許」…");
 
@@ -1166,7 +1180,7 @@ async function locateByDevice() {
     if (!nearest) {
       const message = "定位成功，但找不到對應鄉鎮，請改以手動選取縣市／鄉鎮。";
       setLocateStatus(message, { isError: true });
-      locateBtn.disabled = false;
+      setLocateButtonsDisabled(false);
       setLocateButtonText();
       return;
     }
@@ -1174,13 +1188,19 @@ async function locateByDevice() {
     applyRegionSelection(getRegionForCity(nearest.city), nearest.city, nearest.town, { persist: true });
     syncSelectValue(cameraCitySelect, nearest.city);
     syncSelectValue(freewayCitySelect, nearest.city);
+    windyLocateFocus = {
+      lat: latitude,
+      lon: longitude,
+      zoom: 9
+    };
+    updateWindyTrackEmbed();
 
     const accuracyText = Number.isFinite(accuracy) ? `，精度約 ${Math.round(accuracy)} 公尺` : "";
     const message = `定位完成：已選 ${nearest.city}${nearest.town}（距離約 ${nearest.distanceKm.toFixed(1)} km${accuracyText}）`;
     setLocateStatus(message);
     showInPageAlert("定位成功", message, { timeoutMs: 5000 });
 
-    locateBtn.disabled = false;
+    setLocateButtonsDisabled(false);
     setLocateButtonText();
     performFullRefresh("manual");
     renderAllCameraLists();
@@ -1191,7 +1211,7 @@ async function locateByDevice() {
     const message = getGeolocationErrorMessage(error);
     setLocateStatus(message, { isError: true });
     showInPageAlert("定位無法啟用", message, { timeoutMs: 10000 });
-    locateBtn.disabled = false;
+    setLocateButtonsDisabled(false);
     setLocateButtonText();
   };
 
@@ -2856,11 +2876,24 @@ function buildWindyEmbedUrl(lat, lon, zoom = 6) {
 }
 
 function getWindyFocusPoint() {
+  const hasTyphoonCenter = Boolean(
+    Number.isFinite(appState.typhoonOfficial?.lat) && Number.isFinite(appState.typhoonOfficial?.lon)
+  );
+  if (
+    windyLocateFocus &&
+    Number.isFinite(windyLocateFocus.lat) &&
+    Number.isFinite(windyLocateFocus.lon)
+  ) {
+    return {
+      lat: windyLocateFocus.lat,
+      lon: windyLocateFocus.lon,
+      zoom: windyLocateFocus.zoom || 9,
+      hasTyphoonCenter
+    };
+  }
   return {
     ...WINDY_TAIWAN_VIEW,
-    hasTyphoonCenter: Boolean(
-      Number.isFinite(appState.typhoonOfficial?.lat) && Number.isFinite(appState.typhoonOfficial?.lon)
-    )
+    hasTyphoonCenter
   };
 }
 
@@ -4586,6 +4619,13 @@ townshipSelect.addEventListener("change", () => {
 
 locateBtn?.addEventListener("click", (event) => {
   event.preventDefault();
+  // Keep this handler synchronous so the browser treats geolocation as a user gesture.
+  locateByDevice();
+});
+
+windyLocateBtn?.addEventListener("click", (event) => {
+  event.preventDefault();
+  event.stopPropagation();
   // Keep this handler synchronous so the browser treats geolocation as a user gesture.
   locateByDevice();
 });
