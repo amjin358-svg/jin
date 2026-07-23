@@ -2538,6 +2538,7 @@ async function fetchAirQuality() {
   ozoneValue.textContent = `${ozone.toFixed(1)} μg/m³`;
 
   renderAirQualityLevelStyles({ aqi, pm25, pm10, ozone });
+  syncAirDetailsSummaryLabel();
 
   appState.airQuality = {
     cityName: location.cityName,
@@ -2547,6 +2548,17 @@ async function fetchAirQuality() {
     pm10,
     ozone
   };
+}
+
+function syncAirDetailsSummaryLabel() {
+  if (!airSummary || !appState.airQuality) {
+    return;
+  }
+  const details = document.querySelector("#airDetails");
+  const label = getAqiLabel(appState.airQuality.aqi);
+  airSummary.textContent = details?.open
+    ? `當地空氣品質：${label}（點擊收合）`
+    : `當地空氣品質：${label}（點擊展開完整資訊）`;
 }
 
 function getFloodLevelByDepth(depthCm) {
@@ -4462,6 +4474,9 @@ initServiceWorker()
   })
   .catch(() => updateNotificationHint());
 blackScreenCameraIds = loadBlackScreenCameraIds();
+document.querySelector("#airDetails")?.addEventListener("toggle", () => {
+  syncAirDetailsSummaryLabel();
+});
 initVisitorCounter();
 performFullRefresh("manual");
 fetchRoadCameras();
