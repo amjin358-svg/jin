@@ -3837,8 +3837,9 @@ function fitMapToFocusArea() {
   if (!bounds) {
     return;
   }
+  // Keep a few pixels inset so the focus ring is not clipped by the map frame.
   warningMap.fitBounds(bounds, {
-    padding: [0, 0],
+    padding: [8, 8],
     maxZoom: 13,
     animate: false
   });
@@ -3849,38 +3850,46 @@ function updateCityFocusLayer() {
     return;
   }
   const location = getActiveWeatherLocation();
-  if (mapCityFocusLayer && warningMap.hasLayer(mapCityFocusLayer)) {
-    warningMap.removeLayer(mapCityFocusLayer);
-  }
-  if (!location) {
+  if (mapCityFocusLayer) {
+    try {
+      warningMap.removeLayer(mapCityFocusLayer);
+    } catch {
+      /* ignore */
+    }
     mapCityFocusLayer = null;
+  }
+  if (!location || !Number.isFinite(location.lat) || !Number.isFinite(location.lon)) {
     return;
   }
 
+  if (!warningMap.getPane("focusPane")) {
+    warningMap.createPane("focusPane");
+  }
   const focusPane = warningMap.getPane("focusPane");
   if (focusPane) {
-    focusPane.style.zIndex = "650";
+    focusPane.style.zIndex = "680";
+    focusPane.style.pointerEvents = "none";
   }
 
   mapCityFocusLayer = L.circle([location.lat, location.lon], {
     pane: "focusPane",
     radius: MAP_FOCUS_CIRCLE_RADIUS_M,
     color: "#00d4ff",
-    weight: 3,
-    opacity: 0.95,
+    weight: 4,
+    opacity: 1,
     fillColor: "#00d4ff",
-    fillOpacity: 0.12,
+    fillOpacity: 0.14,
+    interactive: false,
     className: "leaflet-focus-frame"
-  }).bindTooltip(`${location.label} 焦點區`);
+  });
+  mapCityFocusLayer.bindTooltip(`${location.label} 焦點區`, { sticky: true });
 
   mapLayerVisibility["city-focus"] = true;
-  if (!warningMap.hasLayer(mapCityFocusLayer)) {
-    mapCityFocusLayer.addTo(warningMap);
-  }
+  mapCityFocusLayer.addTo(warningMap);
   syncMapLayerVisibility("city-focus");
   requestAnimationFrame(() => {
     fitMapToFocusArea();
-    window.setTimeout(fitMapToFocusArea, 120);
+    window.setTimeout(fitMapToFocusArea, 180);
   });
 }
 
@@ -3949,6 +3958,10 @@ function initWarningMap() {
   warningMap.createPane("floodPane");
   warningMap.createPane("cameraPane");
   warningMap.createPane("focusPane");
+  const focusPane = warningMap.getPane("focusPane");
+  if (focusPane) {
+    focusPane.style.zIndex = "680";
+  }
 
   L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
     className: "high-contrast-tiles",
@@ -3971,6 +3984,10 @@ function initWarningMap() {
     });
   updateCityFocusLayer();
   updateCameraMapLayer();
+  warningMap.whenReady(() => {
+    updateCityFocusLayer();
+    fitMapToFocusArea();
+  });
   requestAnimationFrame(() => {
     fitMapToFocusArea();
   });

@@ -818,14 +818,23 @@ label {
 .freeway-details summary,
 .freeway-summary-link {
   cursor: pointer;
-  color: var(--freeway-link);
+  color: #12b76a !important;
   font-weight: 700;
   margin-bottom: 10px;
+  list-style: none;
+}
+
+.freeway-details summary::-webkit-details-marker {
+  color: #12b76a;
+}
+
+.freeway-details summary::marker {
+  color: #12b76a;
 }
 
 .freeway-details summary:hover,
 .freeway-summary-link:hover {
-  color: #039855;
+  color: #039855 !important;
 }
 
 .freeway-camera-card {
@@ -1426,6 +1435,12 @@ input[type="checkbox"] {
   width: 100%;
   position: relative;
   overflow: hidden;
+}
+
+.leaflet-focus-frame {
+  stroke: #00d4ff !important;
+  stroke-width: 4px !important;
+  fill: rgba(0, 212, 255, 0.14) !important;
 }
 
 .layer-panel {
