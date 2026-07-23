@@ -377,7 +377,7 @@ const FREEWAY_CAMERA_REGIONS = [
   { id: "n5", label: "國道5號", lat: 24.8, lon: 121.8, radiusKm: 9999, routes: ["N5"] },
   { id: "n2-n4", label: "國道2／4號", lat: 24.9, lon: 121.2, radiusKm: 9999, routes: ["N2", "N2A", "N4"] },
   { id: "n6-n8-n10", label: "國道6／8／10號", lat: 23.8, lon: 120.6, radiusKm: 9999, routes: ["N6", "N8", "N10"] },
-  { id: "near-city", label: "靠近所選位置（65km）", lat: null, lon: null, radiusKm: 65, routes: null }
+  { id: "near-city", label: "靠近所選位置（40km／交流道）", lat: null, lon: null, radiusKm: 40, routes: null }
 ];
 
 const REGION_STORAGE_KEY = "weatherRegionPreferenceV1";
@@ -446,6 +446,7 @@ const lastUpdated = document.querySelector("#lastUpdated");
 const weatherSummary = document.querySelector("#weatherSummary");
 const tempValue = document.querySelector("#tempValue");
 const feelValue = document.querySelector("#feelValue");
+const weatherIcon = document.querySelector("#weatherIcon");
 const humidityValue = document.querySelector("#humidityValue");
 const windValue = document.querySelector("#windValue");
 const rainValue = document.querySelector("#rainValue");
@@ -488,7 +489,6 @@ const subscriptionForm = document.querySelector("#subscriptionForm");
 const subscriberEmail = document.querySelector("#subscriberEmail");
 const subscriptionStatus = document.querySelector("#subscriptionStatus");
 const testNotificationBtn = document.querySelector("#testNotificationBtn");
-const enableNotificationBtn = document.querySelector("#enableNotificationBtn");
 const notificationHint = document.querySelector("#notificationHint");
 const inPageAlertHost = document.querySelector("#inPageAlertHost");
 const autoRefreshMeta = document.querySelector("#autoRefreshMeta");
@@ -497,13 +497,16 @@ const autoRefreshIntervalSelect = document.querySelector("#autoRefreshInterval")
 
 let cityCameraDataset = null;
 let freewayCameraDataset = null;
+let freewayInterchangeIndex = null;
+let blackScreenCameraIds = new Set();
+let utilityAlertTimers = [];
 const DISABLED_CAMERA_HOSTS = new Set(["cctvs.freeway.gov.tw"]);
 let warningMap = null;
 let mapFloodLayer = null;
 let mapCameraLayer = null;
 let mapCityFocusLayer = null;
 let mapPowerOutageLayer = null;
-const mapLayerOrder = ["flood-warning", "power-outage", "cctv-points", "city-focus"];
+const mapLayerOrder = ["city-focus", "flood-warning", "power-outage", "cctv-points"];
 const mapLayerVisibility = {
   "power-outage": true,
   "flood-warning": true,
@@ -525,7 +528,7 @@ const AUTO_REFRESH_STORAGE_KEY = "autoRefreshIntervalMinutesV1";
 const DEFAULT_AUTO_REFRESH_MINUTES = 15;
 const SUBSCRIPTION_STORAGE_KEY = "weatherMemberSubscriptionV1";
 const NOTIFICATION_DIGEST_STORAGE_KEY = "subscriptionNotificationDigestV1";
-const SUBSCRIPTION_TOPIC_ORDER = ["closure", "flood", "power-outage", "weather", "air"];
+const SUBSCRIPTION_TOPIC_ORDER = ["closure", "flood", "power-outage", "water-outage", "weather", "air"];
 const RECOVERY_STATE_STORAGE_KEY = "subscriptionRecoveryStateV1";
 const FLOOD_LATEST_API =
   "https://opendata.wra.gov.tw/api/v2/1b991bbb-ad85-4e7a-b931-06ce8749d3ed?format=JSON";
@@ -545,12 +548,19 @@ const VISITOR_COUNTER_NAMESPACE = "jin-weather-tw-v1";
 const VISITOR_COUNTER_KEY = "visits";
 const VISITOR_COUNTER_STORAGE_KEY = "siteVisitCountV1";
 const CITY_CCTV_RADIUS_KM = 3;
-const FREEWAY_CCTV_RADIUS_KM = 65;
+const FREEWAY_CCTV_RADIUS_KM = 40;
+const FREEWAY_INTERCHANGE_BASE_RADIUS_KM = 40;
 const WINDY_TAIWAN_VIEW = { lat: 23.7, lon: 121.0, zoom: 5 };
 const POWER_OUTAGE_NOTIFY_RADIUS_KM = 10;
 const FLOOD_NOTIFY_RADIUS_KM = 80;
 const FLOOD_SUBSCRIPTION_RADIUS_KM = 20;
 const FLOOD_SAFE_DEPTH_CM = 15;
+const UTILITY_ALERT_REPEAT_MS = 15 * 60 * 1000;
+const UTILITY_ALERT_REPEAT_COUNT = 2;
+const PENDING_UTILITY_ALERT_STORAGE_KEY = "pendingUtilityAlertNotificationsV1";
+const WATER_OUTAGE_STATE_STORAGE_KEY = "waterOutageTrackingStateV1";
+const BLACK_SCREEN_CCTV_STORAGE_KEY = "blackScreenCctvIdsV1";
+const CCTV_BLACK_LUMINANCE_THRESHOLD = 18;
 let jsZipModulePromise = null;
 const appState = {
   weather: null,
@@ -562,6 +572,8 @@ const appState = {
   floodMetaText: "",
   powerOutagePoints: [],
   powerOutageMetaText: "",
+  waterOutageItems: [],
+  waterOutageMetaText: "",
   typhoon: null,
   typhoonOfficial: null,
   aiAlerts: [],
@@ -1239,6 +1251,106 @@ function resolveFreewayCctvRadiusKm() {
   return FREEWAY_CCTV_RADIUS_KM;
 }
 
+function extractFreewayInterchangeNames(stakenumber = "") {
+  const text = String(stakenumber || "");
+  const names = [];
+  const matches = text.matchAll(/([^()到＋+、，,\s]{1,20}?交流道)/g);
+  for (const match of matches) {
+    const name = String(match[1] || "").trim();
+    if (name && !names.includes(name)) {
+      names.push(name);
+    }
+  }
+  return names;
+}
+
+function buildFreewayInterchangeIndex(cameras = []) {
+  const byName = new Map();
+  cameras.forEach((camera) => {
+    const lat = Number(camera.gisy);
+    const lon = Number(camera.gisx);
+    if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+      return;
+    }
+    const names = extractFreewayInterchangeNames(camera.stakenumber);
+    if (!names.length) {
+      return;
+    }
+    names.forEach((name) => {
+      if (!byName.has(name)) {
+        byName.set(name, { name, latSum: 0, lonSum: 0, count: 0 });
+      }
+      const row = byName.get(name);
+      row.latSum += lat;
+      row.lonSum += lon;
+      row.count += 1;
+    });
+  });
+
+  const interchanges = [...byName.values()].map((row) => {
+    const lat = row.latSum / row.count;
+    const lon = row.lonSum / row.count;
+    let nearestCity = CITY_LOCATIONS[0]?.name || "";
+    let best = Infinity;
+    CITY_LOCATIONS.forEach((city) => {
+      const distance = getDistanceKm(lat, lon, city.lat, city.lon);
+      if (distance < best) {
+        best = distance;
+        nearestCity = city.name;
+      }
+    });
+    return {
+      name: row.name,
+      lat,
+      lon,
+      city: nearestCity,
+      cityDistanceKm: best
+    };
+  });
+
+  return {
+    all: interchanges,
+    byCity: interchanges.reduce((acc, item) => {
+      if (!acc[item.city]) {
+        acc[item.city] = [];
+      }
+      acc[item.city].push(item);
+      return acc;
+    }, {})
+  };
+}
+
+function getFreewayInterchangesForCity(cityName) {
+  if (!freewayInterchangeIndex) {
+    return [];
+  }
+  if (!cityName) {
+    return freewayInterchangeIndex.all;
+  }
+  const exact = freewayInterchangeIndex.byCity[cityName] || [];
+  if (exact.length) {
+    return exact;
+  }
+  const city = CITY_LOCATIONS.find((item) => item.name === cityName);
+  if (!city) {
+    return [];
+  }
+  return freewayInterchangeIndex.all.filter(
+    (item) => getDistanceKm(item.lat, item.lon, city.lat, city.lon) <= 35
+  );
+}
+
+function getMinDistanceToPointsKm(lat, lon, points = []) {
+  let best = Infinity;
+  points.forEach((point) => {
+    const distance = getDistanceKm(lat, lon, point.lat, point.lon);
+    if (distance < best) {
+      best = distance;
+    }
+  });
+  return best;
+}
+
 function getFilteredSortedCityCameras() {
   if (!cityCameraDataset || !Array.isArray(cityCameraDataset.cameras)) {
     return [];
@@ -1246,10 +1358,18 @@ function getFilteredSortedCityCameras() {
   const selectedCity = getSelectedCameraCityName();
   const keyword = cameraKeyword.value.trim().toLowerCase();
   const normalize = (text) => text.toLowerCase().replaceAll("臺", "台");
-  const focus = getCctvLocationFocus();
+  const focusPoint = getCityCameraFocusPoint();
+  const focusLabel = getCctvLocationFocus().label;
+  const focus = {
+    lat: Number(focusPoint?.lat),
+    lon: Number(focusPoint?.lon),
+    label: focusLabel
+  };
 
   return cityCameraDataset.cameras
     .filter((camera) => isCameraUrlUsable(camera.html))
+    .filter((camera) => !isCameraMarkedBlackScreen(camera))
+    .filter((camera) => !isCameraMaintenanceText(camera))
     .filter((camera) => {
       if (!selectedCity) {
         return true;
@@ -1265,19 +1385,18 @@ function getFilteredSortedCityCameras() {
       );
       return haystack.includes(normalize(keyword));
     })
-    .filter((camera) => {
-      if (!Number.isFinite(focus.lat) || !Number.isFinite(focus.lon)) {
-        return true;
-      }
-      const distanceKm = getDistanceKm(focus.lat, focus.lon, Number(camera.gisy), Number(camera.gisx));
-      return distanceKm <= CITY_CCTV_RADIUS_KM;
-    })
     .map((camera) => {
       const distanceKm =
         Number.isFinite(focus.lat) && Number.isFinite(focus.lon)
           ? getDistanceKm(focus.lat, focus.lon, Number(camera.gisy), Number(camera.gisx))
           : Infinity;
-      return { ...camera, distanceKm };
+      return { ...camera, distanceKm, focusLabel: focus.label };
+    })
+    .filter((camera) => {
+      if (!Number.isFinite(focus.lat) || !Number.isFinite(focus.lon)) {
+        return true;
+      }
+      return camera.distanceKm <= CITY_CCTV_RADIUS_KM;
     })
     .sort((a, b) => a.distanceKm - b.distanceKm);
 }
@@ -1286,28 +1405,32 @@ function getFilteredSortedFreewayCameras() {
   if (!freewayCameraDataset || !Array.isArray(freewayCameraDataset.cameras)) {
     return [];
   }
-  const focus = getCctvLocationFocus();
-  const radiusKm = resolveFreewayCctvRadiusKm(focus);
+  const selectedCity = getSelectedFreewayCityName();
+  const interchanges = getFreewayInterchangesForCity(selectedCity);
+  const radiusKm = FREEWAY_INTERCHANGE_BASE_RADIUS_KM;
+  const weatherFocus = getCctvLocationFocus();
 
   return getFreewayCamerasBeforeRadiusFilter()
-    .filter((camera) => {
-      if (!Number.isFinite(focus.lat) || !Number.isFinite(focus.lon)) {
-        return true;
-      }
-      const distanceKm = getDistanceKm(focus.lat, focus.lon, Number(camera.gisy), Number(camera.gisx));
-      return distanceKm <= radiusKm;
-    })
+    .filter((camera) => !isCameraMarkedBlackScreen(camera))
+    .filter((camera) => !isCameraMaintenanceText(camera))
     .map((camera) => {
-      const distanceKm =
-        Number.isFinite(focus.lat) && Number.isFinite(focus.lon)
-          ? getDistanceKm(focus.lat, focus.lon, Number(camera.gisy), Number(camera.gisx))
+      const lat = Number(camera.gisy);
+      const lon = Number(camera.gisx);
+      const interchangeDistanceKm = interchanges.length
+        ? getMinDistanceToPointsKm(lat, lon, interchanges)
+        : Number.isFinite(weatherFocus.lat) && Number.isFinite(weatherFocus.lon)
+          ? getDistanceKm(weatherFocus.lat, weatherFocus.lon, lat, lon)
           : Infinity;
       return {
         ...camera,
-        distanceKm,
-        routeCode: getCameraRouteCode(camera.id)
+        distanceKm: interchangeDistanceKm,
+        routeCode: getCameraRouteCode(camera.id),
+        focusLabel: selectedCity
+          ? `${selectedCity}交流道基準`
+          : weatherFocus.label || "所選位置"
       };
     })
+    .filter((camera) => Number.isFinite(camera.distanceKm) && camera.distanceKm <= radiusKm)
     .sort((a, b) => a.distanceKm - b.distanceKm);
 }
 
@@ -1570,7 +1693,7 @@ async function lookupCrossRoadFromMap(lat, lon, primaryRoad = "") {
   };
 
   try {
-    const query = `[out:json][timeout:20];(way(around:45,${lat},${lon})["highway"]["name"];);out tags;`;
+    const query = `[out:json][timeout:20];(way(around:35,${lat},${lon})["highway"~"^(motorway|trunk|primary|secondary|tertiary|residential|unclassified|living_street)$"]["name"];);out tags;`;
     const response = await fetch("https://overpass-api.de/api/interpreter", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
@@ -1665,6 +1788,7 @@ function scheduleCameraCrossRoadEnrichment(card, camera) {
 function createCameraCard(camera, scopeLabel, { radiusKm = CITY_CCTV_RADIUS_KM } = {}) {
   const card = document.createElement("article");
   card.className = "camera-item";
+  card.dataset.cameraId = camera.id || "";
   const streamUrl = camera.html;
   const [roadA, roadB] = getCameraIntersectionRoads(camera);
   const distance = Number.isFinite(camera.distanceKm) ? `${camera.distanceKm.toFixed(1)} km` : "--";
@@ -1700,19 +1824,25 @@ function createCameraCard(camera, scopeLabel, { radiusKm = CITY_CCTV_RADIUS_KM }
       </div>
     </div>
   `;
+  const hideBlackScreenCard = () => {
+    markCameraAsBlackScreen(camera.id);
+    card.remove();
+  };
   const img = card.querySelector("img");
   img?.addEventListener("error", () => {
-    img.replaceWith(Object.assign(document.createElement("div"), {
-      className: "camera-fallback",
-      innerHTML: `<p>影像需於官方頁面開啟</p><a href="${streamUrl}" target="_blank" rel="noopener noreferrer">前往即時影像</a>`
-    }));
+    hideBlackScreenCard();
+  });
+  img?.addEventListener("load", () => {
+    window.setTimeout(() => {
+      const luminance = analyzeImageDarkness(img);
+      if (luminance !== null && luminance <= CCTV_BLACK_LUMINANCE_THRESHOLD) {
+        hideBlackScreenCard();
+      }
+    }, 700);
   });
   const frame = card.querySelector("iframe");
   frame?.addEventListener("error", () => {
-    frame.replaceWith(Object.assign(document.createElement("div"), {
-      className: "camera-fallback",
-      innerHTML: `<p>此鏡頭需於官方頁面開啟</p><a href="${streamUrl}" target="_blank" rel="noopener noreferrer">前往即時影像</a>`
-    }));
+    hideBlackScreenCard();
   });
   scheduleCameraCrossRoadEnrichment(card, camera);
   return card;
@@ -1725,9 +1855,12 @@ function updateCameraMetaText() {
   const cityFetchedAt = cityCameraDataset.fetchedAt ? formatDateTime(cityCameraDataset.fetchedAt) : "未提供";
   const rows = getFilteredSortedCityCameras();
   const matchedCount = rows.length;
-  const focus = getCctvLocationFocus();
+  const focusPoint = getCityCameraFocusPoint();
+  const focusLabel = getCctvLocationFocus().label;
   const nearestKm = Number.isFinite(rows[0]?.distanceKm) ? rows[0].distanceKm.toFixed(1) : "--";
-  cameraMeta.textContent = `定位所在地：${focus.label}｜半徑 ${CITY_CCTV_RADIUS_KM} 公里｜${matchedCount} 支｜最近距離 ${nearestKm} km｜快照：${cityFetchedAt}`;
+  cameraMeta.textContent = `定位所在地：${focusLabel}｜半徑 ${CITY_CCTV_RADIUS_KM} 公里｜${matchedCount} 支｜最近距離 ${nearestKm} km｜快照：${cityFetchedAt}${
+    Number.isFinite(focusPoint?.lat) ? `｜基準 ${focusPoint.lat.toFixed(4)}, ${focusPoint.lon.toFixed(4)}` : ""
+  }`;
 }
 
 function renderCameraList() {
@@ -1745,8 +1878,7 @@ function renderCameraList() {
     return;
   }
 
-  const focus = getCctvLocationFocus();
-  const scopeLabel = focus.label || "所選位置";
+  const scopeLabel = getCctvLocationFocus().label || "所選位置";
   rows.forEach((camera) => {
     cameraList.append(createCameraCard(camera, scopeLabel));
   });
@@ -1760,9 +1892,10 @@ function updateFreewayCameraMetaText() {
     ? formatDateTime(freewayCameraDataset.fetchedAt)
     : "未提供";
   const matchedCount = getFilteredSortedFreewayCameras().length;
-  const focus = getCctvLocationFocus();
-  const radiusKm = resolveFreewayCctvRadiusKm();
-  freewayCameraMeta.textContent = `定位所在地：${focus.label}｜半徑 ${radiusKm} 公里｜${matchedCount} 支｜快照：${freewayFetchedAt}`;
+  const selectedCity = getSelectedFreewayCityName() || getCctvLocationFocus().label;
+  const radiusKm = FREEWAY_INTERCHANGE_BASE_RADIUS_KM;
+  const interchangeCount = getFreewayInterchangesForCity(getSelectedFreewayCityName()).length;
+  freewayCameraMeta.textContent = `交流道基準：${selectedCity || "所選縣市"}（${interchangeCount} 處）｜半徑 ${radiusKm} 公里｜${matchedCount} 支｜快照：${freewayFetchedAt}`;
 }
 
 function renderFreewayCameraList() {
@@ -1777,14 +1910,15 @@ function renderFreewayCameraList() {
   const rows = getFilteredSortedFreewayCameras().slice(0, 16);
   updateFreewayCameraMetaText();
   if (!rows.length) {
-    const radiusKm = resolveFreewayCctvRadiusKm(getCctvLocationFocus());
-    freewayCameraList.innerHTML = `<p class="status-warn">所選位置半徑 ${radiusKm} 公里內查無國道監控點，請更換鄉鎮、國道或關鍵字。</p>`;
+    freewayCameraList.innerHTML = `<p class="status-warn">所選縣市交流道半徑 ${FREEWAY_INTERCHANGE_BASE_RADIUS_KM} 公里內查無國道監控點，請更換縣市、國道或關鍵字。</p>`;
     return;
   }
-  const focus = getCctvLocationFocus();
-  const scopeLabel = focus.label || "所選位置";
+  const selectedCity = getSelectedFreewayCityName();
+  const scopeLabel = selectedCity ? `${selectedCity}交流道基準` : getCctvLocationFocus().label || "所選位置";
   rows.forEach((camera) => {
-    freewayCameraList.append(createCameraCard(camera, scopeLabel, { radiusKm: FREEWAY_CCTV_RADIUS_KM }));
+    freewayCameraList.append(
+      createCameraCard(camera, scopeLabel, { radiusKm: FREEWAY_INTERCHANGE_BASE_RADIUS_KM })
+    );
   });
 }
 
@@ -1818,6 +1952,132 @@ function getDistanceKm(lat1, lon1, lat2, lon2) {
     Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return earthRadiusKm * c;
+}
+
+function loadBlackScreenCameraIds() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(BLACK_SCREEN_CCTV_STORAGE_KEY) || "[]");
+    return new Set(Array.isArray(raw) ? raw.map(String) : []);
+  } catch {
+    return new Set();
+  }
+}
+
+function saveBlackScreenCameraIds() {
+  try {
+    localStorage.setItem(BLACK_SCREEN_CCTV_STORAGE_KEY, JSON.stringify([...blackScreenCameraIds]));
+  } catch {
+    /* ignore */
+  }
+}
+
+function markCameraAsBlackScreen(cameraId) {
+  if (!cameraId) {
+    return;
+  }
+  blackScreenCameraIds.add(String(cameraId));
+  saveBlackScreenCameraIds();
+}
+
+function isCameraMarkedBlackScreen(camera) {
+  return blackScreenCameraIds.has(String(camera?.id || ""));
+}
+
+function isCameraMaintenanceText(camera = {}) {
+  const text = `${camera.description || ""} ${camera.stakenumber || ""} ${camera.roadName || ""}`;
+  return /維修|施工中|暫停|故障|無訊號|黑畫面|測試中/.test(text);
+}
+
+function analyzeImageDarkness(img) {
+  try {
+    const canvas = document.createElement("canvas");
+    const size = 48;
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
+    if (!ctx) {
+      return null;
+    }
+    ctx.drawImage(img, 0, 0, size, size);
+    const { data } = ctx.getImageData(0, 0, size, size);
+    let total = 0;
+    let count = 0;
+    for (let i = 0; i < data.length; i += 16) {
+      const r = data[i];
+      const g = data[i + 1];
+      const b = data[i + 2];
+      total += 0.2126 * r + 0.7152 * g + 0.0722 * b;
+      count += 1;
+    }
+    return count ? total / count : null;
+  } catch {
+    return null;
+  }
+}
+
+function getWeatherIconSvg(code) {
+  const weatherCode = Number(code);
+  if ([95, 96, 99].includes(weatherCode)) {
+    return `
+      <svg viewBox="0 0 64 64" role="img" aria-label="雷雨">
+        <ellipse class="cloud-body" cx="30" cy="28" rx="16" ry="10" fill="#dce7f8"/>
+        <ellipse class="cloud-body" cx="40" cy="30" rx="12" ry="8" fill="#c9d8f0"/>
+        <path class="bolt" d="M34 34 L28 46 H34 L30 56 L44 40 H36 L40 34 Z" fill="#ffd166"/>
+        <path class="rain-drop" d="M18 40 l2 8" stroke="#8ecae6" stroke-width="2" stroke-linecap="round"/>
+        <path class="rain-drop" d="M24 42 l2 8" stroke="#8ecae6" stroke-width="2" stroke-linecap="round"/>
+      </svg>`;
+  }
+  if ([61, 63, 65, 80, 81, 82, 51, 53, 55, 56, 57, 66, 67].includes(weatherCode)) {
+    return `
+      <svg viewBox="0 0 64 64" role="img" aria-label="雨天">
+        <circle cx="44" cy="18" r="8" fill="#ffd166"/>
+        <ellipse class="cloud-body" cx="28" cy="28" rx="16" ry="10" fill="#e8eef8"/>
+        <ellipse class="cloud-body" cx="38" cy="30" rx="12" ry="8" fill="#d5e0f2"/>
+        <path class="rain-drop" d="M20 40 l2 9" stroke="#7db7e8" stroke-width="2.2" stroke-linecap="round"/>
+        <path class="rain-drop" d="M28 42 l2 9" stroke="#7db7e8" stroke-width="2.2" stroke-linecap="round"/>
+        <path class="rain-drop" d="M36 40 l2 9" stroke="#7db7e8" stroke-width="2.2" stroke-linecap="round"/>
+      </svg>`;
+  }
+  if ([45, 48, 3].includes(weatherCode)) {
+    return `
+      <svg viewBox="0 0 64 64" role="img" aria-label="陰天">
+        <ellipse class="cloud-body" cx="26" cy="30" rx="15" ry="10" fill="#cfd8e6"/>
+        <ellipse class="cloud-body" cx="38" cy="28" rx="14" ry="11" fill="#b7c4d8"/>
+        <ellipse class="cloud-body" cx="34" cy="34" rx="16" ry="9" fill="#a9b7cd"/>
+      </svg>`;
+  }
+  if ([1, 2].includes(weatherCode)) {
+    return `
+      <svg viewBox="0 0 64 64" role="img" aria-label="多雲">
+        <g class="sun-core">
+          <circle cx="42" cy="20" r="8" fill="#ffd166"/>
+          <g stroke="#ffd166" stroke-width="2" stroke-linecap="round">
+            <path d="M42 8 v3"/><path d="M42 29 v3"/><path d="M30 20 h3"/><path d="M51 20 h3"/>
+            <path d="M33 11 l2 2"/><path d="M49 27 l2 2"/><path d="M49 11 l-2 2"/><path d="M33 27 l-2 2"/>
+          </g>
+        </g>
+        <ellipse class="cloud-body" cx="26" cy="34" rx="15" ry="10" fill="#f2f6ff"/>
+        <ellipse class="cloud-body" cx="38" cy="36" rx="12" ry="8" fill="#e2eaf8"/>
+      </svg>`;
+  }
+  return `
+    <svg viewBox="0 0 64 64" role="img" aria-label="晴朗">
+      <g class="sun-core">
+        <circle cx="32" cy="32" r="12" fill="#ffd166"/>
+        <g stroke="#ffd166" stroke-width="2.4" stroke-linecap="round">
+          <path d="M32 10 v5"/><path d="M32 49 v5"/><path d="M10 32 h5"/><path d="M49 32 h5"/>
+          <path d="M16 16 l3.5 3.5"/><path d="M44.5 44.5 l3.5 3.5"/>
+          <path d="M44.5 16 l3.5 -3.5"/><path d="M16 48 l3.5 -3.5"/>
+        </g>
+      </g>
+    </svg>`;
+}
+
+function renderWeatherIcon(weatherCode) {
+  if (!weatherIcon) {
+    return;
+  }
+  weatherIcon.innerHTML = getWeatherIconSvg(weatherCode);
 }
 
 function findNearestTimeIndex(times, nowIso) {
@@ -1963,8 +2223,9 @@ async function fetchWeather() {
   const rainProb = Number(payload.hourly.precipitation_probability[rainProbIndex] ?? 0);
 
   weatherSummary.textContent = `${location.label}・${WEATHER_CODE_LABEL[current.weather_code] ?? "天氣狀態更新中"}`;
-  tempValue.textContent = `${Math.round(current.temperature_2m)}°C`;
-  feelValue.textContent = `${Math.round(current.apparent_temperature)}°C`;
+  tempValue.textContent = `${Math.round(current.temperature_2m)}°`;
+  feelValue.textContent = `${Math.round(current.apparent_temperature)}°`;
+  renderWeatherIcon(current.weather_code);
   humidityValue.textContent = `${Math.round(current.relative_humidity_2m)}%`;
   windValue.textContent = `${Math.round(current.wind_speed_10m)} km/h`;
   rainValue.textContent = `${current.precipitation.toFixed(1)} mm`;
@@ -2527,6 +2788,7 @@ function createDefaultRecoveryState() {
   return {
     floodSensors: {},
     powerOutages: {},
+    waterOutages: {},
     hasLandTyphoonWarning: false
   };
 }
@@ -2541,6 +2803,7 @@ function loadRecoveryState() {
     return {
       floodSensors: parsed.floodSensors ?? {},
       powerOutages: parsed.powerOutages ?? {},
+      waterOutages: parsed.waterOutages ?? {},
       hasLandTyphoonWarning: Boolean(parsed.hasLandTyphoonWarning)
     };
   } catch {
@@ -2581,9 +2844,19 @@ function updateRecoveryTrackingState() {
         if (currentWarningSensors[sensorid]) {
           return;
         }
-        messages.push(
-          `【積淹水消退】${point.areaName} 已消退至安全警戒高度（原水深 ${point.depthCm} cm、等級 ${point.level}），${locationLabel} 周邊約 ${point.distanceKm.toFixed(1)} km，請恢復通行並持續留意。`
-        );
+        messages.push({
+          kind: "flood-recovery",
+          text: `【積淹水消退】${point.areaName} 已消退至安全警戒高度（原水深 ${point.depthCm} cm、等級 ${point.level}），${locationLabel} 周邊約 ${point.distanceKm.toFixed(1)} km，請恢復通行並持續留意。`
+        });
+      });
+      Object.entries(currentWarningSensors).forEach(([sensorid, point]) => {
+        if (prev.floodSensors[sensorid]) {
+          return;
+        }
+        messages.push({
+          kind: "flood-alert",
+          text: `【積淹水警戒】${point.areaName} 水深 ${point.depthCm} cm（等級 ${point.level}），距離約 ${point.distanceKm.toFixed(1)} km。`
+        });
       });
     }
     next.floodSensors = currentWarningSensors;
@@ -2609,24 +2882,65 @@ function updateRecoveryTrackingState() {
       }
       const typeLabel = point.type === "disaster" ? "災害性停電" : "計畫性停電";
       const place = point.label || point.area || "未提供區域";
-      messages.push(
-        `【電力回復】${place}（${typeLabel}）已恢復供電，${locationLabel} 半徑 ${POWER_OUTAGE_NOTIFY_RADIUS_KM} 公里內距離約 ${Number(point.distanceKm).toFixed(1)} km。`
-      );
+      messages.push({
+        kind: "power-recovery",
+        text: `【電力回復】${place}（${typeLabel}）已恢復供電，${locationLabel} 半徑 ${POWER_OUTAGE_NOTIFY_RADIUS_KM} 公里內距離約 ${Number(point.distanceKm).toFixed(1)} km。`
+      });
+    });
+    Object.entries(currentOutages).forEach(([key, point]) => {
+      if (prev.powerOutages[key]) {
+        return;
+      }
+      const typeLabel = point.type === "disaster" ? "災害性停電" : "計畫性停電";
+      const place = point.label || point.area || "未提供區域";
+      messages.push({
+        kind: "power-alert",
+        text: `【停電警戒】${place}（${typeLabel}）距離約 ${Number(point.distanceKm).toFixed(1)} km，請留意供電狀況。`
+      });
     });
   }
   next.powerOutages = currentOutages;
 
+  const currentWater = {};
+  (appState.waterOutageItems || []).forEach((item) => {
+    currentWater[item.id] = item;
+  });
+  if (isSubscribed && topics.has("water-outage")) {
+    Object.entries(prev.waterOutages || {}).forEach(([id, item]) => {
+      if (currentWater[id]) {
+        return;
+      }
+      messages.push({
+        kind: "water-recovery",
+        text: `【停水解除】${item.area || item.summary || "所選縣市停水案件"} 已恢復供水／降壓解除，請確認用水恢復正常。`
+      });
+    });
+    Object.entries(currentWater).forEach(([id, item]) => {
+      if (prev.waterOutages?.[id]) {
+        return;
+      }
+      messages.push({
+        kind: "water-alert",
+        text: `【停水警戒】${item.area || "所選縣市"}：${item.summary || "有停水／降壓公告"}（${item.period || "期間詳見台水公告"}）。`
+      });
+    });
+  }
+  next.waterOutages = currentWater;
+
   const hasLandWarning = Boolean(appState.typhoonOfficial?.hasLandWarning);
   if (isSubscribed && prev.hasLandTyphoonWarning && !hasLandWarning) {
     const typhoonName = appState.typhoonOfficial?.name;
-    messages.push(
-      `【解除颱風警報】中央氣象署已解除陸上颱風警報${typhoonName ? `（${typhoonName}）` : ""}，${locationLabel} 請持續留意後續天氣與防災資訊。`
-    );
+    messages.push({
+      kind: "typhoon-recovery",
+      text: `【解除颱風警報】中央氣象署已解除陸上颱風警報${typhoonName ? `（${typhoonName}）` : ""}，${locationLabel} 請持續留意後續天氣與防災資訊。`
+    });
   }
   next.hasLandTyphoonWarning = hasLandWarning;
 
   saveRecoveryState(next);
-  return messages;
+  return messages
+    .map((item) => (typeof item === "string" ? { kind: "generic", text: item } : item))
+    .filter((item) => item?.text);
 }
 
 function renderAiAlerts() {
@@ -2761,17 +3075,17 @@ function updateNotificationHint(extraMessage = "") {
     tips.push(extraMessage);
   }
   if (!support.secure) {
-    tips.push("請以 HTTPS 開啟本站後再啟用通知。");
+    tips.push("請以 HTTPS 開啟本站，系統會自動嘗試顯示通報訊息。");
   } else if (support.reason === "ios-home-screen") {
-    tips.push("iPhone／iPad：請先用 Safari「分享 → 加入主畫面」，再從主畫面圖示開啟本站，即可啟用系統通知。目前仍可使用頁面內即時提醒。");
+    tips.push("iPhone／iPad：請用 Safari「分享 → 加入主畫面」後開啟，系統會自動請求通知權限並顯示通報。");
   } else if (support.reason === "unsupported") {
-    tips.push("此瀏覽器暫不支援系統通知，已自動改用頁面內即時提醒。");
+    tips.push("此瀏覽器暫不支援系統通知，已自動改用頁面內即時通報。");
   } else if ("Notification" in window && Notification.permission === "denied") {
-    tips.push("通知權限已封鎖：請到瀏覽器設定允許本站通知；目前會改用頁面內提醒。");
-  } else if ("Notification" in window && Notification.permission !== "granted") {
-    tips.push("點「啟用通知」或「儲存訂閱」時，請在瀏覽器提示中選擇允許。");
+    tips.push("通知權限已封鎖：請到系統／瀏覽器設定允許本站通知；目前仍會顯示頁面內通報。");
+  } else if ("Notification" in window && Notification.permission === "granted") {
+    tips.push("系統通知已自動啟用；斷電／停水警戒或恢復時會通報 2 次（間隔 15 分鐘）。");
   } else {
-    tips.push("系統通知已就緒；若未跳出系統通知，也會以頁面內提醒顯示。");
+    tips.push("進入頁面或儲存訂閱時會自動請求通知權限，並在目前作業系統通知中心顯示通報。");
   }
   notificationHint.textContent = tips.join(" ");
 }
@@ -2830,6 +3144,7 @@ async function showAppNotification(title, body, { tag, data } = {}) {
     body,
     tag: tag || `jin-${Date.now()}`,
     renotify: true,
+    requireInteraction: true,
     vibrate: [200, 100, 200, 100, 200],
     icon: "./icons/icon-192.svg",
     badge: "./icons/icon-192.svg",
@@ -2838,10 +3153,22 @@ async function showAppNotification(title, body, { tag, data } = {}) {
 
   let systemShown = false;
   try {
+    await initServiceWorker();
     const registration = await getNotificationRegistration();
     if (registration?.showNotification && "Notification" in window && Notification.permission === "granted") {
       await registration.showNotification(title, payload);
       systemShown = true;
+      try {
+        registration.active?.postMessage({
+          type: "SHOW_NOTIFICATION",
+          title,
+          body,
+          tag: payload.tag,
+          data: payload.data
+        });
+      } catch {
+        /* ignore */
+      }
     } else if ("Notification" in window && Notification.permission === "granted") {
       new Notification(title, payload);
       systemShown = true;
@@ -3032,27 +3359,167 @@ function buildSubscriptionNotificationMessages() {
     closure: getSubscriptionClosureMessage,
     flood: getSubscriptionFloodMessage,
     "power-outage": getSubscriptionPowerOutageMessage,
+    "water-outage": getSubscriptionWaterOutageMessage,
     weather: getSubscriptionWeatherMessage,
     air: getSubscriptionAirQualityMessage
   };
-  return getSelectedSubscriptionTopics().map((topic) => topicBuilders[topic]());
+  return getSelectedSubscriptionTopics().map((topic) => topicBuilders[topic]?.()).filter(Boolean);
 }
 
 async function sendRecoveryNotifications(messages) {
-  if (!messages.length || !appState.subscription?.email) {
+  const normalized = (messages || [])
+    .map((item) => (typeof item === "string" ? { kind: "generic", text: item } : item))
+    .filter((item) => item?.text);
+  if (!normalized.length || !appState.subscription?.email) {
     return false;
   }
   const permissionMode = await ensureNotificationPermission();
   if (!permissionMode) {
     return false;
   }
-  for (const message of messages) {
-    await showAppNotification("災害狀態更新", message, {
+
+  const utilityKinds = new Set([
+    "power-alert",
+    "power-recovery",
+    "water-alert",
+    "water-recovery",
+    "flood-alert",
+    "flood-recovery"
+  ]);
+  const utilityMessages = normalized.filter((item) => utilityKinds.has(item.kind));
+  const otherMessages = normalized.filter((item) => !utilityKinds.has(item.kind));
+
+  for (const message of otherMessages) {
+    await showAppNotification("災害狀態更新", message.text, {
       tag: `recovery-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
     });
-    await sleep(900);
+    await sleep(700);
+  }
+
+  for (const message of utilityMessages) {
+    await queueUtilityAlertBurst(message.text, message.kind);
   }
   return true;
+}
+
+function loadPendingUtilityAlerts() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(PENDING_UTILITY_ALERT_STORAGE_KEY) || "[]");
+    return Array.isArray(raw) ? raw : [];
+  } catch {
+    return [];
+  }
+}
+
+function savePendingUtilityAlerts(items) {
+  try {
+    localStorage.setItem(PENDING_UTILITY_ALERT_STORAGE_KEY, JSON.stringify(items));
+  } catch {
+    /* ignore */
+  }
+}
+
+async function queueUtilityAlertBurst(text, kind = "utility") {
+  const now = Date.now();
+  const burstId = `${kind}-${now}-${Math.random().toString(36).slice(2, 7)}`;
+  const pending = loadPendingUtilityAlerts().filter((item) => item.dueAt > now - UTILITY_ALERT_REPEAT_MS);
+  for (let i = 0; i < UTILITY_ALERT_REPEAT_COUNT; i += 1) {
+    pending.push({
+      id: `${burstId}-${i + 1}`,
+      kind,
+      text,
+      dueAt: now + i * UTILITY_ALERT_REPEAT_MS,
+      sent: false
+    });
+  }
+  savePendingUtilityAlerts(pending);
+  await flushPendingUtilityAlerts();
+}
+
+async function flushPendingUtilityAlerts() {
+  const now = Date.now();
+  const pending = loadPendingUtilityAlerts();
+  let changed = false;
+  for (const item of pending) {
+    if (item.sent || item.dueAt > now) {
+      continue;
+    }
+    await showAppNotification("公用事業警戒通報", `${item.text}\n（自動通報）`, {
+      tag: item.id
+    });
+    item.sent = true;
+    changed = true;
+    await sleep(500);
+  }
+  const remaining = pending.filter((item) => !item.sent);
+  if (changed || remaining.length !== pending.length) {
+    savePendingUtilityAlerts(remaining);
+  }
+  utilityAlertTimers.forEach((timer) => window.clearTimeout(timer));
+  utilityAlertTimers = [];
+  remaining.forEach((item) => {
+    const delay = Math.max(0, item.dueAt - Date.now());
+    const timer = window.setTimeout(() => {
+      flushPendingUtilityAlerts().catch(() => {});
+    }, delay + 50);
+    utilityAlertTimers.push(timer);
+  });
+}
+
+async function fetchWaterOutageData() {
+  const cityName = getSubscriptionCityName() || citySelect.value;
+  if (!cityName) {
+    appState.waterOutageItems = [];
+    return [];
+  }
+  const encodedCity = encodeURIComponent(cityName);
+  const endpoint = `https://r.jina.ai/https://web.water.gov.tw/wateroff/city/${encodedCity}/index.html`;
+  try {
+    const response = await fetch(endpoint);
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    const markdown = await response.text();
+    const items = [];
+    const cardPattern =
+      /停水期間\s*起\s*([0-9/\s:]+)\s*迄\s*([0-9/\s:]+)\s*停水區域\s*([^\n]*?)\s*停水原因\s*([^\n]*?)\s*客服專線[\s\S]*?案件編號\s*([0-9]+)/g;
+    let match;
+    while ((match = cardPattern.exec(markdown)) && items.length < 20) {
+      const area = String(match[3] || "").trim();
+      const reason = String(match[4] || "").trim();
+      const id = String(match[5] || "").trim();
+      const start = String(match[1] || "").trim();
+      const end = String(match[2] || "").trim();
+      if (!id) {
+        continue;
+      }
+      items.push({
+        id,
+        city: cityName,
+        area,
+        reason,
+        period: `${start}～${end}`,
+        summary: `${area}${reason ? `（${reason.slice(0, 36)}）` : ""}`
+      });
+    }
+    appState.waterOutageItems = items;
+    appState.waterOutageMetaText = `${cityName} 停水公告 ${items.length} 筆`;
+    return items;
+  } catch (error) {
+    appState.waterOutageItems = [];
+    appState.waterOutageMetaText = `停水資料暫時無法更新：${error.message}`;
+    return [];
+  }
+}
+
+function getSubscriptionWaterOutageMessage() {
+  const locationLabel = getSubscriptionLocationLabel();
+  const items = appState.waterOutageItems || [];
+  if (!items.length) {
+    return `【停水監測】${locationLabel} 目前未抓到有效停水／降壓公告。`;
+  }
+  const top = items[0];
+  return `【停水公告】${top.area || locationLabel}：${top.summary || "有停水案件"}（${top.period || "期間詳見台水"}）。`;
 }
 
 async function sendSubscriptionNotification({ force = false } = {}) {
@@ -3146,7 +3613,8 @@ function applyMapLayerOrder() {
     }
     const pane = warningMap.getPane(paneName);
     if (pane) {
-      pane.style.zIndex = String(zIndex);
+      // Keep focus frame on top so the selection range stays visible.
+      pane.style.zIndex = layerKey === "city-focus" ? "680" : String(zIndex);
       zIndex -= 20;
     }
   });
@@ -3365,9 +3833,14 @@ function fitMapToFocusArea() {
     return;
   }
   warningMap.invalidateSize();
-  warningMap.fitBounds(mapCityFocusLayer.getBounds(), {
-    padding: [28, 28],
-    maxZoom: 12
+  const bounds = mapCityFocusLayer.getBounds?.();
+  if (!bounds) {
+    return;
+  }
+  warningMap.fitBounds(bounds, {
+    padding: [0, 0],
+    maxZoom: 13,
+    animate: false
   });
 }
 
@@ -3380,18 +3853,35 @@ function updateCityFocusLayer() {
     warningMap.removeLayer(mapCityFocusLayer);
   }
   if (!location) {
+    mapCityFocusLayer = null;
     return;
   }
+
+  const focusPane = warningMap.getPane("focusPane");
+  if (focusPane) {
+    focusPane.style.zIndex = "650";
+  }
+
   mapCityFocusLayer = L.circle([location.lat, location.lon], {
     pane: "focusPane",
     radius: MAP_FOCUS_CIRCLE_RADIUS_M,
-    color: "#00b4d8",
-    weight: 2,
-    fillColor: "#00b4d8",
-    fillOpacity: 0.09
+    color: "#00d4ff",
+    weight: 3,
+    opacity: 0.95,
+    fillColor: "#00d4ff",
+    fillOpacity: 0.12,
+    className: "leaflet-focus-frame"
   }).bindTooltip(`${location.label} 焦點區`);
+
+  mapLayerVisibility["city-focus"] = true;
+  if (!warningMap.hasLayer(mapCityFocusLayer)) {
+    mapCityFocusLayer.addTo(warningMap);
+  }
   syncMapLayerVisibility("city-focus");
-  fitMapToFocusArea();
+  requestAnimationFrame(() => {
+    fitMapToFocusArea();
+    window.setTimeout(fitMapToFocusArea, 120);
+  });
 }
 
 function updateCameraMapLayer() {
@@ -3497,9 +3987,11 @@ async function fetchRoadCameras() {
     }
     cityCameraDataset = await cityResponse.json();
     enrichCityCameraCrossRoadsFromNeighbors();
+    blackScreenCameraIds = loadBlackScreenCameraIds();
 
     if (freewayResponse.ok) {
       freewayCameraDataset = await freewayResponse.json();
+      freewayInterchangeIndex = buildFreewayInterchangeIndex(freewayCameraDataset.cameras || []);
     } else if (freewayCameraMeta) {
       freewayCameraMeta.textContent = `國道監控資料暫時無法更新：HTTP ${freewayResponse.status}`;
     }
@@ -3644,12 +4136,16 @@ async function performFullRefresh(triggerSource) {
         if (powerOutageMeta) {
           powerOutageMeta.textContent = appState.powerOutageMetaText;
         }
+      }),
+      fetchWaterOutageData().catch(() => {
+        appState.waterOutageItems = appState.waterOutageItems || [];
       })
     ]);
     renderTyphoonAnalysis();
     renderAiAlerts();
     updateMapForCityChange();
     const recoveryMessages = updateRecoveryTrackingState();
+    await flushPendingUtilityAlerts();
     await maybeNotifySubscribers(triggerSource, recoveryMessages);
     lastUpdated.textContent = `資料更新時間：${formatDateTime(Date.now())}${triggerSource === "auto" ? "（自動）" : ""}`;
     if (appState.autoRefreshEnabled) {
@@ -3751,23 +4247,6 @@ subscriptionForm.addEventListener("submit", async (event) => {
 
 testNotificationBtn?.addEventListener("click", async () => {
   await sendSubscriptionNotification({ force: true });
-});
-
-enableNotificationBtn?.addEventListener("click", async () => {
-  await initServiceWorker();
-  const permissionMode = await ensureNotificationPermission();
-  if (permissionMode === "granted") {
-    renderSubscriptionStatus("系統通知已啟用。");
-    await showAppNotification("通知測試", "系統通知與頁面內提醒已就緒。", {
-      tag: "notification-enable-test"
-    });
-  } else {
-    renderSubscriptionStatus("已改用頁面內即時提醒。");
-    await showAppNotification("頁面內提醒測試", "此瀏覽器暫無法使用系統通知，已改以頁面內即時提醒顯示。", {
-      tag: "notification-fallback-test"
-    });
-  }
-  updateNotificationHint();
 });
 
 document.addEventListener("visibilitychange", () => {
@@ -3889,7 +4368,14 @@ if (document.fonts?.ready) {
   document.fonts.ready.then(scheduleHeroTextFit).catch(() => {});
 }
 window.matchMedia("(min-width: 861px)").addEventListener("change", syncNoticeDetailsOpen);
-initServiceWorker().then(() => updateNotificationHint());
+initServiceWorker()
+  .then(() => ensureNotificationPermission())
+  .then(() => {
+    updateNotificationHint();
+    return flushPendingUtilityAlerts();
+  })
+  .catch(() => updateNotificationHint());
+blackScreenCameraIds = loadBlackScreenCameraIds();
 initVisitorCounter();
 performFullRefresh("manual");
 fetchRoadCameras();
