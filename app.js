@@ -3833,16 +3833,19 @@ function fitMapToFocusArea() {
     return;
   }
   warningMap.invalidateSize();
-  const bounds = mapCityFocusLayer.getBounds?.();
-  if (!bounds) {
-    return;
+  const location = getActiveWeatherLocation();
+  if (location && Number.isFinite(location.lat) && Number.isFinite(location.lon)) {
+    // Zoom so the ~28km focus circle roughly fills the map frame.
+    warningMap.setView([location.lat, location.lon], 10, { animate: false });
   }
-  // Keep a few pixels inset so the focus ring is not clipped by the map frame.
-  warningMap.fitBounds(bounds, {
-    padding: [8, 8],
-    maxZoom: 13,
-    animate: false
-  });
+  const bounds = mapCityFocusLayer.getBounds?.();
+  if (bounds?.isValid?.()) {
+    warningMap.fitBounds(bounds, {
+      padding: [12, 12],
+      maxZoom: 11,
+      animate: false
+    });
+  }
 }
 
 function updateCityFocusLayer() {
@@ -3862,35 +3865,34 @@ function updateCityFocusLayer() {
     return;
   }
 
-  if (!warningMap.getPane("focusPane")) {
-    warningMap.createPane("focusPane");
-  }
-  const focusPane = warningMap.getPane("focusPane");
-  if (focusPane) {
-    focusPane.style.zIndex = "680";
-    focusPane.style.pointerEvents = "none";
-  }
-
-  mapCityFocusLayer = L.circle([location.lat, location.lon], {
-    pane: "focusPane",
+  mapCityFocusLayer = L.layerGroup();
+  const ring = L.circle([location.lat, location.lon], {
     radius: MAP_FOCUS_CIRCLE_RADIUS_M,
     color: "#00d4ff",
-    weight: 4,
+    weight: 5,
     opacity: 1,
     fillColor: "#00d4ff",
-    fillOpacity: 0.14,
-    interactive: false,
-    className: "leaflet-focus-frame"
+    fillOpacity: 0.16,
+    interactive: false
   });
-  mapCityFocusLayer.bindTooltip(`${location.label} 焦點區`, { sticky: true });
+  const center = L.circleMarker([location.lat, location.lon], {
+    radius: 6,
+    color: "#ffffff",
+    weight: 2,
+    fillColor: "#00d4ff",
+    fillOpacity: 1,
+    interactive: false
+  });
+  mapCityFocusLayer.addLayer(ring);
+  mapCityFocusLayer.addLayer(center);
+  mapCityFocusLayer.bindTooltip?.(`${location.label} 焦點區`);
 
   mapLayerVisibility["city-focus"] = true;
   mapCityFocusLayer.addTo(warningMap);
   syncMapLayerVisibility("city-focus");
-  requestAnimationFrame(() => {
-    fitMapToFocusArea();
-    window.setTimeout(fitMapToFocusArea, 180);
-  });
+  fitMapToFocusArea();
+  window.setTimeout(fitMapToFocusArea, 200);
+  window.setTimeout(fitMapToFocusArea, 600);
 }
 
 function updateCameraMapLayer() {
