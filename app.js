@@ -3017,12 +3017,14 @@ function parseTyphoonOfficialText(newsMarkdown, warnMarkdown) {
   };
 }
 
-function buildWindyEmbedUrl(lat, lon, zoom = 6) {
+function buildWindyEmbedUrl(lat, lon, zoom = 6, { precision = 3 } = {}) {
+  const digits = Math.min(6, Math.max(3, Number(precision) || 3));
+  const fmt = (value) => Number(value).toFixed(digits);
   const params = new URLSearchParams({
-    lat: Number(lat).toFixed(3),
-    lon: Number(lon).toFixed(3),
-    detailLat: Number(lat).toFixed(3),
-    detailLon: Number(lon).toFixed(3),
+    lat: fmt(lat),
+    lon: fmt(lon),
+    detailLat: fmt(lat),
+    detailLon: fmt(lon),
     width: String(WINDY_EMBED_WIDTH),
     height: String(WINDY_EMBED_HEIGHT),
     zoom: String(zoom),
@@ -3036,7 +3038,7 @@ function buildWindyEmbedUrl(lat, lon, zoom = 6) {
     pressure: "false",
     type: "map",
     location: "coordinates",
-    detail: "",
+    detail: "true",
     metricWind: "kt",
     metricTemp: "°C",
     radarRange: "-1"
@@ -3056,40 +3058,133 @@ function getWindyFocusPoint() {
     return {
       lat: windyLocateFocus.lat,
       lon: windyLocateFocus.lon,
-      zoom: windyLocateFocus.zoom || 9,
+      zoom: windyLocateFocus.zoom || 11,
+      precision: windyLocateFocus.precision || 6,
       hasTyphoonCenter
     };
   }
   return {
     ...WINDY_TAIWAN_VIEW,
+    precision: 3,
     hasTyphoonCenter
   };
 }
 
-function updateWindyTrackEmbed() {
+function updateWindyTrackEmbed({ force = false } = {}) {
   if (!windyEmbed) {
     return;
   }
   const focus = getWindyFocusPoint();
-  const embedUrl = buildWindyEmbedUrl(focus.lat, focus.lon, focus.zoom);
+  const embedUrl = buildWindyEmbedUrl(focus.lat, focus.lon, focus.zoom, {
+    precision: focus.precision || 3
+  });
   const normalizeSrc = (src) => {
     try {
       const url = new URL(src);
       url.searchParams.delete("_replay");
+      url.searchParams.delete("_locate");
       return url.toString();
     } catch {
       return src;
     }
   };
   const currentSrc = windyEmbed.getAttribute("src") || "";
-  if (!currentSrc || normalizeSrc(currentSrc) !== normalizeSrc(embedUrl)) {
-    windyEmbed.src = embedUrl;
+  if (force || !currentSrc || normalizeSrc(currentSrc) !== normalizeSrc(embedUrl)) {
+    const nextUrl = new URL(embedUrl);
+    if (force) {
+      nextUrl.searchParams.set("_locate", String(Date.now()));
+    }
+    windyEmbed.src = nextUrl.toString();
   }
   windyEmbed.style.height = "100%";
   windyEmbed.style.minHeight = "100%";
   if (windyExternalLink) {
-    windyExternalLink.href = `https://www.windy.com/?${focus.lat.toFixed(3)},${focus.lon.toFixed(3)},${focus.zoom},i:pressure`;
+    windyExternalLink.href = `https://www.windy.com/?${Number(focus.lat).toFixed(5)},${Number(focus.lon).toFixed(5)},${focus.zoom},i:pressure`;
   }
+}
+
+function resolveWindyLocateZoom(accuracyMeters) {
+  if (!Number.isFinite(accuracyMeters)) {
+    return 11;
+  }
+  if (accuracyMeters <= 50) {
+    return 12;
+  }
+  if (accuracyMeters <= 150) {
+    return 11;
+  }
+  if (accuracyMeters <= 500) {
+    return 10;
+  }
+  return 9;
+}
+
+function locateWindyEmbed() {
+  if (!windyLocateBtn || !windyEmbed) {
+    return;
+  }
+  if (!window.isSecureContext) {
+    showInPageAlert("定位無法啟用", "請以 HTTPS（或本機安全環境）開啟本站後再使用 Windy 定位。", {
+      timeoutMs: 9000
+    });
+    return;
+  }
+  if (!navigator.geolocation?.getCurrentPosition) {
+    showInPageAlert("定位無法啟用", "此裝置瀏覽器不支援衛星定位。", { timeoutMs: 9000 });
+    return;
+  }
+
+  windyLocateBtn.disabled = true;
+  if (windyLocateBtnLabel) {
+    windyLocateBtnLabel.textContent = "定位中";
+  }
+
+  const finish = () => {
+    windyLocateBtn.disabled = false;
+    if (windyLocateBtnLabel) {
+      windyLocateBtnLabel.textContent = WINDY_LOCATE_BTN_LABEL;
+    }
+  };
+
+  const applySuccess = (position) => {
+    const { latitude, longitude, accuracy } = position.coords;
+    windyLocateFocus = {
+      lat: latitude,
+      lon: longitude,
+      zoom: resolveWindyLocateZoom(accuracy),
+      precision: 6
+    };
+    // Reload Windy embed with high-precision coordinates so its marker/detail
+    // point aligns to the browser GPS location (embed geolocation enabled).
+    updateWindyTrackEmbed({ force: true });
+
+    const nearest = findNearestTownship(latitude, longitude);
+    if (nearest) {
+      applyRegionSelection(getRegionForCity(nearest.city), nearest.city, nearest.town, {
+        persist: true
+      });
+      syncSelectValue(cameraCitySelect, nearest.city);
+      syncSelectValue(freewayCitySelect, nearest.city);
+      renderAllCameraLists();
+      updateMapForCityChange();
+    }
+
+    const accuracyText = Number.isFinite(accuracy) ? `精度約 ${Math.round(accuracy)} 公尺` : "已取得目前位置";
+    showInPageAlert("Windy 定位完成", `已對準使用者位置（${accuracyText}）。`, { timeoutMs: 5000 });
+    finish();
+  };
+
+  const failWith = (error) => {
+    showInPageAlert("Windy 定位失敗", getGeolocationErrorMessage(error), { timeoutMs: 10000 });
+    finish();
+  };
+
+  // Keep getCurrentPosition inside the click gesture; high-accuracy feeds Windy embed coords.
+  navigator.geolocation.getCurrentPosition(applySuccess, failWith, {
+    enableHighAccuracy: true,
+    timeout: 15000,
+    maximumAge: 0
+  });
 }
 
 function formatVisitorCount(count) {
@@ -4859,7 +4954,7 @@ windyLocateBtn?.addEventListener("click", (event) => {
   event.preventDefault();
   event.stopPropagation();
   // Keep this handler synchronous so the browser treats geolocation as a user gesture.
-  locateByDevice();
+  locateWindyEmbed();
 });
 
 refreshBtn.addEventListener("click", () => {

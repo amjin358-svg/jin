@@ -606,27 +606,26 @@ label {
 
 .windy-locate-btn {
   position: absolute;
-  top: 0;
-  left: 0;
+  top: 8px;
+  left: 8px;
   z-index: 6;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  width: 118px;
-  height: 42px;
-  min-height: 42px;
-  padding: 0 10px;
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  border-radius: 0 0 10px 0;
+  width: 112px;
+  height: 40px;
+  min-height: 40px;
+  padding: 0 16px;
+  border: 1px solid #b71c1c;
+  border-radius: 999px;
   background: #e53935;
   color: #fff;
   font-size: 14px;
   font-weight: 800;
   line-height: 1;
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
-  animation: windyLocateBlink 1.8s ease-in-out infinite;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.28);
 }
 
 .windy-locate-btn .locate-icon svg {
@@ -638,26 +637,14 @@ label {
 
 .windy-locate-btn:hover,
 .windy-locate-btn:focus-visible {
-  background: #c62828;
-  outline: none;
+  background: #e53935;
+  outline: 2px solid rgba(255, 255, 255, 0.55);
+  outline-offset: 1px;
 }
 
 .windy-locate-btn:disabled {
   opacity: 0.72;
   cursor: wait;
-  animation: none;
-}
-
-@keyframes windyLocateBlink {
-  0%,
-  100% {
-    opacity: 1;
-    box-shadow: 0 4px 14px rgba(229, 57, 53, 0.45);
-  }
-  50% {
-    opacity: 0.78;
-    box-shadow: 0 4px 18px rgba(229, 57, 53, 0.75);
-  }
 }
 
 .typhoon-wind-map {
