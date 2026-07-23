@@ -472,6 +472,9 @@ const closureMeta = document.querySelector("#closureMeta");
 const closureList = document.querySelector("#closureList");
 const cameraMeta = document.querySelector("#cameraMeta");
 const cameraList = document.querySelector("#cameraList");
+const cameraListMore = document.querySelector("#cameraListMore");
+const cameraMoreDetails = document.querySelector("#cameraMoreDetails");
+const cameraMoreSummaryText = document.querySelector(".camera-more-summary-text");
 const cameraKeyword = document.querySelector("#cameraKeyword");
 const cameraRegionSelect = document.querySelector("#cameraRegionSelect");
 const cameraCitySelect = document.querySelector("#cameraCitySelect");
@@ -571,7 +574,8 @@ const RAIN_FORECAST_HOURS = 8;
 const VISITOR_COUNTER_NAMESPACE = "jin-weather-tw-v1";
 const VISITOR_COUNTER_KEY = "visits";
 const VISITOR_COUNTER_STORAGE_KEY = "siteVisitCountV1";
-const CITY_CCTV_RADIUS_KM = 3;
+const CITY_CCTV_RADIUS_KM = 1;
+const CITY_CCTV_PREVIEW_LIMIT = 8;
 const FREEWAY_CCTV_RADIUS_KM = 40;
 const FREEWAY_INTERCHANGE_BASE_RADIUS_KM = 40;
 const WINDY_TAIWAN_VIEW = { lat: 23.7, lon: 121.0, zoom: 5 };
@@ -585,8 +589,10 @@ const PENDING_UTILITY_ALERT_STORAGE_KEY = "pendingUtilityAlertNotificationsV1";
 const WATER_OUTAGE_STATE_STORAGE_KEY = "waterOutageTrackingStateV1";
 const BLACK_SCREEN_CCTV_STORAGE_KEY = "blackScreenCctvIdsV1";
 const CCTV_BLACK_LUMINANCE_THRESHOLD = 28;
-const CCTV_VISIBLE_LIMIT = 16;
+const CCTV_VISIBLE_LIMIT = 8;
 const CCTV_VERIFY_POOL_SIZE = 48;
+let cityCameraRenderToken = 0;
+let freewayCameraRenderToken = 0;
 let jsZipModulePromise = null;
 const appState = {
   weather: null,
@@ -1443,39 +1449,74 @@ function getFilteredSortedCityCameras() {
     label: focusLabel
   };
 
-  return cityCameraDataset.cameras
-    .filter((camera) => isCameraUrlUsable(camera.html))
-    .filter((camera) => !isCameraMarkedBlackScreen(camera))
-    .filter((camera) => !isCameraMaintenanceText(camera))
-    .filter((camera) => {
-      if (!selectedCity) {
-        return true;
-      }
-      return camera.city === selectedCity;
-    })
-    .filter((camera) => {
-      if (!keyword) {
-        return true;
-      }
-      const haystack = normalize(
-        `${camera.id ?? ""} ${camera.stakenumber ?? ""} ${camera.roadName ?? ""} ${camera.crossRoad ?? ""} ${camera.description ?? ""} ${camera.city ?? ""}`
-      );
-      return haystack.includes(normalize(keyword));
-    })
-    .map((camera) => {
-      const distanceKm =
-        Number.isFinite(focus.lat) && Number.isFinite(focus.lon)
-          ? getDistanceKm(focus.lat, focus.lon, Number(camera.gisy), Number(camera.gisx))
-          : Infinity;
-      return { ...camera, distanceKm, focusLabel: focus.label };
-    })
-    .filter((camera) => {
-      if (!Number.isFinite(focus.lat) || !Number.isFinite(focus.lon)) {
-        return true;
-      }
-      return camera.distanceKm <= CITY_CCTV_RADIUS_KM;
-    })
-    .sort((a, b) => a.distanceKm - b.distanceKm);
+  return dedupeCamerasByIdentity(
+    cityCameraDataset.cameras
+      .filter((camera) => isCameraUrlUsable(camera.html))
+      .filter((camera) => !isCameraMarkedBlackScreen(camera))
+      .filter((camera) => !isCameraMaintenanceText(camera))
+      .filter((camera) => {
+        if (!selectedCity) {
+          return true;
+        }
+        return camera.city === selectedCity;
+      })
+      .filter((camera) => {
+        if (!keyword) {
+          return true;
+        }
+        const haystack = normalize(
+          `${camera.id ?? ""} ${camera.stakenumber ?? ""} ${camera.roadName ?? ""} ${camera.crossRoad ?? ""} ${camera.description ?? ""} ${camera.city ?? ""}`
+        );
+        return haystack.includes(normalize(keyword));
+      })
+      .map((camera) => {
+        const distanceKm =
+          Number.isFinite(focus.lat) && Number.isFinite(focus.lon)
+            ? getDistanceKm(focus.lat, focus.lon, Number(camera.gisy), Number(camera.gisx))
+            : Infinity;
+        return { ...camera, distanceKm, focusLabel: focus.label };
+      })
+      .filter((camera) => {
+        if (!Number.isFinite(focus.lat) || !Number.isFinite(focus.lon)) {
+          return true;
+        }
+        return camera.distanceKm <= CITY_CCTV_RADIUS_KM;
+      })
+      .sort((a, b) => a.distanceKm - b.distanceKm)
+  );
+}
+
+function dedupeCamerasByIdentity(cameras = []) {
+  const seenIds = new Set();
+  const seenUrls = new Set();
+  const seenCoords = new Set();
+  return cameras.filter((camera) => {
+    const id = String(camera?.id || "").trim();
+    const url = String(camera?.html || "").trim().toLowerCase();
+    const lat = Number(camera?.gisy);
+    const lon = Number(camera?.gisx);
+    const coordKey =
+      Number.isFinite(lat) && Number.isFinite(lon) ? `${lat.toFixed(5)},${lon.toFixed(5)}` : "";
+    if (id && seenIds.has(id)) {
+      return false;
+    }
+    if (url && seenUrls.has(url)) {
+      return false;
+    }
+    if (coordKey && seenCoords.has(coordKey)) {
+      return false;
+    }
+    if (id) {
+      seenIds.add(id);
+    }
+    if (url) {
+      seenUrls.add(url);
+    }
+    if (coordKey) {
+      seenCoords.add(coordKey);
+    }
+    return true;
+  });
 }
 
 function getFilteredSortedFreewayCameras() {
@@ -1487,28 +1528,30 @@ function getFilteredSortedFreewayCameras() {
   const radiusKm = FREEWAY_INTERCHANGE_BASE_RADIUS_KM;
   const weatherFocus = getCctvLocationFocus();
 
-  return getFreewayCamerasBeforeRadiusFilter()
-    .filter((camera) => !isCameraMarkedBlackScreen(camera))
-    .filter((camera) => !isCameraMaintenanceText(camera))
-    .map((camera) => {
-      const lat = Number(camera.gisy);
-      const lon = Number(camera.gisx);
-      const interchangeDistanceKm = interchanges.length
-        ? getMinDistanceToPointsKm(lat, lon, interchanges)
-        : Number.isFinite(weatherFocus.lat) && Number.isFinite(weatherFocus.lon)
-          ? getDistanceKm(weatherFocus.lat, weatherFocus.lon, lat, lon)
-          : Infinity;
-      return {
-        ...camera,
-        distanceKm: interchangeDistanceKm,
-        routeCode: getCameraRouteCode(camera.id),
-        focusLabel: selectedCity
-          ? `${selectedCity}交流道基準`
-          : weatherFocus.label || "所選位置"
-      };
-    })
-    .filter((camera) => Number.isFinite(camera.distanceKm) && camera.distanceKm <= radiusKm)
-    .sort((a, b) => a.distanceKm - b.distanceKm);
+  return dedupeCamerasByIdentity(
+    getFreewayCamerasBeforeRadiusFilter()
+      .filter((camera) => !isCameraMarkedBlackScreen(camera))
+      .filter((camera) => !isCameraMaintenanceText(camera))
+      .map((camera) => {
+        const lat = Number(camera.gisy);
+        const lon = Number(camera.gisx);
+        const interchangeDistanceKm = interchanges.length
+          ? getMinDistanceToPointsKm(lat, lon, interchanges)
+          : Number.isFinite(weatherFocus.lat) && Number.isFinite(weatherFocus.lon)
+            ? getDistanceKm(weatherFocus.lat, weatherFocus.lon, lat, lon)
+            : Infinity;
+        return {
+          ...camera,
+          distanceKm: interchangeDistanceKm,
+          routeCode: getCameraRouteCode(camera.id),
+          focusLabel: selectedCity
+            ? `${selectedCity}交流道基準`
+            : weatherFocus.label || "所選位置"
+        };
+      })
+      .filter((camera) => Number.isFinite(camera.distanceKm) && camera.distanceKm <= radiusKm)
+      .sort((a, b) => a.distanceKm - b.distanceKm)
+  );
 }
 
 function isLikelyDirectImageStream(url = "") {
@@ -2007,7 +2050,12 @@ function probeImageStream(url, { timeoutMs = 8000 } = {}) {
     };
     const timer = window.setTimeout(() => finish({ ok: false, reason: "timeout" }), timeoutMs);
     img.decoding = "async";
+    img.referrerPolicy = "no-referrer-when-downgrade";
     img.onload = () => {
+      if (!img.naturalWidth || !img.naturalHeight) {
+        finish({ ok: false, reason: "empty-frame" });
+        return;
+      }
       // Allow one frame paint before sampling.
       window.setTimeout(() => {
         const analysis = analyzeImageDarkness(img);
@@ -2015,7 +2063,7 @@ function probeImageStream(url, { timeoutMs = 8000 } = {}) {
           finish({ ok: false, reason: "black", analysis });
           return;
         }
-        // If canvas is tainted (CORS), analysis is null — treat loaded image as usable.
+        // CORS-tainted frames cannot be sampled; accept only if image dimensions are valid.
         finish({ ok: true, analysis });
       }, 120);
     };
@@ -2024,14 +2072,14 @@ function probeImageStream(url, { timeoutMs = 8000 } = {}) {
   });
 }
 
-function createCameraCard(camera, scopeLabel, { radiusKm = CITY_CCTV_RADIUS_KM } = {}) {
+function createCameraCard(camera, scopeLabel, { forceImage = false } = {}) {
   const card = document.createElement("article");
   card.className = "camera-item camera-item-pending";
   card.hidden = true;
   card.dataset.cameraId = camera.id || "";
   const streamUrl = camera.html;
   const [roadA, roadB] = getCameraIntersectionRoads(camera);
-  const directImage = isLikelyDirectImageStream(streamUrl);
+  const useImage = forceImage || isLikelyDirectImageStream(streamUrl);
   const lat = Number(camera.gisy);
   const lon = Number(camera.gisx);
   const mapsUrl =
@@ -2039,8 +2087,8 @@ function createCameraCard(camera, scopeLabel, { radiusKm = CITY_CCTV_RADIUS_KM }
       ? `https://www.google.com/maps?q=${lat},${lon}&z=18`
       : "";
 
-  const mediaHtml = directImage
-    ? `<img src="${streamUrl}" alt="${camera.id} 即時影像" loading="eager" />`
+  const mediaHtml = useImage
+    ? `<img src="${streamUrl}" alt="${camera.id} 即時影像" loading="eager" referrerpolicy="no-referrer-when-downgrade" />`
     : `<iframe class="camera-frame" src="${streamUrl}" title="${camera.id} 即時影像" loading="eager" referrerpolicy="no-referrer-when-downgrade"></iframe>`;
 
   card.innerHTML = `
@@ -2076,6 +2124,10 @@ function createCameraCard(camera, scopeLabel, { radiusKm = CITY_CCTV_RADIUS_KM }
     img.addEventListener("error", () => hideDeadCard("img-error"));
     img.addEventListener("load", () => {
       window.setTimeout(() => {
+        if (!img.naturalWidth || !img.naturalHeight) {
+          hideDeadCard("empty-frame");
+          return;
+        }
         const analysis = analyzeImageDarkness(img);
         if (isLikelyNonLiveFrame(analysis)) {
           hideDeadCard("black");
@@ -2096,73 +2148,120 @@ function createCameraCard(camera, scopeLabel, { radiusKm = CITY_CCTV_RADIUS_KM }
       settled = true;
       hideDeadCard(reason);
     };
-    const pass = () => {
-      if (settled) {
-        return;
-      }
-      settled = true;
-      revealCard();
-    };
     frame.addEventListener("error", () => fail("iframe-error"));
     frame.addEventListener("load", () => {
-      // Cross-origin iframe content cannot be inspected; only reject clearly black image streams.
-      if (isLikelyDirectImageStream(streamUrl)) {
-        probeImageStream(streamUrl, { timeoutMs: 5000 }).then((result) => {
-          if (result.reason === "black") {
-            fail("black");
-            return;
-          }
-          if (result.reason === "error") {
-            fail("img-error");
-            return;
-          }
-          pass();
-        });
-        return;
-      }
-      // HTML player pages: keep if iframe loaded; hide only on later timeout without load.
-      pass();
+      // Iframe players cannot be inspected; require a usable image probe instead.
+      probeImageStream(streamUrl, { timeoutMs: 5000 }).then((result) => {
+        if (!result.ok) {
+          fail(result.reason || "iframe-unverified");
+          return;
+        }
+        if (settled) {
+          return;
+        }
+        settled = true;
+        // Replace unverifiable iframe with the verified image stream.
+        const verifiedImg = document.createElement("img");
+        verifiedImg.src = streamUrl;
+        verifiedImg.alt = `${camera.id} 即時影像`;
+        verifiedImg.loading = "eager";
+        verifiedImg.referrerPolicy = "no-referrer-when-downgrade";
+        frame.replaceWith(verifiedImg);
+        revealCard();
+      });
     });
     window.setTimeout(() => {
       if (!settled) {
         fail("iframe-timeout");
       }
-    }, 12000);
+    }, 8000);
   }
 
   scheduleCameraCrossRoadEnrichment(card, camera);
   return card;
 }
 
-async function appendVerifiedCameraCards(listEl, cameras, scopeLabel, { radiusKm = CITY_CCTV_RADIUS_KM } = {}) {
+async function appendVerifiedCameraCards(
+  listEl,
+  cameras,
+  scopeLabel,
+  { limit = CCTV_VISIBLE_LIMIT, isCurrent = () => true } = {}
+) {
   if (!listEl) {
-    return 0;
+    return { shown: 0, liveCameras: [] };
   }
   let shown = 0;
+  const liveCameras = [];
+  const seenIds = new Set();
   for (const camera of cameras) {
-    if (shown >= CCTV_VISIBLE_LIMIT) {
+    if (!isCurrent()) {
+      return { shown, liveCameras };
+    }
+    if (shown >= limit) {
       break;
+    }
+    const cameraId = String(camera.id || "");
+    if (cameraId && seenIds.has(cameraId)) {
+      continue;
     }
     if (isCameraMarkedBlackScreen(camera) || isCameraMaintenanceText(camera) || !isCameraUrlUsable(camera.html)) {
       continue;
     }
 
-    if (isLikelyDirectImageStream(camera.html)) {
-      const probe = await probeImageStream(camera.html, { timeoutMs: 7000 });
-      if (!probe.ok) {
-        markCameraAsBlackScreen(camera.id);
-        continue;
-      }
+    const probe = await probeImageStream(camera.html, { timeoutMs: 7000 });
+    if (!isCurrent()) {
+      return { shown, liveCameras };
+    }
+    if (!probe.ok) {
+      markCameraAsBlackScreen(camera.id);
+      continue;
     }
 
-    const card = createCameraCard(camera, scopeLabel, { radiusKm });
+    const card = createCameraCard(camera, scopeLabel, { forceImage: true });
+    if (cameraId) {
+      seenIds.add(cameraId);
+    }
     listEl.append(card);
     const ok = await waitForCameraCardDecision(card, 10000);
+    if (!isCurrent()) {
+      return { shown, liveCameras };
+    }
     if (ok) {
       shown += 1;
+      liveCameras.push(camera);
     }
   }
-  return shown;
+  return { shown, liveCameras };
+}
+
+async function collectVerifiedLiveCameras(cameras, { isCurrent = () => true } = {}) {
+  const liveCameras = [];
+  const seenIds = new Set();
+  for (const camera of cameras) {
+    if (!isCurrent()) {
+      return liveCameras;
+    }
+    const cameraId = String(camera.id || "");
+    if (cameraId && seenIds.has(cameraId)) {
+      continue;
+    }
+    if (isCameraMarkedBlackScreen(camera) || isCameraMaintenanceText(camera) || !isCameraUrlUsable(camera.html)) {
+      continue;
+    }
+    const probe = await probeImageStream(camera.html, { timeoutMs: 7000 });
+    if (!isCurrent()) {
+      return liveCameras;
+    }
+    if (!probe.ok) {
+      markCameraAsBlackScreen(camera.id);
+      continue;
+    }
+    if (cameraId) {
+      seenIds.add(cameraId);
+    }
+    liveCameras.push(camera);
+  }
+  return liveCameras;
 }
 
 function waitForCameraCardDecision(card, timeoutMs = 10000) {
@@ -2212,11 +2311,45 @@ function updateCameraMetaText() {
   cameraMeta.textContent = `定位所在地：${focusLabel}｜快照：${cityFetchedAt}`;
 }
 
+function resetCityCameraLists() {
+  if (cameraList) {
+    cameraList.innerHTML = "";
+  }
+  if (cameraListMore) {
+    cameraListMore.innerHTML = "";
+  }
+  if (cameraMoreDetails) {
+    cameraMoreDetails.hidden = true;
+    cameraMoreDetails.open = false;
+  }
+  if (cameraMoreSummaryText) {
+    cameraMoreSummaryText.textContent = "查看更多路口監控";
+  }
+}
+
+function syncCityCameraMorePanel(extraCount) {
+  if (!cameraMoreDetails || !cameraMoreSummaryText) {
+    return;
+  }
+  if (extraCount > 0) {
+    cameraMoreDetails.hidden = false;
+    cameraMoreSummaryText.textContent = `查看更多路口監控（另 ${extraCount} 支）`;
+    return;
+  }
+  cameraMoreDetails.hidden = true;
+  cameraMoreDetails.open = false;
+  cameraMoreSummaryText.textContent = "查看更多路口監控";
+}
+
 async function renderCameraList() {
-  cameraList.innerHTML = "";
+  const token = ++cityCameraRenderToken;
+  const isCurrent = () => token === cityCameraRenderToken;
+  resetCityCameraLists();
 
   if (!cityCameraDataset || !Array.isArray(cityCameraDataset.cameras)) {
-    cameraList.innerHTML = `<p class="status-warn">目前無法載入各縣市市區路口監控資料。</p>`;
+    if (cameraList) {
+      cameraList.innerHTML = `<p class="status-warn">目前無法載入各縣市市區路口監控資料。</p>`;
+    }
     updateCameraMapLayer({ liveOnly: true });
     return;
   }
@@ -2225,16 +2358,55 @@ async function renderCameraList() {
   updateCameraMapLayer({ liveOnly: true });
   const rows = getFilteredSortedCityCameras().slice(0, CCTV_VERIFY_POOL_SIZE);
   if (!rows.length) {
-    cameraList.innerHTML = `<p class="status-warn">所選位置半徑 ${CITY_CCTV_RADIUS_KM} 公里內查無市區路口監控點，請更換鄉鎮或關鍵字。</p>`;
+    if (cameraList) {
+      cameraList.innerHTML = `<p class="status-warn">所選位置直線距離 ${CITY_CCTV_RADIUS_KM} 公里內查無市區路口監控點，請更換鄉鎮或關鍵字。</p>`;
+    }
     return;
   }
 
   const scopeLabel = getCctvLocationFocus().label || "所選位置";
-  const shown = await appendVerifiedCameraCards(cameraList, rows, scopeLabel);
+  const liveCameras = await collectVerifiedLiveCameras(rows, { isCurrent });
+  if (!isCurrent()) {
+    return;
+  }
+
+  const previewCameras = liveCameras.slice(0, CITY_CCTV_PREVIEW_LIMIT);
+  const extraCameras = liveCameras.slice(CITY_CCTV_PREVIEW_LIMIT);
+
+  for (const camera of previewCameras) {
+    if (!isCurrent()) {
+      return;
+    }
+    const card = createCameraCard(camera, scopeLabel, { forceImage: true });
+    cameraList.append(card);
+    await waitForCameraCardDecision(card, 10000);
+  }
+  if (!isCurrent()) {
+    return;
+  }
+
+  if (extraCameras.length && cameraListMore) {
+    syncCityCameraMorePanel(extraCameras.length);
+    for (const camera of extraCameras) {
+      if (!isCurrent()) {
+        return;
+      }
+      const card = createCameraCard(camera, scopeLabel, { forceImage: true });
+      cameraListMore.append(card);
+      await waitForCameraCardDecision(card, 10000);
+    }
+  } else {
+    syncCityCameraMorePanel(0);
+  }
+
+  if (!isCurrent()) {
+    return;
+  }
   updateCameraMetaText();
   updateCameraMapLayer({ liveOnly: true });
-  if (!shown && !cameraList.querySelector(".camera-item-live")) {
+  if (!cameraList?.querySelector(".camera-item-live")) {
     cameraList.innerHTML = `<p class="status-warn">附近監控目前多為維修／無畫面，暫無正常顯示的路口影像。</p>`;
+    syncCityCameraMorePanel(0);
   }
 }
 
@@ -2257,12 +2429,14 @@ async function renderFreewayCameraList() {
   if (!freewayCameraList) {
     return;
   }
+  const token = ++freewayCameraRenderToken;
+  const isCurrent = () => token === freewayCameraRenderToken;
   freewayCameraList.innerHTML = "";
   if (!freewayCameraDataset || !Array.isArray(freewayCameraDataset.cameras)) {
     freewayCameraList.innerHTML = `<p class="status-warn">目前無法載入國道監控資料。</p>`;
     return;
   }
-  const rows = getFilteredSortedFreewayCameras().slice(0, CCTV_VERIFY_POOL_SIZE);
+  const rows = dedupeCamerasByIdentity(getFilteredSortedFreewayCameras()).slice(0, CCTV_VERIFY_POOL_SIZE);
   updateFreewayCameraMetaText();
   if (!rows.length) {
     freewayCameraList.innerHTML = `<p class="status-warn">所選縣市交流道半徑 ${FREEWAY_INTERCHANGE_BASE_RADIUS_KM} 公里內查無國道監控點，請更換縣市、國道或關鍵字。</p>`;
@@ -2270,9 +2444,13 @@ async function renderFreewayCameraList() {
   }
   const selectedCity = getSelectedFreewayCityName();
   const scopeLabel = selectedCity ? `${selectedCity}交流道基準` : getCctvLocationFocus().label || "所選位置";
-  const shown = await appendVerifiedCameraCards(freewayCameraList, rows, scopeLabel, {
-    radiusKm: FREEWAY_INTERCHANGE_BASE_RADIUS_KM
+  const { shown } = await appendVerifiedCameraCards(freewayCameraList, rows, scopeLabel, {
+    limit: CCTV_VERIFY_POOL_SIZE,
+    isCurrent
   });
+  if (!isCurrent()) {
+    return;
+  }
   updateFreewayCameraMetaText();
   if (!shown && !freewayCameraList.querySelector(".camera-item-live")) {
     freewayCameraList.innerHTML = `<p class="status-warn">附近國道監控目前多為維修／無畫面，暫無正常顯示影像。</p>`;
@@ -4234,8 +4412,10 @@ function updateCityFocusLayer() {
 }
 
 function getLiveCityCameraIds() {
+  const primary = [...(cameraList?.querySelectorAll(".camera-item-live") || [])];
+  const extras = [...(cameraListMore?.querySelectorAll(".camera-item-live") || [])];
   return new Set(
-    [...(cameraList?.querySelectorAll(".camera-item-live") || [])]
+    [...primary, ...extras]
       .map((el) => el.dataset.cameraId)
       .filter(Boolean)
   );

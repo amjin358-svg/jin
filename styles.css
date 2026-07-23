@@ -865,16 +865,65 @@ label {
 }
 
 .freeway-details summary::-webkit-details-marker {
-  color: #12b76a;
+  display: none;
 }
 
 .freeway-details summary::marker {
+  content: "";
+}
+
+.freeway-details summary::after {
+  content: " ▾";
   color: #12b76a;
+  font-weight: 700;
+}
+
+.freeway-details[open] summary::after {
+  content: " ▴";
 }
 
 .freeway-details summary:hover,
 .freeway-summary-link:hover {
   color: #039855 !important;
+}
+
+.camera-more-details {
+  margin-top: 10px;
+}
+
+.camera-more-details[hidden] {
+  display: none !important;
+}
+
+.camera-more-summary {
+  cursor: pointer;
+  list-style: none;
+  color: #1f5ae1;
+  font-weight: 700;
+  font-size: 14px;
+  margin: 0 0 10px;
+}
+
+.camera-more-summary::-webkit-details-marker {
+  display: none;
+}
+
+.camera-more-summary::marker {
+  content: "";
+}
+
+.camera-more-summary::after {
+  content: " ▾";
+  color: #1f5ae1;
+  font-weight: 700;
+}
+
+.camera-more-details[open] > .camera-more-summary::after {
+  content: " ▴";
+}
+
+.camera-more-summary:hover {
+  text-decoration: underline;
 }
 
 .freeway-camera-card {
