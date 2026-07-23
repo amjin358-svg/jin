@@ -5351,17 +5351,17 @@ function updateAutoRefreshMeta() {
   }
   if (!appState.autoRefreshEnabled) {
     autoRefreshMeta.textContent = "更新倒數：已暫停";
-    setDualLabelText(autoRefreshToggle, "自動更新恢復按鍵", "自動更新恢復");
+    setDualLabelText(autoRefreshToggle, "自動更新恢復按鍵", "恢復更新");
     return;
   }
   if (appState.autoRefreshRunning) {
     autoRefreshMeta.textContent = "更新倒數：更新中…";
-    setDualLabelText(autoRefreshToggle, "自動更新暫停按鍵", "自動更新暫停");
+    setDualLabelText(autoRefreshToggle, "自動更新暫停按鍵", "暫停更新");
     return;
   }
   const remainingMs = Math.max(0, appState.nextAutoRefreshAt - Date.now());
   autoRefreshMeta.textContent = `更新倒數 ${formatAutoRefreshCountdown(remainingMs)}`;
-  setDualLabelText(autoRefreshToggle, "自動更新暫停按鍵", "自動更新暫停");
+  setDualLabelText(autoRefreshToggle, "自動更新暫停按鍵", "暫停更新");
 }
 
 async function tickAutoRefreshCountdown() {
