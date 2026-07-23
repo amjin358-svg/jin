@@ -367,7 +367,7 @@ const CITY_CAMERA_REGIONS = [
   { id: "central", label: "中部地區", lat: 24.15, lon: 120.67, radiusKm: 60 },
   { id: "south", label: "南部地區", lat: 22.9, lon: 120.4, radiusKm: 70 },
   { id: "east", label: "東部地區", lat: 23.8, lon: 121.5, radiusKm: 90 },
-  { id: "near-city", label: "靠近所選位置（3km）", lat: null, lon: null, radiusKm: 3 }
+  { id: "near-city", label: "靠近所選位置（2km）", lat: null, lon: null, radiusKm: 2 }
 ];
 
 const FREEWAY_CAMERA_REGIONS = [
@@ -1203,8 +1203,9 @@ async function locateByDevice() {
     }
 
     applyRegionSelection(getRegionForCity(nearest.city), nearest.city, nearest.town, { persist: true });
-    syncSelectValue(cameraCitySelect, nearest.city);
-    syncSelectValue(freewayCitySelect, nearest.city);
+    syncSelectValue(cameraCitySelect, "follow");
+    syncSelectValue(freewayCitySelect, "follow");
+    syncCameraRegionToLocatorArea({ preferNearCity: true });
     windyLocateFocus = {
       lat: latitude,
       lon: longitude,
@@ -1214,7 +1215,7 @@ async function locateByDevice() {
     updateWindyTrackEmbed({ force: true });
 
     const accuracyText = Number.isFinite(accuracy) ? `，精度約 ${Math.round(accuracy)} 公尺` : "";
-    const message = `定位完成：已選 ${nearest.city}${nearest.town}（距離約 ${nearest.distanceKm.toFixed(1)} km${accuracyText}）`;
+    const message = `定位完成：已選 ${nearest.city}${nearest.town}（距離約 ${nearest.distanceKm.toFixed(1)} km${accuracyText}）｜路口監控改以定位區域 ${CITY_CCTV_RADIUS_KM} 公里呈現`;
     setLocateStatus(message);
     showInPageAlert("定位成功", message, { timeoutMs: 5000 });
 
@@ -1263,6 +1264,44 @@ function getCameraRouteCode(cameraId = "") {
 
 function getSelectedCameraRegion() {
   return CITY_CAMERA_REGIONS.find((item) => item.id === cameraRegionSelect.value) ?? CITY_CAMERA_REGIONS[0];
+}
+
+function getActiveCityCctvRadiusKm() {
+  const region = getSelectedCameraRegion();
+  if (region?.id === "near-city") {
+    return CITY_CCTV_RADIUS_KM;
+  }
+  const radius = Number(region?.radiusKm);
+  return Number.isFinite(radius) && radius > 0 ? radius : CITY_CCTV_RADIUS_KM;
+}
+
+function getLocatorAreaRegionId(lat, lon) {
+  if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+    return "near-city";
+  }
+  const regional = CITY_CAMERA_REGIONS.filter((region) => region.id !== "all" && region.id !== "near-city");
+  let best = null;
+  let bestDistance = Infinity;
+  regional.forEach((region) => {
+    const distance = getDistanceKm(lat, lon, region.lat, region.lon);
+    if (distance < bestDistance) {
+      bestDistance = distance;
+      best = region;
+    }
+  });
+  return best?.id || "near-city";
+}
+
+function syncCameraRegionToLocatorArea({ preferNearCity = true } = {}) {
+  if (!cameraRegionSelect) {
+    return;
+  }
+  const focus = getCctvLocationFocus();
+  if (preferNearCity) {
+    cameraRegionSelect.value = "near-city";
+    return;
+  }
+  cameraRegionSelect.value = getLocatorAreaRegionId(focus.lat, focus.lon);
 }
 
 function getSelectedFreewayRegion() {
@@ -1451,6 +1490,8 @@ function getFilteredSortedCityCameras() {
     return [];
   }
   const selectedCity = getSelectedCameraCityName();
+  const region = getSelectedCameraRegion();
+  const radiusKm = getActiveCityCctvRadiusKm();
   const keyword = cameraKeyword.value.trim().toLowerCase();
   const normalize = (text) => text.toLowerCase().replaceAll("臺", "台");
   const focusPoint = getCityCameraFocusPoint();
@@ -1460,6 +1501,7 @@ function getFilteredSortedCityCameras() {
     lon: Number(focusPoint?.lon),
     label: focusLabel
   };
+  const locatorCity = getSelectedCameraCityName() || citySelect?.value || "";
 
   return dedupeCamerasByIdentity(
     cityCameraDataset.cameras
@@ -1467,10 +1509,12 @@ function getFilteredSortedCityCameras() {
       .filter((camera) => !isCameraMarkedBlackScreen(camera))
       .filter((camera) => !isCameraMaintenanceText(camera))
       .filter((camera) => {
-        if (!selectedCity) {
+        // Scope monitors to the locator / selected administrative city area.
+        const cityName = region?.id === "near-city" ? locatorCity || selectedCity : selectedCity;
+        if (!cityName) {
           return true;
         }
-        return camera.city === selectedCity;
+        return camera.city === cityName;
       })
       .filter((camera) => {
         if (!keyword) {
@@ -1486,13 +1530,13 @@ function getFilteredSortedCityCameras() {
           Number.isFinite(focus.lat) && Number.isFinite(focus.lon)
             ? getDistanceKm(focus.lat, focus.lon, Number(camera.gisy), Number(camera.gisx))
             : Infinity;
-        return { ...camera, distanceKm, focusLabel: focus.label };
+        return { ...camera, distanceKm, focusLabel: focus.label, areaLabel: camera.city || focus.label };
       })
       .filter((camera) => {
         if (!Number.isFinite(focus.lat) || !Number.isFinite(focus.lon)) {
           return true;
         }
-        return camera.distanceKm <= CITY_CCTV_RADIUS_KM;
+        return camera.distanceKm <= radiusKm;
       })
       .sort((a, b) => a.distanceKm - b.distanceKm)
   );
@@ -2104,6 +2148,7 @@ function createCameraCard(camera, scopeLabel, { forceImage = false } = {}) {
     <div class="camera-body">
       <h3>${camera.id}</h3>
       <p data-cross-roads>交叉路口：${roadA} × ${roadB}</p>
+      <p>監控區域：${camera.city || "未提供"}</p>
       <p>定位所在地：${scopeLabel}</p>
       <div class="camera-links">
         <a href="${streamUrl}" target="_blank" rel="noopener noreferrer">即時影像</a>
@@ -2316,7 +2361,11 @@ function updateCameraMetaText() {
   }
   const cityFetchedAt = cityCameraDataset.fetchedAt ? formatDateTime(cityCameraDataset.fetchedAt) : "未提供";
   const focusLabel = getCctvLocationFocus().label || "所選位置";
-  cameraMeta.textContent = `定位所在地：${focusLabel}｜快照：${cityFetchedAt}`;
+  const region = getSelectedCameraRegion();
+  const radiusKm = getActiveCityCctvRadiusKm();
+  const cityName = getSelectedCameraCityName() || "全部縣市";
+  const matchedCount = getCityCamerasForDisasterMap().length;
+  cameraMeta.textContent = `定位所在地：${focusLabel}｜地區：${region?.label || "地區範圍"}｜縣市：${cityName}｜半徑 ${radiusKm} 公里｜地圖標示 ${matchedCount} 支｜快照：${cityFetchedAt}`;
 }
 
 function resetCityCameraLists() {
@@ -2367,7 +2416,7 @@ async function renderCameraList() {
   const rows = getFilteredSortedCityCameras().slice(0, CCTV_VERIFY_POOL_SIZE);
   if (!rows.length) {
     if (cameraList) {
-      cameraList.innerHTML = `<p class="status-warn">所選位置直線距離 ${CITY_CCTV_RADIUS_KM} 公里內查無市區路口監控點，請更換鄉鎮或關鍵字。</p>`;
+      cameraList.innerHTML = `<p class="status-warn">所選位置直線距離 ${getActiveCityCctvRadiusKm()} 公里內查無市區路口監控點，請更換鄉鎮或關鍵字。</p>`;
     }
     return;
   }
@@ -3180,8 +3229,9 @@ function locateWindyEmbed() {
       applyRegionSelection(getRegionForCity(nearest.city), nearest.city, nearest.town, {
         persist: true
       });
-      syncSelectValue(cameraCitySelect, nearest.city);
-      syncSelectValue(freewayCitySelect, nearest.city);
+      syncSelectValue(cameraCitySelect, "follow");
+      syncSelectValue(freewayCitySelect, "follow");
+      syncCameraRegionToLocatorArea({ preferNearCity: true });
       renderAllCameraLists();
       updateMapForCityChange();
     }
@@ -4927,13 +4977,8 @@ function updateCameraMapLayer() {
   }
   mapCameraLayer.clearLayers();
   mapLegendMarkers.cctv = [];
-  const liveIds = getLiveCityCameraIds();
-  const nearbyCameras = getCityCamerasForDisasterMap();
-  // Prefer live cards from the monitor section above the map; fall back to nearby candidates.
-  const camerasToPlot =
-    liveIds.size > 0
-      ? nearbyCameras.filter((camera) => liveIds.has(String(camera.id || "")))
-      : nearbyCameras;
+  // Plot the same city CCTV set used by the monitor section / legend (coords required).
+  const camerasToPlot = getCityCamerasForDisasterMap();
   camerasToPlot.forEach((camera) => {
     const lat = Number(camera.gisy);
     const lon = Number(camera.gisx);
@@ -4945,6 +4990,7 @@ function updateCameraMapLayer() {
       ? `約 ${camera.distanceKm.toFixed(1)} km`
       : "--";
     const mapsUrl = `https://www.google.com/maps?q=${lat},${lon}&z=18`;
+    const areaText = camera.city || camera.areaLabel || "";
     const marker = L.circleMarker([lat, lon], {
       pane: "cameraPane",
       radius: 8,
@@ -4957,7 +5003,7 @@ function updateCameraMapLayer() {
       `
         <strong>${camera.id}</strong><br/>
         交叉路口：${roadA} × ${roadB}<br/>
-        ${camera.city ? `${camera.city}<br/>` : ""}
+        ${areaText ? `所在縣市：${areaText}<br/>` : ""}
         距離定位點：${distanceText}<br/>
         <a href="${camera.html}" target="_blank" rel="noopener noreferrer">即時影像</a>
         ｜
@@ -4975,6 +5021,10 @@ function syncMapLegendState() {
   const legend = document.querySelector(".map-legend");
   if (!legend) {
     return;
+  }
+  // Keep CCTV legend count identical to markers currently drawn on the map layer.
+  if (mapCameraLayer?.getLayers) {
+    mapLegendMarkers.cctv = mapCameraLayer.getLayers();
   }
   legend.querySelectorAll("[data-legend-key]").forEach((item) => {
     const key = item.dataset.legendKey;
