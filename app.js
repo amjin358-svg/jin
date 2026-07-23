@@ -3834,18 +3834,40 @@ function fitMapToFocusArea() {
   }
   warningMap.invalidateSize();
   const location = getActiveWeatherLocation();
-  if (location && Number.isFinite(location.lat) && Number.isFinite(location.lon)) {
-    // Zoom so the ~28km focus circle roughly fills the map frame.
-    warningMap.setView([location.lat, location.lon], 10, { animate: false });
+  if (!location || !Number.isFinite(location.lat) || !Number.isFinite(location.lon)) {
+    return;
   }
+  warningMap.setView([location.lat, location.lon], 10, { animate: false });
   const bounds = mapCityFocusLayer.getBounds?.();
   if (bounds?.isValid?.()) {
     warningMap.fitBounds(bounds, {
-      padding: [12, 12],
-      maxZoom: 11,
+      padding: [10, 10],
+      maxZoom: 12,
       animate: false
     });
   }
+}
+
+function resolveFocusRadiusMetersForMap() {
+  if (!warningMap) {
+    return MAP_FOCUS_CIRCLE_RADIUS_M;
+  }
+  warningMap.invalidateSize();
+  const size = warningMap.getSize();
+  if (!size || size.x < 40 || size.y < 40) {
+    return MAP_FOCUS_CIRCLE_RADIUS_M;
+  }
+  const bounds = warningMap.getBounds();
+  if (!bounds?.isValid?.()) {
+    return MAP_FOCUS_CIRCLE_RADIUS_M;
+  }
+  const center = warningMap.getCenter();
+  const north = L.latLng(bounds.getNorth(), center.lng);
+  const halfHeightKm = getDistanceKm(center.lat, center.lng, north.lat, north.lng);
+  const east = L.latLng(center.lat, bounds.getEast());
+  const halfWidthKm = getDistanceKm(center.lat, center.lng, east.lat, east.lng);
+  const radiusKm = Math.max(3, Math.min(halfHeightKm, halfWidthKm) * 0.92);
+  return Math.round(radiusKm * 1000);
 }
 
 function updateCityFocusLayer() {
@@ -3865,9 +3887,13 @@ function updateCityFocusLayer() {
     return;
   }
 
+  // Anchor the map on the selected place first, then size the ring to the visible frame.
+  warningMap.setView([location.lat, location.lon], 10, { animate: false });
+  const radiusM = resolveFocusRadiusMetersForMap();
+
   mapCityFocusLayer = L.featureGroup();
   const ring = L.circle([location.lat, location.lon], {
-    radius: MAP_FOCUS_CIRCLE_RADIUS_M,
+    radius: radiusM,
     color: "#00d4ff",
     weight: 5,
     opacity: 1,
@@ -3890,8 +3916,15 @@ function updateCityFocusLayer() {
   mapCityFocusLayer.addTo(warningMap);
   syncMapLayerVisibility("city-focus");
   fitMapToFocusArea();
-  window.setTimeout(fitMapToFocusArea, 200);
-  window.setTimeout(fitMapToFocusArea, 600);
+  window.setTimeout(() => {
+    // Rebuild once layout/size settles so the ring matches the map frame.
+    if (!warningMap) {
+      return;
+    }
+    const settledRadius = resolveFocusRadiusMetersForMap();
+    ring.setRadius(settledRadius);
+    fitMapToFocusArea();
+  }, 350);
 }
 
 function updateCameraMapLayer() {
