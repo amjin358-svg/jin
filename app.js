@@ -2342,12 +2342,12 @@ async function renderCameraList() {
     if (cameraList) {
       cameraList.innerHTML = `<p class="status-warn">目前無法載入各縣市市區路口監控資料。</p>`;
     }
-    updateCameraMapLayer({ liveOnly: true });
+    updateCameraMapLayer();
     return;
   }
 
   updateCameraMetaText();
-  updateCameraMapLayer({ liveOnly: true });
+  updateCameraMapLayer();
   const rows = getFilteredSortedCityCameras().slice(0, CCTV_VERIFY_POOL_SIZE);
   if (!rows.length) {
     if (cameraList) {
@@ -2395,7 +2395,7 @@ async function renderCameraList() {
     return;
   }
   updateCameraMetaText();
-  updateCameraMapLayer({ liveOnly: true });
+  updateCameraMapLayer();
   if (!cameraList?.querySelector(".camera-item-live")) {
     cameraList.innerHTML = `<p class="status-warn">附近監控目前多為維修／無畫面，暫無正常顯示的路口影像。</p>`;
     syncCityCameraMorePanel(0);
@@ -3567,6 +3567,9 @@ function loadSubscription() {
 }
 
 function renderSubscriptionStatus(message) {
+  if (!subscriptionStatus) {
+    return;
+  }
   if (message) {
     subscriptionStatus.textContent = message;
     return;
@@ -3575,17 +3578,14 @@ function renderSubscriptionStatus(message) {
     subscriptionStatus.textContent = "尚未設定訂閱。";
     return;
   }
-  const support = getNotificationSupport();
-  const permissionLabel = !support.apiAvailable
-    ? support.isStandalone
-      ? "此瀏覽器不支援系統通知，改用頁面內提醒"
-      : "系統通知需以主畫面開啟，或改用頁面內提醒"
-    : Notification.permission === "granted"
-      ? "已允許瀏覽器通知"
-      : Notification.permission === "denied"
-        ? "通知權限已封鎖，改用頁面內提醒"
-        : "尚未允許瀏覽器通知，暫用頁面內提醒";
-  subscriptionStatus.textContent = `已訂閱 ${appState.subscription.email}（地區：${appState.subscription.city || "未指定"}｜主題：${getSelectedSubscriptionTopics().join("、")}｜${permissionLabel}）`;
+  subscriptionStatus.textContent = "訂閱完成，已依所選主題啟用即時訊息通知。";
+}
+
+function clearSubscriptionHint() {
+  if (notificationHint) {
+    notificationHint.hidden = true;
+    notificationHint.textContent = "";
+  }
 }
 
 function isStandaloneDisplay() {
@@ -3624,28 +3624,11 @@ function getNotificationSupport() {
 }
 
 function updateNotificationHint(extraMessage = "") {
-  if (!notificationHint) {
-    return;
-  }
-  const support = getNotificationSupport();
-  const tips = [];
+  // Keep text under「儲存訂閱」limited to subscription completion status.
+  clearSubscriptionHint();
   if (extraMessage) {
-    tips.push(extraMessage);
+    showInPageAlert("訂閱提醒", extraMessage, { timeoutMs: 7000 });
   }
-  if (!support.secure) {
-    tips.push("請以 HTTPS 開啟本站，系統會自動嘗試顯示通報訊息。");
-  } else if (support.reason === "ios-home-screen") {
-    tips.push("iPhone／iPad：請用 Safari「分享 → 加入主畫面」後開啟，系統會自動請求通知權限並顯示通報。");
-  } else if (support.reason === "unsupported") {
-    tips.push("此瀏覽器暫不支援系統通知，已自動改用頁面內即時通報。");
-  } else if ("Notification" in window && Notification.permission === "denied") {
-    tips.push("通知權限已封鎖：請到系統／瀏覽器設定允許本站通知；目前仍會顯示頁面內通報。");
-  } else if ("Notification" in window && Notification.permission === "granted") {
-    tips.push("系統通知已自動啟用；斷電／停水警戒或恢復時會通報 2 次（間隔 15 分鐘）。");
-  } else {
-    tips.push("進入頁面或儲存訂閱時會自動請求通知權限，並在目前作業系統通知中心顯示通報。");
-  }
-  notificationHint.textContent = tips.join(" ");
 }
 
 function showInPageAlert(title, body, { timeoutMs = 8000 } = {}) {
@@ -4250,51 +4233,27 @@ function updateFloodMapLayer() {
   mapLegendMarkers["flood-2"] = [];
   mapLegendMarkers["flood-1"] = [];
 
-  const points = appState.floodLivePoints.length
-    ? appState.floodLivePoints
-    : [];
-
-  if (!points.length && appState.floodStations.length) {
-    // Keep a light fallback sample of stations when all depths are zero,
-    // so the layer remains inspectable.
-    appState.floodStations.slice(0, 40).forEach((station) => {
-      const marker = L.circleMarker([station.lat, station.lon], {
-        pane: "floodPane",
-        ...buildFloodPointStyle(0)
-      });
-      marker.bindPopup(
-        `
-          <strong>${station.name}</strong><br/>
-          ${station.county}${station.town}<br/>
-          目前水深：0 cm<br/>
-          來源：水利署 IoW 即時感測
-        `
-      );
-      mapFloodLayer.addLayer(marker);
-      mapLegendMarkers["flood-1"].push(marker);
+  // Only plot live flooded sensors so legend/badge counts match on-map points.
+  appState.floodLivePoints.forEach((point) => {
+    const marker = L.circleMarker([point.lat, point.lon], {
+      pane: "floodPane",
+      ...buildFloodPointStyle(point.depthCm)
     });
-  } else {
-    points.forEach((point) => {
-      const marker = L.circleMarker([point.lat, point.lon], {
-        pane: "floodPane",
-        ...buildFloodPointStyle(point.depthCm)
-      });
-      marker.bindPopup(
-        `
-          <strong>${point.name}</strong><br/>
-          ${point.county}${point.town}<br/>
-          警示等級：${point.level}<br/>
-          即時水深：${point.depthCm} cm<br/>
-          更新時間：${point.updatedAt || "-"}<br/>
-          來源：水利署 IoW 即時感測
-        `
-      );
-      mapFloodLayer.addLayer(marker);
-      const level = Number(point.level) || getFloodLevelByDepth(point.depthCm);
-      const key = `flood-${Math.min(4, Math.max(1, level))}`;
-      mapLegendMarkers[key]?.push(marker);
-    });
-  }
+    marker.bindPopup(
+      `
+        <strong>${point.name}</strong><br/>
+        ${point.county}${point.town}<br/>
+        警示等級：${point.level}<br/>
+        即時水深：${point.depthCm} cm<br/>
+        更新時間：${point.updatedAt || "-"}<br/>
+        來源：水利署 IoW 即時感測
+      `
+    );
+    mapFloodLayer.addLayer(marker);
+    const level = Number(point.level) || getFloodLevelByDepth(point.depthCm);
+    const key = `flood-${Math.min(4, Math.max(1, level))}`;
+    mapLegendMarkers[key]?.push(marker);
+  });
 
   syncMapLayerVisibility("flood-warning");
   updateFloodLayerMetaText();
@@ -4314,20 +4273,19 @@ function updateFloodLayerMetaText() {
   const floodedCount = appState.floodLivePoints.length;
   const stationCount = appState.floodStations.length;
   const mappedCount = getFloodMarkersOnMap().length;
-  const displayCount = floodedCount > 0 ? floodedCount : mappedCount;
   appState.floodMetaText =
     floodedCount > 0
-      ? `即時積水感測點 ${floodedCount} 處（測站總數 ${stationCount}）。`
+      ? `即時積水感測點 ${mappedCount} 處（測站總數 ${stationCount}）。`
       : `目前全台 IoW 測站未回報積水（測站總數 ${stationCount}）。`;
 
   const note = document.querySelector("#floodLayerMeta");
   if (note) {
     note.textContent = `${appState.floodMetaText} 顏色越深代表水深越高。`;
   }
-  syncMapFloodCountBadge(displayCount, floodedCount > 0);
+  syncMapFloodCountBadge(mappedCount);
 }
 
-function syncMapFloodCountBadge(count, hasLiveFlood = false) {
+function syncMapFloodCountBadge(count) {
   const value = Math.max(0, Number(count) || 0);
   if (mapFloodCountValue) {
     mapFloodCountValue.textContent = String(value);
@@ -4335,7 +4293,7 @@ function syncMapFloodCountBadge(count, hasLiveFlood = false) {
   if (!mapFloodCountBtn) {
     return;
   }
-  mapFloodCountBtn.classList.toggle("is-empty", value <= 0 || !hasLiveFlood);
+  mapFloodCountBtn.classList.toggle("is-empty", value <= 0);
   mapFloodCountBtn.disabled = value <= 0;
   mapFloodCountBtn.setAttribute(
     "aria-label",
@@ -4560,7 +4518,7 @@ function getLiveCityCameraIds() {
   );
 }
 
-function updateCameraMapLayer({ liveOnly = false } = {}) {
+function updateCameraMapLayer() {
   if (!warningMap) {
     return;
   }
@@ -4569,32 +4527,36 @@ function updateCameraMapLayer({ liveOnly = false } = {}) {
   }
   mapCameraLayer.clearLayers();
   mapLegendMarkers.cctv = [];
-  const liveIds = getLiveCityCameraIds();
   getFilteredSortedCityCameras()
-    .filter((camera) => {
-      if (!liveOnly) {
-        return true;
-      }
-      return liveIds.has(String(camera.id));
-    })
     .slice(0, 220)
     .forEach((camera) => {
-      if (!Number.isFinite(Number(camera.gisy)) || !Number.isFinite(Number(camera.gisx))) {
+      const lat = Number(camera.gisy);
+      const lon = Number(camera.gisx);
+      if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
         return;
       }
-      const marker = L.circleMarker([Number(camera.gisy), Number(camera.gisx)], {
+      const [roadA, roadB] = getCameraIntersectionRoads(camera);
+      const distanceText = Number.isFinite(camera.distanceKm)
+        ? `約 ${camera.distanceKm.toFixed(1)} km`
+        : "--";
+      const mapsUrl = `https://www.google.com/maps?q=${lat},${lon}&z=18`;
+      const marker = L.circleMarker([lat, lon], {
         pane: "cameraPane",
-        radius: 4,
+        radius: 6,
         color: "#66d9ff",
         fillColor: "#0096c7",
-        fillOpacity: 0.7,
-        weight: 1
+        fillOpacity: 0.85,
+        weight: 2
       });
       marker.bindPopup(
         `
           <strong>${camera.id}</strong><br/>
-          ${camera.city ? `${camera.city}｜` : ""}${camera.stakenumber ?? "未提供路口資訊"}<br/>
+          交叉路口：${roadA} × ${roadB}<br/>
+          ${camera.city ? `${camera.city}<br/>` : ""}
+          距離定位點：${distanceText}<br/>
           <a href="${camera.html}" target="_blank" rel="noopener noreferrer">即時影像</a>
+          ｜
+          <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer">地圖位置</a>
         `
       );
       mapCameraLayer.addLayer(marker);
@@ -4614,13 +4576,14 @@ function syncMapLegendState() {
     const markers = mapLegendMarkers[key] || [];
     const countEl = item.querySelector("[data-legend-count]");
     if (countEl) {
-      countEl.textContent = markers.length ? String(markers.length) : "0";
+      countEl.textContent = String(markers.length);
       countEl.removeAttribute("aria-hidden");
     }
     item.classList.toggle("legend-item-empty", markers.length === 0);
     item.setAttribute("aria-disabled", markers.length === 0 ? "true" : "false");
   });
-  syncMapFloodCountBadge(appState.floodLivePoints.length, appState.floodLivePoints.length > 0);
+  // Keep flood badge count identical to markers currently on the map.
+  syncMapFloodCountBadge(getFloodMarkersOnMap().length);
 }
 
 function focusMapLegendMarkers(legendKey) {
@@ -4685,6 +4648,7 @@ function updateMapForCityChange() {
     return;
   }
   updateCityFocusLayer();
+  updateCameraMapLayer();
   fetchPowerOutageData().catch((error) => {
     appState.powerOutageMetaText = `停電區域資料暫時無法更新：${error.message}`;
     if (powerOutageMeta) {
@@ -4736,7 +4700,7 @@ function initWarningMap() {
       }
     });
   updateCityFocusLayer();
-  updateCameraMapLayer({ liveOnly: true });
+  updateCameraMapLayer();
   warningMap.whenReady(() => {
     updateCityFocusLayer();
     fitMapToFocusArea();
@@ -5005,11 +4969,11 @@ subscriptionForm.addEventListener("submit", async (event) => {
   const permissionMode = await ensureNotificationPermission();
   await sendSubscriptionNotification({ force: true });
   if (permissionMode === "granted") {
-    renderSubscriptionStatus("訂閱已儲存，系統通知與頁面內提醒皆已啟用。");
+    renderSubscriptionStatus("訂閱完成，已啟用系統通知與頁面內提醒。");
   } else {
-    renderSubscriptionStatus("訂閱已儲存，已啟用頁面內即時提醒（系統通知暫不可用）。");
+    renderSubscriptionStatus("訂閱完成，已啟用頁面內即時訊息通知。");
   }
-  updateNotificationHint();
+  clearSubscriptionHint();
 });
 
 testNotificationBtn?.addEventListener("click", async () => {
