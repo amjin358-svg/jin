@@ -65,7 +65,7 @@
               <option value="30">每 30 分鐘</option>
               <option value="60">每 1 小時</option>
             </select>
-            <p id="autoRefreshMeta" class="auto-refresh-countdown">自動更新：啟用中</p>
+            <p id="autoRefreshMeta" class="auto-refresh-countdown">更新倒數：啟用中</p>
           </div>
           <button id="autoRefreshToggle" type="button" class="ghost-btn">
             <span class="text-full">自動更新暫停按鍵</span>
@@ -259,8 +259,8 @@
               <button id="testNotificationBtn" type="button" class="ghost-btn">測試通知</button>
             </div>
           </form>
-          <p id="subscriptionStatus" class="timestamp">尚未設定訂閱。</p>
-          <p id="notificationHint" class="timestamp notification-hint"></p>
+          <p id="subscriptionStatus" class="timestamp subscription-status-box">尚未設定訂閱。</p>
+          <p id="notificationHint" class="timestamp notification-hint subscription-status-box"></p>
         </article>
         </div>
       </section>
@@ -291,8 +291,8 @@
             <select id="cameraCitySelect" aria-label="選擇 CCTV 縣市範圍"></select>
           </div>
           <div>
-            <label for="cameraRegionSelect">地區範圍</label>
-            <select id="cameraRegionSelect" aria-label="選擇市區 CCTV 地區範圍"></select>
+            <label for="cameraRegionSelect">地區範圍（定位點 2 公里）</label>
+            <select id="cameraRegionSelect" aria-label="選擇市區 CCTV 地區範圍（定位點 2 公里）"></select>
           </div>
           <div>
             <label for="cameraKeyword">關鍵字篩選（路口/路名/代碼）</label>

@@ -576,7 +576,7 @@ const RAIN_FORECAST_HOURS = 8;
 const VISITOR_COUNTER_NAMESPACE = "jin-weather-tw-v1";
 const VISITOR_COUNTER_KEY = "visits";
 const VISITOR_COUNTER_STORAGE_KEY = "siteVisitCountV1";
-const CITY_CCTV_RADIUS_KM = 1;
+const CITY_CCTV_RADIUS_KM = 2;
 const CITY_CCTV_PREVIEW_LIMIT = 8;
 const FREEWAY_CCTV_RADIUS_KM = 40;
 const FREEWAY_INTERCHANGE_BASE_RADIUS_KM = 40;
@@ -3039,7 +3039,7 @@ function buildWindyEmbedUrl(lat, lon, zoom = 6, { precision = 3 } = {}) {
     pressure: "false",
     type: "map",
     location: "coordinates",
-    detail: "true",
+    detail: "",
     metricWind: "kt",
     metricTemp: "°C",
     radarRange: "-1"
@@ -4830,17 +4830,17 @@ function updateAutoRefreshMeta() {
     return;
   }
   if (!appState.autoRefreshEnabled) {
-    autoRefreshMeta.textContent = "倒數：已暫停";
+    autoRefreshMeta.textContent = "更新倒數：已暫停";
     setDualLabelText(autoRefreshToggle, "自動更新恢復按鍵", "自動更新恢復");
     return;
   }
   if (appState.autoRefreshRunning) {
-    autoRefreshMeta.textContent = "倒數：更新中…";
+    autoRefreshMeta.textContent = "更新倒數：更新中…";
     setDualLabelText(autoRefreshToggle, "自動更新暫停按鍵", "自動更新暫停");
     return;
   }
   const remainingMs = Math.max(0, appState.nextAutoRefreshAt - Date.now());
-  autoRefreshMeta.textContent = `倒數 ${formatAutoRefreshCountdown(remainingMs)}`;
+  autoRefreshMeta.textContent = `更新倒數 ${formatAutoRefreshCountdown(remainingMs)}`;
   setDualLabelText(autoRefreshToggle, "自動更新暫停按鍵", "自動更新暫停");
 }
 
