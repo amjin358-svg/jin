@@ -582,7 +582,7 @@ const LIKE_COUNTER_KEY = "likes";
 const LIKE_COUNTER_STORAGE_KEY = "siteLikeCountV1";
 const LIKE_VOTED_STORAGE_KEY = "siteLikedV1";
 const CITY_CCTV_RADIUS_KM = 2;
-const CITY_CCTV_PREVIEW_LIMIT = 8;
+const CITY_CCTV_PREVIEW_LIMIT = 6;
 const FREEWAY_CCTV_RADIUS_KM = 40;
 const FREEWAY_INTERCHANGE_BASE_RADIUS_KM = 40;
 const WINDY_TAIWAN_VIEW = { lat: 23.7, lon: 121.0, zoom: 5 };
@@ -1243,10 +1243,9 @@ async function locateByDevice() {
     };
     updateWindyTrackEmbed({ force: true });
 
-    const accuracyText = Number.isFinite(accuracy) ? `，精度約 ${Math.round(accuracy)} 公尺` : "";
-    const message = `定位完成：已選 ${nearest.city}${nearest.town}（距離約 ${nearest.distanceKm.toFixed(1)} km${accuracyText}）｜路口監控改以定位區域 ${CITY_CCTV_RADIUS_KM} 公里呈現`;
+    const message = `定位完成：${nearest.city}${nearest.town}`;
     setLocateStatus(message);
-    showInPageAlert("定位成功", message, { timeoutMs: 5000 });
+    showInPageAlert("定位完成", message, { timeoutMs: 3500 });
 
     setLocateButtonsDisabled(false);
     setLocateButtonText();
@@ -2494,7 +2493,7 @@ async function renderCameraList() {
   }
 
   const previewCameras = liveCameras.slice(0, CITY_CCTV_PREVIEW_LIMIT);
-  const extraCameras = liveCameras.slice(CITY_CCTV_PREVIEW_LIMIT);
+  const extraCameras = [];
 
   for (const camera of previewCameras) {
     if (!isCurrent()) {
@@ -3302,8 +3301,8 @@ function locateWindyEmbed() {
       updateMapForCityChange();
     }
 
-    const accuracyText = Number.isFinite(accuracy) ? `精度約 ${Math.round(accuracy)} 公尺` : "已取得目前位置";
-    showInPageAlert("Windy 定位完成", `已對準使用者位置（${accuracyText}）。`, { timeoutMs: 5000 });
+    const message = `定位完成：${nearest ? `${nearest.city}${nearest.town}` : "目前位置"}`;
+    showInPageAlert("定位完成", message, { timeoutMs: 3500 });
     finish();
   };
 
@@ -3853,13 +3852,7 @@ function renderSubscriptionStatus(message) {
     subscriptionStatus.textContent = "尚未設定訂閱。";
     return;
   }
-  const topics = new Set(appState.subscription?.topics ?? []);
-  if (topics.has("weather")) {
-    subscriptionStatus.textContent =
-      "訂閱完成：每日天氣預報會寄到您的信箱（每天一次），關閉頁面後仍可收到背景通知。";
-    return;
-  }
-  subscriptionStatus.textContent = "訂閱完成，已依所選主題啟用即時訊息與背景通知。";
+  subscriptionStatus.textContent = "訂閱完成。";
 }
 
 function clearSubscriptionHint() {
@@ -5280,9 +5273,8 @@ function updateMapForCityChange() {
 }
 
 function addDisasterMapBaseTiles(map) {
-  // OSM tiles are often blocked/rate-limited; use CARTO + Taiwan NLSC instead.
-  const cartoTiles = L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
-    className: "high-contrast-tiles",
+  // Disaster-oriented basemaps: dark canvas for overlays, Taiwan NLSC, and terrain topo.
+  const darkTiles = L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
     maxZoom: 20,
     subdomains: "abcd",
     attribution:
@@ -5291,27 +5283,24 @@ function addDisasterMapBaseTiles(map) {
   const nlscTiles = L.tileLayer(
     "https://wmts.nlsc.gov.tw/wmts/EMAP/default/GoogleMapsCompatible/{z}/{y}/{x}",
     {
-      className: "high-contrast-tiles",
       maxZoom: 19,
       attribution: '圖資 &copy; <a href="https://maps.nlsc.gov.tw/">內政部國土測繪中心</a>'
     }
   );
-  const esriTiles = L.tileLayer(
-    "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",
-    {
-      className: "high-contrast-tiles",
-      maxZoom: 18,
-      attribution: "Tiles &copy; Esri"
-    }
-  );
+  const topoTiles = L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png", {
+    maxZoom: 17,
+    attribution:
+      'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>, <a href="https://opentopomap.org">OpenTopoMap</a> (CC-BY-SA)'
+  });
 
-  cartoTiles.addTo(map);
+  // Default dark basemap keeps flood / outage / CCTV markers highly readable.
+  darkTiles.addTo(map);
   L.control
     .layers(
       {
-        "CARTO 街道圖": cartoTiles,
+        "災害警示底圖（深色）": darkTiles,
         "台灣通用電子地圖": nlscTiles,
-        "Esri 街道圖": esriTiles
+        "地形圖 OpenTopo": topoTiles
       },
       null,
       { position: "topright", collapsed: true }
@@ -5594,6 +5583,7 @@ cameraKeyword.addEventListener("input", () => {
 
 cameraRegionSelect.addEventListener("change", () => {
   renderAllCameraLists();
+  updateCameraMapLayer();
 });
 
 cameraCitySelect?.addEventListener("change", () => {
@@ -5628,38 +5618,23 @@ subscriptionForm.addEventListener("submit", async (event) => {
   localStorage.setItem(SUBSCRIPTION_STORAGE_KEY, JSON.stringify(appState.subscription));
   await initServiceWorker();
   const permissionMode = await ensureNotificationPermission();
-  let emailStatus = "";
-  let backgroundStatus = "";
   if (topics.includes("weather")) {
     try {
       if (!appState.weather?.current) {
         await fetchWeather();
       }
       await registerSubscriptionEmailDelivery(appState.subscription);
-      emailStatus = "已寄送訂閱確認與今日天氣預報至您的信箱（每天一次）。";
-    } catch (error) {
-      emailStatus = `郵件寄送尚未完成：${error.message || "請查看信箱是否有第一次啟用確認信"}。`;
+    } catch {
+      /* keep status minimal even if mail activation is pending */
     }
   }
   try {
-    const bg = await enableBackgroundNotifications(appState.subscription);
-    if (bg.enabled) {
-      backgroundStatus = bg.periodicSync
-        ? "已啟用關閉頁面後的背景通知。"
-        : "已啟用背景通知（部分瀏覽器需將網站加到主畫面以穩定收訊）。";
-    }
+    await enableBackgroundNotifications(appState.subscription);
   } catch {
-    backgroundStatus = "";
+    /* ignore */
   }
   await sendSubscriptionNotification({ force: true });
-  const extra = [emailStatus, backgroundStatus].filter(Boolean).join(" ");
-  if (permissionMode === "granted") {
-    renderSubscriptionStatus(
-      extra ? `訂閱完成。${extra} 已啟用系統通知與頁面內提醒。` : "訂閱完成，已啟用系統通知與頁面內提醒。"
-    );
-  } else {
-    renderSubscriptionStatus(extra ? `訂閱完成。${extra}` : "訂閱完成，已啟用頁面內即時訊息通知。");
-  }
+  renderSubscriptionStatus("訂閱完成。");
   clearSubscriptionHint();
 });
 
@@ -5759,8 +5734,8 @@ function fitHeroTexts() {
     riskBadge?.parentElement?.getBoundingClientRect().width || document.documentElement.clientWidth || 0
   );
   fitSingleLineText(riskBadge, {
-    maxPx: Math.min(28, Math.floor(riskParentWidth * 0.08)),
-    minPx: 11
+    maxPx: Math.min(36, Math.floor(riskParentWidth * 0.11)),
+    minPx: 15
   });
 }
 
