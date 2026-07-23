@@ -506,6 +506,16 @@ let mapFloodLayer = null;
 let mapCameraLayer = null;
 let mapCityFocusLayer = null;
 let mapPowerOutageLayer = null;
+const mapLegendMarkers = {
+  "flood-4": [],
+  "flood-3": [],
+  "flood-2": [],
+  "flood-1": [],
+  "power-disaster": [],
+  "power-planned": [],
+  cctv: [],
+  "city-focus": []
+};
 const mapLayerOrder = ["city-focus", "flood-warning", "power-outage", "cctv-points"];
 const mapLayerVisibility = {
   "power-outage": true,
@@ -862,6 +872,8 @@ function updatePowerOutageMapLayer() {
     warningMap.removeLayer(mapPowerOutageLayer);
   }
   mapPowerOutageLayer = L.layerGroup();
+  mapLegendMarkers["power-disaster"] = [];
+  mapLegendMarkers["power-planned"] = [];
   const grouped = new Map();
 
   appState.powerOutagePoints.forEach((point) => {
@@ -890,9 +902,15 @@ function updatePowerOutageMapLayer() {
       .join("<hr/>");
     marker.bindPopup(`${popupLines}<br/>來源：台灣電力公司開放資料`);
     mapPowerOutageLayer.addLayer(marker);
+    if (type === "disaster") {
+      mapLegendMarkers["power-disaster"].push(marker);
+    } else {
+      mapLegendMarkers["power-planned"].push(marker);
+    }
   });
 
   syncMapLayerVisibility("power-outage");
+  syncMapLegendState();
 }
 
 function saveRegionPreference() {
@@ -1881,8 +1899,8 @@ function isCameraMarkedBlackScreen(camera) {
 }
 
 function isCameraMaintenanceText(camera = {}) {
-  const text = `${camera.description || ""} ${camera.stakenumber || ""} ${camera.roadName || ""} ${camera.id || ""}`;
-  return /維修|施工中|暫停|故障|無訊號|黑畫面|無畫面|測試中|停用|關閉|offline|off[\s_-]?line|out[\s_-]?of[\s_-]?service/i.test(
+  const text = `${camera.description || ""} ${camera.stakenumber || ""} ${camera.roadName || ""} ${camera.id || ""} ${camera.html || ""}`;
+  return /維修|維護中|影像維護|施工中|暫停|故障|無訊號|黑畫面|無畫面|測試中|停用|關閉|無法顯示|offline|off[\s_-]?line|out[\s_-]?of[\s_-]?service|maintenance|under[\s_-]?construction/i.test(
     text
   );
 }
@@ -1900,6 +1918,7 @@ function analyzeImageDarkness(img) {
     ctx.drawImage(img, 0, 0, size, size);
     const { data } = ctx.getImageData(0, 0, size, size);
     let total = 0;
+    let sumSq = 0;
     let darkPixels = 0;
     let count = 0;
     for (let i = 0; i < data.length; i += 4) {
@@ -1912,6 +1931,7 @@ function analyzeImageDarkness(img) {
       }
       const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
       total += luminance;
+      sumSq += luminance * luminance;
       if (luminance <= 22) {
         darkPixels += 1;
       }
@@ -1920,9 +1940,11 @@ function analyzeImageDarkness(img) {
     if (!count) {
       return null;
     }
+    const average = total / count;
     return {
-      average: total / count,
-      darkRatio: darkPixels / count
+      average,
+      darkRatio: darkPixels / count,
+      variance: sumSq / count - average * average
     };
   } catch {
     return null;
@@ -1934,6 +1956,17 @@ function isLikelyBlackFrame(analysis) {
     return false;
   }
   return analysis.average <= CCTV_BLACK_LUMINANCE_THRESHOLD || analysis.darkRatio >= 0.92;
+}
+
+function isLikelyNonLiveFrame(analysis) {
+  if (!analysis) {
+    return false;
+  }
+  if (isLikelyBlackFrame(analysis)) {
+    return true;
+  }
+  // Near-uniform frames usually mean maintenance placeholders, not live traffic.
+  return Number.isFinite(analysis.variance) && analysis.variance <= 48;
 }
 
 function probeImageStream(url, { timeoutMs = 8000 } = {}) {
@@ -1958,7 +1991,7 @@ function probeImageStream(url, { timeoutMs = 8000 } = {}) {
       // Allow one frame paint before sampling.
       window.setTimeout(() => {
         const analysis = analyzeImageDarkness(img);
-        if (isLikelyBlackFrame(analysis)) {
+        if (isLikelyNonLiveFrame(analysis)) {
           finish({ ok: false, reason: "black", analysis });
           return;
         }
@@ -1978,11 +2011,6 @@ function createCameraCard(camera, scopeLabel, { radiusKm = CITY_CCTV_RADIUS_KM }
   card.dataset.cameraId = camera.id || "";
   const streamUrl = camera.html;
   const [roadA, roadB] = getCameraIntersectionRoads(camera);
-  const distance = Number.isFinite(camera.distanceKm) ? `${camera.distanceKm.toFixed(1)} km` : "--";
-  const inRange =
-    Number.isFinite(camera.distanceKm) && camera.distanceKm <= radiusKm
-      ? `（${radiusKm} 公里範圍內）`
-      : `（超出 ${radiusKm} 公里）`;
   const directImage = isLikelyDirectImageStream(streamUrl);
   const lat = Number(camera.gisy);
   const lon = Number(camera.gisx);
@@ -2000,12 +2028,12 @@ function createCameraCard(camera, scopeLabel, { radiusKm = CITY_CCTV_RADIUS_KM }
     <div class="camera-body">
       <h3>${camera.id}</h3>
       <p data-cross-roads>交叉路口：${roadA} × ${roadB}</p>
-      <p>定位所在地：${scopeLabel}｜距離定位點：${distance} ${inRange}</p>
+      <p>定位所在地：${scopeLabel}</p>
       <div class="camera-links">
-        <a href="${streamUrl}" target="_blank" rel="noopener noreferrer">開啟官方即時影像</a>
+        <a href="${streamUrl}" target="_blank" rel="noopener noreferrer">即時影像</a>
         ${
           mapsUrl
-            ? `<a class="camera-maps-link" href="${mapsUrl}" target="_blank" rel="noopener noreferrer">Google 地圖核對位置</a>`
+            ? `<a class="camera-maps-link" href="${mapsUrl}" target="_blank" rel="noopener noreferrer">地圖位置</a>`
             : ""
         }
       </div>
@@ -2029,7 +2057,7 @@ function createCameraCard(camera, scopeLabel, { radiusKm = CITY_CCTV_RADIUS_KM }
     img.addEventListener("load", () => {
       window.setTimeout(() => {
         const analysis = analyzeImageDarkness(img);
-        if (isLikelyBlackFrame(analysis)) {
+        if (isLikelyNonLiveFrame(analysis)) {
           hideDeadCard("black");
           return;
         }
@@ -2160,15 +2188,8 @@ function updateCameraMetaText() {
     return;
   }
   const cityFetchedAt = cityCameraDataset.fetchedAt ? formatDateTime(cityCameraDataset.fetchedAt) : "未提供";
-  const rows = getFilteredSortedCityCameras();
-  const matchedCount = rows.length;
-  const focusPoint = getCityCameraFocusPoint();
-  const focusLabel = getCctvLocationFocus().label;
-  const nearestKm = Number.isFinite(rows[0]?.distanceKm) ? rows[0].distanceKm.toFixed(1) : "--";
-  const visibleCount = cameraList?.querySelectorAll(".camera-item-live").length ?? 0;
-  cameraMeta.textContent = `定位所在地：${focusLabel}｜半徑 ${CITY_CCTV_RADIUS_KM} 公里｜候選 ${matchedCount} 支｜正常顯示 ${visibleCount} 支｜最近距離 ${nearestKm} km｜快照：${cityFetchedAt}${
-    Number.isFinite(focusPoint?.lat) ? `｜基準 ${focusPoint.lat.toFixed(4)}, ${focusPoint.lon.toFixed(4)}` : ""
-  }`;
+  const focusLabel = getCctvLocationFocus().label || "所選位置";
+  cameraMeta.textContent = `定位所在地：${focusLabel}｜快照：${cityFetchedAt}`;
 }
 
 async function renderCameraList() {
@@ -2176,10 +2197,12 @@ async function renderCameraList() {
 
   if (!cityCameraDataset || !Array.isArray(cityCameraDataset.cameras)) {
     cameraList.innerHTML = `<p class="status-warn">目前無法載入各縣市市區路口監控資料。</p>`;
+    updateCameraMapLayer({ liveOnly: true });
     return;
   }
 
   updateCameraMetaText();
+  updateCameraMapLayer({ liveOnly: true });
   const rows = getFilteredSortedCityCameras().slice(0, CCTV_VERIFY_POOL_SIZE);
   if (!rows.length) {
     cameraList.innerHTML = `<p class="status-warn">所選位置半徑 ${CITY_CCTV_RADIUS_KM} 公里內查無市區路口監控點，請更換鄉鎮或關鍵字。</p>`;
@@ -2189,6 +2212,7 @@ async function renderCameraList() {
   const scopeLabel = getCctvLocationFocus().label || "所選位置";
   const shown = await appendVerifiedCameraCards(cameraList, rows, scopeLabel);
   updateCameraMetaText();
+  updateCameraMapLayer({ liveOnly: true });
   if (!shown && !cameraList.querySelector(".camera-item-live")) {
     cameraList.innerHTML = `<p class="status-warn">附近監控目前多為維修／無畫面，暫無正常顯示的路口影像。</p>`;
   }
@@ -2723,7 +2747,7 @@ async function fetchAirQuality() {
   const pm10 = Number(payload.hourly.pm10[index] ?? 0);
   const ozone = Number(payload.hourly.ozone[index] ?? 0);
 
-  airSummary.textContent = `當地空氣品質：${getAqiLabel(aqi)}（點擊展開完整資訊）`;
+  airSummary.textContent = `當地空氣品質：${getAqiLabel(aqi)}`;
   aqiValue.textContent = `${Math.round(aqi)}`;
   pm25Value.textContent = `${pm25.toFixed(1)} μg/m³`;
   pm10Value.textContent = `${pm10.toFixed(1)} μg/m³`;
@@ -2746,11 +2770,8 @@ function syncAirDetailsSummaryLabel() {
   if (!airSummary || !appState.airQuality) {
     return;
   }
-  const details = document.querySelector("#airDetails");
   const label = getAqiLabel(appState.airQuality.aqi);
-  airSummary.textContent = details?.open
-    ? `當地空氣品質：${label}（點擊收合）`
-    : `當地空氣品質：${label}（點擊展開完整資訊）`;
+  airSummary.textContent = `當地空氣品質：${label}`;
 }
 
 function getFloodLevelByDepth(depthCm) {
@@ -3926,6 +3947,10 @@ function updateFloodMapLayer() {
     warningMap.removeLayer(mapFloodLayer);
   }
   mapFloodLayer = L.layerGroup();
+  mapLegendMarkers["flood-4"] = [];
+  mapLegendMarkers["flood-3"] = [];
+  mapLegendMarkers["flood-2"] = [];
+  mapLegendMarkers["flood-1"] = [];
 
   const points = appState.floodLivePoints.length
     ? appState.floodLivePoints
@@ -3948,6 +3973,7 @@ function updateFloodMapLayer() {
         `
       );
       mapFloodLayer.addLayer(marker);
+      mapLegendMarkers["flood-1"].push(marker);
     });
   } else {
     points.forEach((point) => {
@@ -3966,11 +3992,15 @@ function updateFloodMapLayer() {
         `
       );
       mapFloodLayer.addLayer(marker);
+      const level = Number(point.level) || getFloodLevelByDepth(point.depthCm);
+      const key = `flood-${Math.min(4, Math.max(1, level))}`;
+      mapLegendMarkers[key]?.push(marker);
     });
   }
 
   syncMapLayerVisibility("flood-warning");
   updateFloodLayerMetaText();
+  syncMapLegendState();
 }
 
 function updateFloodLayerMetaText() {
@@ -4131,6 +4161,7 @@ function updateCityFocusLayer() {
   const radiusM = resolveFocusRadiusMetersForMap();
 
   mapCityFocusLayer = L.featureGroup();
+  mapLegendMarkers["city-focus"] = [];
   const ring = L.circle([location.lat, location.lon], {
     radius: radiusM,
     color: "#00d4ff",
@@ -4146,14 +4177,17 @@ function updateCityFocusLayer() {
     weight: 2,
     fillColor: "#00d4ff",
     fillOpacity: 1,
-    interactive: false
+    interactive: true
   });
+  center.bindPopup(`所選位置焦點範圍<br/>${location.label || `${location.lat.toFixed(4)}, ${location.lon.toFixed(4)}`}`);
   mapCityFocusLayer.addLayer(ring);
   mapCityFocusLayer.addLayer(center);
+  mapLegendMarkers["city-focus"].push(center);
 
   mapLayerVisibility["city-focus"] = true;
   mapCityFocusLayer.addTo(warningMap);
   syncMapLayerVisibility("city-focus");
+  syncMapLegendState();
   fitMapToFocusArea();
   window.setTimeout(() => {
     // Rebuild once layout/size settles so the ring matches the map frame.
@@ -4166,7 +4200,15 @@ function updateCityFocusLayer() {
   }, 350);
 }
 
-function updateCameraMapLayer() {
+function getLiveCityCameraIds() {
+  return new Set(
+    [...(cameraList?.querySelectorAll(".camera-item-live") || [])]
+      .map((el) => el.dataset.cameraId)
+      .filter(Boolean)
+  );
+}
+
+function updateCameraMapLayer({ liveOnly = false } = {}) {
   if (!warningMap) {
     return;
   }
@@ -4174,7 +4216,15 @@ function updateCameraMapLayer() {
     mapCameraLayer = L.layerGroup();
   }
   mapCameraLayer.clearLayers();
+  mapLegendMarkers.cctv = [];
+  const liveIds = getLiveCityCameraIds();
   getFilteredSortedCityCameras()
+    .filter((camera) => {
+      if (!liveOnly) {
+        return true;
+      }
+      return liveIds.has(String(camera.id));
+    })
     .slice(0, 220)
     .forEach((camera) => {
       if (!Number.isFinite(Number(camera.gisy)) || !Number.isFinite(Number(camera.gisx))) {
@@ -4192,13 +4242,81 @@ function updateCameraMapLayer() {
         `
           <strong>${camera.id}</strong><br/>
           ${camera.city ? `${camera.city}｜` : ""}${camera.stakenumber ?? "未提供路口資訊"}<br/>
-          距離篩選中心：約 ${camera.distanceKm.toFixed(1)} km<br/>
-          <a href="${camera.html}" target="_blank" rel="noopener noreferrer">開啟官方即時影像</a>
+          <a href="${camera.html}" target="_blank" rel="noopener noreferrer">即時影像</a>
         `
       );
       mapCameraLayer.addLayer(marker);
+      mapLegendMarkers.cctv.push(marker);
     });
   syncMapLayerVisibility("cctv-points");
+  syncMapLegendState();
+}
+
+function syncMapLegendState() {
+  const legend = document.querySelector(".map-legend");
+  if (!legend) {
+    return;
+  }
+  legend.querySelectorAll("[data-legend-key]").forEach((item) => {
+    const key = item.dataset.legendKey;
+    const markers = mapLegendMarkers[key] || [];
+    const countEl = item.querySelector("[data-legend-count]");
+    if (countEl) {
+      countEl.textContent = markers.length ? String(markers.length) : "0";
+    }
+    item.classList.toggle("legend-item-empty", markers.length === 0);
+    item.setAttribute("aria-disabled", markers.length === 0 ? "true" : "false");
+  });
+}
+
+function focusMapLegendMarkers(legendKey) {
+  if (!warningMap) {
+    return;
+  }
+  const markers = mapLegendMarkers[legendKey] || [];
+  if (!markers.length) {
+    return;
+  }
+  const group = L.featureGroup(markers);
+  const bounds = group.getBounds?.();
+  if (bounds?.isValid?.()) {
+    warningMap.fitBounds(bounds, {
+      padding: [28, 28],
+      maxZoom: legendKey === "city-focus" ? 12 : 14,
+      animate: true
+    });
+  } else {
+    warningMap.setView(markers[0].getLatLng(), Math.max(warningMap.getZoom(), 13), { animate: true });
+  }
+  window.setTimeout(() => {
+    markers[0]?.openPopup?.();
+  }, 280);
+}
+
+function initMapLegendInteractions() {
+  const legend = document.querySelector(".map-legend");
+  if (!legend || legend.dataset.bound === "1") {
+    return;
+  }
+  legend.dataset.bound = "1";
+  legend.addEventListener("click", (event) => {
+    const item = event.target.closest("[data-legend-key]");
+    if (!item || item.classList.contains("legend-item-empty")) {
+      return;
+    }
+    focusMapLegendMarkers(item.dataset.legendKey);
+  });
+  legend.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter" && event.key !== " ") {
+      return;
+    }
+    const item = event.target.closest("[data-legend-key]");
+    if (!item || item.classList.contains("legend-item-empty")) {
+      return;
+    }
+    event.preventDefault();
+    focusMapLegendMarkers(item.dataset.legendKey);
+  });
 }
 
 function updateMapForCityChange() {
@@ -4206,7 +4324,6 @@ function updateMapForCityChange() {
     return;
   }
   updateCityFocusLayer();
-  updateCameraMapLayer();
   fetchPowerOutageData().catch((error) => {
     appState.powerOutageMetaText = `停電區域資料暫時無法更新：${error.message}`;
     if (powerOutageMeta) {
@@ -4244,6 +4361,8 @@ function initWarningMap() {
 
   renderLayerControl();
   applyMapLayerOrder();
+  initMapLegendInteractions();
+  syncMapLegendState();
   loadFloodStations()
     .then(() => fetchLiveFloodData())
     .then(() => renderAiAlerts())
@@ -4256,7 +4375,7 @@ function initWarningMap() {
       }
     });
   updateCityFocusLayer();
-  updateCameraMapLayer();
+  updateCameraMapLayer({ liveOnly: true });
   warningMap.whenReady(() => {
     updateCityFocusLayer();
     fitMapToFocusArea();
@@ -4287,7 +4406,6 @@ async function fetchRoadCameras() {
     }
 
     renderAllCameraLists();
-    updateCameraMapLayer();
   } catch (error) {
     cameraMeta.textContent = `市區監控資料暫時無法更新：${error.message}`;
     cameraList.innerHTML = `<p class="status-warn">請稍後重試或改用來源網址查詢。</p>`;
@@ -4480,17 +4598,14 @@ refreshBtn.addEventListener("click", () => {
 
 cameraKeyword.addEventListener("input", () => {
   renderAllCameraLists();
-  updateCameraMapLayer();
 });
 
 cameraRegionSelect.addEventListener("change", () => {
   renderAllCameraLists();
-  updateCameraMapLayer();
 });
 
 cameraCitySelect?.addEventListener("change", () => {
   renderAllCameraLists();
-  updateCameraMapLayer();
 });
 
 freewayKeyword?.addEventListener("input", () => {

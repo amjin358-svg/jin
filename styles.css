@@ -132,10 +132,11 @@ body {
   min-height: 0;
   border-radius: 12px;
   overflow: hidden;
+  background-color: #0f172a;
   background-image: var(--visual-image);
   background-size: cover;
   background-position: center;
-  box-shadow: 0 8px 20px rgba(15, 22, 34, 0.12);
+  box-shadow: 0 10px 24px rgba(15, 22, 34, 0.18);
   max-width: 100%;
   min-width: 0;
 }
@@ -143,15 +144,23 @@ body {
 .visual-break.section-title-bar {
   display: flex;
   align-items: center;
-  padding: 6px 14px;
-  min-height: 0;
-  animation: none;
+  padding: 10px 16px;
+  min-height: 52px;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background-color: #0f172a;
+  background-image: var(--visual-image);
+  background-size: cover;
+  background-position: center;
+  animation: visualKenBurns 22s ease-in-out infinite alternate;
 }
 
 .visual-break-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(120deg, rgba(15, 42, 92, 0.82), rgba(31, 90, 225, 0.62));
+  background:
+    linear-gradient(120deg, rgba(15, 42, 92, 0.78), rgba(31, 90, 225, 0.58)),
+    linear-gradient(180deg, rgba(15, 23, 42, 0.12), rgba(15, 23, 42, 0.42));
+  pointer-events: none;
 }
 
 .visual-break-caption {
@@ -1236,12 +1245,14 @@ input[type="checkbox"] {
 
 .camera-source-link {
   margin: 0 0 8px;
-  font-size: 13px;
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--muted);
 }
 
 .camera-source-link a {
   color: #1f5ae1;
-  font-weight: 700;
+  font-weight: 600;
   text-decoration: none;
 }
 
@@ -1553,13 +1564,50 @@ input[type="checkbox"] {
 }
 
 .legend-list li {
-  display: grid;
-  grid-template-columns: 12px minmax(0, max-content);
-  gap: 6px;
-  align-items: center;
+  display: block;
   font-size: 12px;
   line-height: 1.2;
   color: #334155;
+}
+
+.legend-item-btn {
+  display: grid;
+  grid-template-columns: 12px minmax(0, 1fr) auto;
+  gap: 6px;
+  align-items: center;
+  width: 100%;
+  margin: 0;
+  padding: 3px 2px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.legend-item-btn:hover,
+.legend-item-btn:focus-visible {
+  background: rgba(31, 90, 225, 0.08);
+  outline: none;
+}
+
+.legend-item-btn.legend-item-empty {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.legend-item-btn.legend-item-empty:hover {
+  background: transparent;
+}
+
+.legend-count {
+  min-width: 1.4em;
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  text-align: right;
 }
 
 .legend-swatch {
@@ -2078,7 +2126,8 @@ input[type="checkbox"] {
   }
 
   .visual-break.section-title-bar {
-    padding: 5px 10px;
+    padding: 8px 12px;
+    min-height: 46px;
     border-radius: 10px;
   }
 
