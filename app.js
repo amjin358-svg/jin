@@ -1489,21 +1489,13 @@ function getFilteredSortedCityCameras() {
 function dedupeCamerasByIdentity(cameras = []) {
   const seenIds = new Set();
   const seenUrls = new Set();
-  const seenCoords = new Set();
   return cameras.filter((camera) => {
     const id = String(camera?.id || "").trim();
     const url = String(camera?.html || "").trim().toLowerCase();
-    const lat = Number(camera?.gisy);
-    const lon = Number(camera?.gisx);
-    const coordKey =
-      Number.isFinite(lat) && Number.isFinite(lon) ? `${lat.toFixed(5)},${lon.toFixed(5)}` : "";
     if (id && seenIds.has(id)) {
       return false;
     }
     if (url && seenUrls.has(url)) {
-      return false;
-    }
-    if (coordKey && seenCoords.has(coordKey)) {
       return false;
     }
     if (id) {
@@ -1512,10 +1504,7 @@ function dedupeCamerasByIdentity(cameras = []) {
     if (url) {
       seenUrls.add(url);
     }
-    if (coordKey) {
-      seenCoords.add(coordKey);
-    }
-    return true;
+    return Boolean(id || url);
   });
 }
 
