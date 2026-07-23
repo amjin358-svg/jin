@@ -557,7 +557,7 @@ const AUTO_REFRESH_STORAGE_KEY = "autoRefreshIntervalMinutesV1";
 const DEFAULT_AUTO_REFRESH_MINUTES = 15;
 const SUBSCRIPTION_STORAGE_KEY = "weatherMemberSubscriptionV1";
 const NOTIFICATION_DIGEST_STORAGE_KEY = "subscriptionNotificationDigestV1";
-const SUBSCRIPTION_TOPIC_ORDER = ["closure", "flood", "power-outage", "water-outage", "weather", "air"];
+const SUBSCRIPTION_TOPIC_ORDER = ["weather", "air", "closure", "flood", "power-outage", "water-outage"];
 const RECOVERY_STATE_STORAGE_KEY = "subscriptionRecoveryStateV1";
 const FLOOD_LATEST_API =
   "https://opendata.wra.gov.tw/api/v2/1b991bbb-ad85-4e7a-b931-06ce8749d3ed?format=JSON";
@@ -1484,6 +1484,39 @@ function getFilteredSortedCityCameras() {
           return true;
         }
         return camera.distanceKm <= CITY_CCTV_RADIUS_KM;
+      })
+      .sort((a, b) => a.distanceKm - b.distanceKm)
+  );
+}
+
+function getCityCamerasForDisasterMap() {
+  if (!cityCameraDataset || !Array.isArray(cityCameraDataset.cameras)) {
+    return [];
+  }
+  const selectedCity =
+    getSelectedCameraCityName() || getActiveWeatherLocation()?.cityName || citySelect?.value || "";
+  const focusPoint = getCityCameraFocusPoint();
+  const focus = {
+    lat: Number(focusPoint?.lat),
+    lon: Number(focusPoint?.lon)
+  };
+
+  return dedupeCamerasByIdentity(
+    cityCameraDataset.cameras
+      .filter((camera) => isCameraUrlUsable(camera.html))
+      .filter((camera) => {
+        if (!selectedCity) {
+          return true;
+        }
+        return camera.city === selectedCity;
+      })
+      .filter((camera) => Number.isFinite(Number(camera.gisy)) && Number.isFinite(Number(camera.gisx)))
+      .map((camera) => {
+        const distanceKm =
+          Number.isFinite(focus.lat) && Number.isFinite(focus.lon)
+            ? getDistanceKm(focus.lat, focus.lon, Number(camera.gisy), Number(camera.gisx))
+            : Infinity;
+        return { ...camera, distanceKm };
       })
       .sort((a, b) => a.distanceKm - b.distanceKm)
   );
@@ -4527,41 +4560,40 @@ function updateCameraMapLayer() {
   }
   mapCameraLayer.clearLayers();
   mapLegendMarkers.cctv = [];
-  getFilteredSortedCityCameras()
-    .slice(0, 220)
-    .forEach((camera) => {
-      const lat = Number(camera.gisy);
-      const lon = Number(camera.gisx);
-      if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
-        return;
-      }
-      const [roadA, roadB] = getCameraIntersectionRoads(camera);
-      const distanceText = Number.isFinite(camera.distanceKm)
-        ? `約 ${camera.distanceKm.toFixed(1)} km`
-        : "--";
-      const mapsUrl = `https://www.google.com/maps?q=${lat},${lon}&z=18`;
-      const marker = L.circleMarker([lat, lon], {
-        pane: "cameraPane",
-        radius: 6,
-        color: "#66d9ff",
-        fillColor: "#0096c7",
-        fillOpacity: 0.85,
-        weight: 2
-      });
-      marker.bindPopup(
-        `
-          <strong>${camera.id}</strong><br/>
-          交叉路口：${roadA} × ${roadB}<br/>
-          ${camera.city ? `${camera.city}<br/>` : ""}
-          距離定位點：${distanceText}<br/>
-          <a href="${camera.html}" target="_blank" rel="noopener noreferrer">即時影像</a>
-          ｜
-          <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer">地圖位置</a>
-        `
-      );
-      mapCameraLayer.addLayer(marker);
-      mapLegendMarkers.cctv.push(marker);
+  // Plot every city CCTV in the selected county so legend count matches map points.
+  getCityCamerasForDisasterMap().forEach((camera) => {
+    const lat = Number(camera.gisy);
+    const lon = Number(camera.gisx);
+    if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+      return;
+    }
+    const [roadA, roadB] = getCameraIntersectionRoads(camera);
+    const distanceText = Number.isFinite(camera.distanceKm)
+      ? `約 ${camera.distanceKm.toFixed(1)} km`
+      : "--";
+    const mapsUrl = `https://www.google.com/maps?q=${lat},${lon}&z=18`;
+    const marker = L.circleMarker([lat, lon], {
+      pane: "cameraPane",
+      radius: 6,
+      color: "#66d9ff",
+      fillColor: "#0096c7",
+      fillOpacity: 0.85,
+      weight: 2
     });
+    marker.bindPopup(
+      `
+        <strong>${camera.id}</strong><br/>
+        交叉路口：${roadA} × ${roadB}<br/>
+        ${camera.city ? `${camera.city}<br/>` : ""}
+        距離定位點：${distanceText}<br/>
+        <a href="${camera.html}" target="_blank" rel="noopener noreferrer">即時影像</a>
+        ｜
+        <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer">地圖位置</a>
+      `
+    );
+    mapCameraLayer.addLayer(marker);
+    mapLegendMarkers.cctv.push(marker);
+  });
   syncMapLayerVisibility("cctv-points");
   syncMapLegendState();
 }
