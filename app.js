@@ -5748,7 +5748,7 @@ function syncNoticeDetailsOpen() {
   noticeDetails.open = window.matchMedia("(min-width: 861px)").matches;
 }
 
-function fitSingleLineText(element, { maxPx, minPx } = {}) {
+function fitSingleLineText(element, { maxPx, minPx, fillRatio = 1 } = {}) {
   if (!element) {
     return;
   }
@@ -5761,9 +5761,10 @@ function fitSingleLineText(element, { maxPx, minPx } = {}) {
   element.style.maxWidth = "100%";
   element.style.minWidth = "0";
   element.style.boxSizing = "border-box";
+  element.style.letterSpacing = "";
   const parentWidth = Math.floor(parent.getBoundingClientRect().width);
   const selfWidth = Math.floor(element.getBoundingClientRect().width);
-  const available = Math.max(0, selfWidth || parentWidth);
+  const available = Math.max(0, Math.floor((selfWidth || parentWidth) * Math.min(1, Math.max(0.85, fillRatio))));
   if (!available) {
     return;
   }
@@ -5783,6 +5784,18 @@ function fitSingleLineText(element, { maxPx, minPx } = {}) {
     }
   }
   element.style.fontSize = `${best}px`;
+
+  // Spread letter-spacing slightly when text still has unused width, for a fuller line.
+  const used = element.scrollWidth;
+  const leftover = available - used;
+  const textLength = Math.max(1, (element.textContent || "").trim().length);
+  if (leftover > 8 && textLength > 8) {
+    const tracking = Math.min(1.2, leftover / textLength);
+    element.style.letterSpacing = `${tracking.toFixed(3)}px`;
+    if (element.scrollWidth > available + 0.5) {
+      element.style.letterSpacing = "";
+    }
+  }
 }
 
 function fitHeroTexts() {
@@ -5792,9 +5805,11 @@ function fitHeroTexts() {
   const riskBadge = document.querySelector("#typhoonRiskBadge.hero-fit-text");
   const content = document.querySelector(".hero-content");
   const width = Math.floor(content?.getBoundingClientRect().width || document.documentElement.clientWidth || 0);
+  // English eyebrow: auto-fit one line to nearly full hero width.
   fitSingleLineText(eyebrow, {
-    maxPx: Math.min(16, Math.floor(width * 0.032)),
-    minPx: 7
+    maxPx: Math.min(34, Math.max(12, Math.floor(width * 0.055))),
+    minPx: 6,
+    fillRatio: 0.995
   });
   fitSingleLineText(title, {
     maxPx: Math.min(48, Math.floor(width * 0.088)),

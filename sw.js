@@ -1,4 +1,4 @@
-const SW_VERSION = "jin-v10-locate-glow";
+const SW_VERSION = "jin-v11-eyebrow-fullwidth";
 const PREFS_DB = "jin-bg-prefs-v1";
 const PREFS_STORE = "prefs";
 const PREFS_KEY = "subscription";
