@@ -1,4 +1,4 @@
-const SW_VERSION = "jin-v7-cctv-area-switch";
+const SW_VERSION = "jin-v8-auto-refresh-equal";
 const PREFS_DB = "jin-bg-prefs-v1";
 const PREFS_STORE = "prefs";
 const PREFS_KEY = "subscription";
