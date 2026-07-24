@@ -461,6 +461,8 @@ const rainProbValue = document.querySelector("#rainProbValue");
 const cloudValue = document.querySelector("#cloudValue");
 const pressureValue = document.querySelector("#pressureValue");
 const rainTimeline = document.querySelector("#rainTimeline");
+const weeklyForecastSummary = document.querySelector("#weeklyForecastSummary");
+const weeklyForecastList = document.querySelector("#weeklyForecastList");
 const closureMeta = document.querySelector("#closureMeta");
 const closureList = document.querySelector("#closureList");
 const cameraMeta = document.querySelector("#cameraMeta");
@@ -3024,6 +3026,74 @@ function renderRainTimeline(hours) {
   });
 }
 
+function buildWeeklyForecastDays(daily = {}) {
+  const dates = Array.isArray(daily.time) ? daily.time : [];
+  return dates.slice(0, 7).map((date, index) => {
+    const weekday = new Date(`${date}T12:00:00+08:00`).toLocaleDateString("zh-TW", {
+      weekday: "short",
+      timeZone: "Asia/Taipei"
+    });
+    const monthDay = new Date(`${date}T12:00:00+08:00`).toLocaleDateString("zh-TW", {
+      month: "numeric",
+      day: "numeric",
+      timeZone: "Asia/Taipei"
+    });
+    const weatherCode = Number(daily.weather_code?.[index]);
+    return {
+      date,
+      weekday,
+      monthDay,
+      weatherCode,
+      label: WEATHER_CODE_LABEL[weatherCode] ?? "天氣更新中",
+      tempMax: Number(daily.temperature_2m_max?.[index]),
+      tempMin: Number(daily.temperature_2m_min?.[index]),
+      rainSum: Number(daily.precipitation_sum?.[index] ?? 0),
+      rainProb: Number(daily.precipitation_probability_max?.[index] ?? 0)
+    };
+  });
+}
+
+function renderWeeklyForecast(days = [], locationLabel = "") {
+  if (weeklyForecastSummary) {
+    weeklyForecastSummary.textContent = locationLabel
+      ? `${locationLabel}｜一週天氣預報`
+      : "定位點一週天氣預報";
+  }
+  if (!weeklyForecastList) {
+    return;
+  }
+  weeklyForecastList.innerHTML = "";
+  if (!days.length) {
+    weeklyForecastList.innerHTML = `<p class="rain-empty">暫無一週預報資料</p>`;
+    return;
+  }
+
+  days.forEach((day, index) => {
+    const row = document.createElement("div");
+    row.className = "weekly-forecast-row";
+    if (index === 0) {
+      row.classList.add("is-today");
+    }
+    const maxText = Number.isFinite(day.tempMax) ? `${Math.round(day.tempMax)}°` : "--";
+    const minText = Number.isFinite(day.tempMin) ? `${Math.round(day.tempMin)}°` : "--";
+    const rainProbText = Number.isFinite(day.rainProb) ? `${Math.round(day.rainProb)}%` : "--";
+    const rainSumText = Number.isFinite(day.rainSum) ? `${day.rainSum.toFixed(1)} mm` : "--";
+    row.innerHTML = `
+      <div class="weekly-forecast-day">
+        <strong>${index === 0 ? "今天" : day.weekday}</strong>
+        <span>${day.monthDay}</span>
+      </div>
+      <div class="weekly-forecast-icon" aria-hidden="true">${getWeatherIconSvg(day.weatherCode)}</div>
+      <div class="weekly-forecast-meta">
+        <span class="weekly-forecast-label">${day.label}</span>
+        <span class="weekly-forecast-temps">${minText} / ${maxText}</span>
+        <span class="weekly-forecast-rain">降雨 ${rainProbText}｜${rainSumText}</span>
+      </div>
+    `;
+    weeklyForecastList.append(row);
+  });
+}
+
 async function fetchWeather() {
   const location = getActiveWeatherLocation();
   if (!location) {
@@ -3038,8 +3108,12 @@ async function fetchWeather() {
     "temperature_2m,relative_humidity_2m,precipitation,weather_code,wind_speed_10m,wind_gusts_10m,pressure_msl,apparent_temperature,cloud_cover"
   );
   endpoint.searchParams.set("hourly", "precipitation_probability,precipitation");
+  endpoint.searchParams.set(
+    "daily",
+    "weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max"
+  );
   endpoint.searchParams.set("timezone", "Asia/Taipei");
-  endpoint.searchParams.set("forecast_days", "2");
+  endpoint.searchParams.set("forecast_days", "7");
 
   const response = await fetch(endpoint.toString());
   if (!response.ok) {
@@ -3065,6 +3139,7 @@ async function fetchWeather() {
   const rain24 = next24Hours.reduce((sum, item) => sum + item.precipitation, 0);
   const rainProbIndex = findNearestTimeIndex(payload.hourly.time, current.time);
   const rainProb = Number(payload.hourly.precipitation_probability[rainProbIndex] ?? 0);
+  const weeklyForecast = buildWeeklyForecastDays(payload.daily || {});
 
   weatherSummary.textContent = `${location.label}・${WEATHER_CODE_LABEL[current.weather_code] ?? "天氣狀態更新中"}`;
   tempValue.textContent = `${Math.round(current.temperature_2m)}°`;
@@ -3078,6 +3153,7 @@ async function fetchWeather() {
   pressureValue.textContent = `${Math.round(current.pressure_msl)} hPa`;
   rainProjection.textContent = `未來 ${RAIN_FORECAST_HOURS} 小時累積降雨預估：${rain24.toFixed(1)} mm`;
   renderRainTimeline(next8Hours);
+  renderWeeklyForecast(weeklyForecast, location.label);
 
   appState.weather = {
     cityName: location.cityName,
@@ -3088,6 +3164,7 @@ async function fetchWeather() {
     current,
     next8Hours,
     next24Hours,
+    weeklyForecast,
     rain24,
     rainProb
   };

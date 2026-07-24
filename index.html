@@ -181,6 +181,10 @@
             <div id="rainTimeline" class="rain-timeline" aria-live="polite"></div>
             <p id="rainProjection" class="timestamp">未來 8 小時累積降雨預估：-- mm</p>
           </div>
+          <details id="weeklyForecastDetails" class="weekly-forecast-details">
+            <summary id="weeklyForecastSummary">定位點一週天氣預報</summary>
+            <div id="weeklyForecastList" class="weekly-forecast-list" aria-live="polite"></div>
+          </details>
           <details id="airDetails" class="air-details">
             <summary id="airSummary" class="air-inline-summary">當地空氣品質：讀取中...</summary>
             <div class="air-details-body">
@@ -429,7 +433,7 @@
             <span class="notice-hint mobile-only">點擊展開</span>
           </summary>
           <ul>
-            <li>天氣與空氣品質：Open-Meteo（鄉鎮級即時與短時預報／AQI）。</li>
+            <li>天氣與空氣品質：Open-Meteo（鄉鎮級即時、8 小時降雨、一週預報／AQI）。</li>
             <li>區域記憶：瀏覽器 localStorage 保留上次選取的區域／縣市／鄉鎮。</li>
             <li>停班停課資料：行政院人事行政總處公告頁面（經公開鏡像讀取）。</li>
             <li>縣市路口監控：交通部運輸資料流通服務（各縣市 CCTV 公開資料快照）。</li>

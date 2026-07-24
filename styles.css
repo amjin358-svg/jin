@@ -1422,6 +1422,129 @@ input[type="checkbox"] {
   color: #0b2f55;
 }
 
+.weekly-forecast-details {
+  margin-top: 14px;
+  padding: 10px 12px;
+  border-top: 1px solid #8ebce6;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.72);
+  display: grid;
+  gap: 8px;
+}
+
+.weekly-forecast-details > summary {
+  cursor: pointer;
+  list-style: none;
+  font-size: 16px;
+  font-weight: 800;
+  color: #072445;
+  line-height: 1.35;
+  padding: 6px 4px;
+}
+
+.weekly-forecast-details > summary::-webkit-details-marker {
+  display: none;
+}
+
+.weekly-forecast-details > summary::marker {
+  content: "";
+}
+
+.weekly-forecast-details > summary::after {
+  content: " ▾";
+  color: #1f5ae1;
+  font-weight: 800;
+}
+
+.weekly-forecast-details[open] > summary::after {
+  content: " ▴";
+}
+
+.weekly-forecast-list {
+  display: grid;
+  gap: 8px;
+  padding-top: 2px;
+}
+
+.weekly-forecast-row {
+  display: grid;
+  grid-template-columns: minmax(64px, 0.9fr) 36px minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(238, 244, 255, 0.85);
+  border: 1px solid #c7daf8;
+}
+
+.weekly-forecast-row.is-today {
+  background: rgba(255, 248, 230, 0.95);
+  border-color: #e6c56b;
+}
+
+.weekly-forecast-day {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.weekly-forecast-day strong {
+  font-size: 14px;
+  font-weight: 800;
+  color: #0b3fad;
+  line-height: 1.2;
+}
+
+.weekly-forecast-day span {
+  font-size: 12px;
+  color: #5b6b86;
+  line-height: 1.2;
+}
+
+.weekly-forecast-icon {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.weekly-forecast-icon svg {
+  width: 32px;
+  height: 32px;
+  display: block;
+}
+
+.weekly-forecast-meta {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.weekly-forecast-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1f2a44;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.weekly-forecast-temps {
+  font-size: 15px;
+  font-weight: 800;
+  color: #0b3fad;
+  font-variant-numeric: tabular-nums;
+}
+
+.weekly-forecast-rain {
+  font-size: 12px;
+  color: #5b6b86;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .air-details {
   margin-top: 14px;
   padding: 10px 12px;
