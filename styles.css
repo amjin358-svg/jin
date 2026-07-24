@@ -1170,6 +1170,13 @@ label {
   color: #8a6d00;
   background: #fffdf3;
   appearance: auto;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.auto-refresh-controls select option {
+  font-size: 18px;
+  font-weight: 700;
 }
 
 .auto-refresh-countdown {
@@ -2558,6 +2565,12 @@ input[type="checkbox"] {
     border-radius: 10px;
   }
 
+  .auto-refresh-controls select,
+  .auto-refresh-controls select option {
+    font-size: 15px;
+    font-weight: 800;
+  }
+
   .closure-list {
     max-height: 240px;
     gap: 4px;
@@ -2882,6 +2895,12 @@ input[type="checkbox"] {
     padding: 5px 6px;
     font-size: 12px;
     max-width: none;
+  }
+
+  .auto-refresh-controls select,
+  .auto-refresh-controls select option {
+    font-size: 14px;
+    font-weight: 800;
   }
 
   .map-pane,
