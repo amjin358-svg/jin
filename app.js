@@ -508,7 +508,6 @@ const testNotificationBtn = document.querySelector("#testNotificationBtn");
 const notificationHint = document.querySelector("#notificationHint");
 const inPageAlertHost = document.querySelector("#inPageAlertHost");
 const autoRefreshMeta = document.querySelector("#autoRefreshMeta");
-const autoRefreshToggle = document.querySelector("#autoRefreshToggle");
 const autoRefreshIntervalSelect = document.querySelector("#autoRefreshInterval");
 
 let cityCameraDataset = null;
@@ -5524,17 +5523,14 @@ function updateAutoRefreshMeta() {
   }
   if (!appState.autoRefreshEnabled) {
     autoRefreshMeta.textContent = "更新倒數：已暫停";
-    setDualLabelText(autoRefreshToggle, "自動更新恢復按鍵", "恢復更新");
     return;
   }
   if (appState.autoRefreshRunning) {
     autoRefreshMeta.textContent = "更新倒數：更新中…";
-    setDualLabelText(autoRefreshToggle, "自動更新暫停按鍵", "暫停更新");
     return;
   }
   const remainingMs = Math.max(0, appState.nextAutoRefreshAt - Date.now());
   autoRefreshMeta.textContent = `更新倒數 ${formatAutoRefreshCountdown(remainingMs)}`;
-  setDualLabelText(autoRefreshToggle, "自動更新暫停按鍵", "暫停更新");
 }
 
 async function tickAutoRefreshCountdown() {
@@ -5732,14 +5728,6 @@ document.addEventListener("visibilitychange", () => {
   if (!document.hidden && appState.subscription?.email && appState.autoRefreshEnabled) {
     performFullRefresh("auto").catch(() => {});
   }
-});
-
-autoRefreshToggle.addEventListener("click", () => {
-  appState.autoRefreshEnabled = !appState.autoRefreshEnabled;
-  if (appState.autoRefreshEnabled) {
-    scheduleNextAutoRefresh();
-  }
-  updateAutoRefreshMeta();
 });
 
 autoRefreshIntervalSelect?.addEventListener("change", () => {

@@ -1085,9 +1085,7 @@ label {
 }
 
 .auto-refresh-controls select,
-.auto-refresh-countdown,
-.auto-refresh-row .ghost-btn,
-.auto-refresh-controls .auto-refresh-toggle {
+.auto-refresh-countdown {
   flex: 1 1 0;
   width: 0;
   min-width: 0;
@@ -1096,7 +1094,8 @@ label {
   max-height: 44px;
   padding: 8px 10px;
   box-sizing: border-box;
-  border: 2px solid #1f5ae1;
+  border-width: 2px;
+  border-style: solid;
   border-radius: 10px;
   font-size: 16px;
   font-weight: 700;
@@ -1107,8 +1106,9 @@ label {
 }
 
 .auto-refresh-controls select {
-  color: #1f5ae1;
-  background: #fff;
+  border-color: #e6b800;
+  color: #8a6d00;
+  background: #fffdf3;
   appearance: auto;
 }
 
@@ -1117,20 +1117,10 @@ label {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  border-color: #7eb6e8;
   color: #1f5ae1;
   background: #eef4ff;
   text-align: center;
-}
-
-.auto-refresh-row .ghost-btn,
-.auto-refresh-controls .auto-refresh-toggle {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  max-width: none;
-  color: #1f5ae1;
-  background: #fff;
-  cursor: pointer;
 }
 
 .ghost-btn {
@@ -2493,9 +2483,7 @@ input[type="checkbox"] {
   }
 
   .auto-refresh-controls select,
-  .auto-refresh-countdown,
-  .auto-refresh-row .ghost-btn,
-  .auto-refresh-controls .auto-refresh-toggle {
+  .auto-refresh-countdown {
     flex: 1 1 0;
     width: 0;
     min-width: 0;
@@ -2827,9 +2815,7 @@ input[type="checkbox"] {
   }
 
   .auto-refresh-controls select,
-  .auto-refresh-countdown,
-  .auto-refresh-row .ghost-btn,
-  .auto-refresh-controls .auto-refresh-toggle {
+  .auto-refresh-countdown {
     height: 38px;
     min-height: 38px;
     max-height: 38px;
