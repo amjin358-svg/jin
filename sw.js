@@ -1,4 +1,4 @@
-const SW_VERSION = "jin-v17-mobile-alert-92";
+const SW_VERSION = "jin-v18-freeway-interchange-progress";
 const PREFS_DB = "jin-bg-prefs-v1";
 const PREFS_STORE = "prefs";
 const PREFS_KEY = "subscription";

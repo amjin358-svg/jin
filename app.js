@@ -365,13 +365,13 @@ const CAMERA_DISTRICT_ALL_CITY = "all-city";
 const CAMERA_TOWN_RADIUS_KM = 6; // retained for map focus fallback only
 
 const FREEWAY_CAMERA_REGIONS = [
+  { id: "near-city", label: "國道交流道（預設）", lat: null, lon: null, radiusKm: 40, routes: null },
   { id: "all-freeway", label: "全部國道", lat: 23.7, lon: 120.96, radiusKm: 9999, routes: null },
   { id: "n1", label: "國道1號", lat: 24.5, lon: 120.9, radiusKm: 9999, routes: ["N1", "N1H", "N1K"] },
   { id: "n3", label: "國道3號", lat: 24.5, lon: 120.9, radiusKm: 9999, routes: ["N3", "N3A", "N3K", "N3N"] },
   { id: "n5", label: "國道5號", lat: 24.8, lon: 121.8, radiusKm: 9999, routes: ["N5"] },
   { id: "n2-n4", label: "國道2／4號", lat: 24.9, lon: 121.2, radiusKm: 9999, routes: ["N2", "N2A", "N4"] },
-  { id: "n6-n8-n10", label: "國道6／8／10號", lat: 23.8, lon: 120.6, radiusKm: 9999, routes: ["N6", "N8", "N10"] },
-  { id: "near-city", label: "靠近所選位置（40km／交流道）", lat: null, lon: null, radiusKm: 40, routes: null }
+  { id: "n6-n8-n10", label: "國道6／8／10號", lat: 23.8, lon: 120.6, radiusKm: 9999, routes: ["N6", "N8", "N10"] }
 ];
 
 const REGION_STORAGE_KEY = "weatherRegionPreferenceV1";
@@ -476,7 +476,6 @@ const freewayCameraMeta = document.querySelector("#freewayCameraMeta");
 const freewayCameraList = document.querySelector("#freewayCameraList");
 const freewayCitySelect = document.querySelector("#freewayCitySelect");
 const freewayRegionSelect = document.querySelector("#freewayRegionSelect");
-const freewayKeyword = document.querySelector("#freewayKeyword");
 const mapLayerList = document.querySelector("#mapLayerList");
 const airSummary = document.querySelector("#airSummary");
 const aqiMetric = document.querySelector("#aqiMetric");
@@ -585,6 +584,7 @@ const CITY_CCTV_PREVIEW_LIMIT = 8;
 const CITY_CCTV_MORE_LIMIT = 16;
 const FREEWAY_CCTV_RADIUS_KM = 40;
 const FREEWAY_INTERCHANGE_BASE_RADIUS_KM = 40;
+const FREEWAY_CCTV_PREVIEW_LIMIT = 8;
 const WINDY_TAIWAN_VIEW = { lat: 23.7, lon: 121.0, zoom: 5 };
 const POWER_OUTAGE_NOTIFY_RADIUS_KM = 10;
 const FLOOD_NOTIFY_RADIUS_KM = 80;
@@ -1099,7 +1099,7 @@ function initFreewayRegionSelect() {
     option.textContent = region.label;
     freewayRegionSelect.append(option);
   });
-  freewayRegionSelect.value = "all-freeway";
+  freewayRegionSelect.value = "near-city";
 }
 
 function initFreewayCitySelect() {
@@ -1403,8 +1403,7 @@ function getFreewayRadiusCacheKey(focus) {
   const lat = Number.isFinite(focus?.lat) ? focus.lat.toFixed(3) : "na";
   const lon = Number.isFinite(focus?.lon) ? focus.lon.toFixed(3) : "na";
   const freewayRegion = getSelectedFreewayRegion();
-  const keyword = (freewayKeyword?.value ?? "").trim().toLowerCase();
-  return `${lat},${lon}|${freewayRegion.id}|${keyword}`;
+  return `${lat},${lon}|${freewayRegion.id}`;
 }
 
 function getFreewayCamerasBeforeRadiusFilter() {
@@ -1412,20 +1411,9 @@ function getFreewayCamerasBeforeRadiusFilter() {
     return [];
   }
   const freewayRegion = getSelectedFreewayRegion();
-  const keyword = (freewayKeyword?.value ?? "").trim().toLowerCase();
-  const normalize = (text) => text.toLowerCase().replaceAll("臺", "台");
 
   return freewayCameraDataset.cameras
     .filter((camera) => isCameraUrlUsable(camera.html))
-    .filter((camera) => {
-      if (!keyword) {
-        return true;
-      }
-      const haystack = normalize(
-        `${camera.id ?? ""} ${camera.stakenumber ?? ""} ${camera.routeCode ?? getCameraRouteCode(camera.id)}`
-      );
-      return haystack.includes(normalize(keyword));
-    })
     .filter((camera) => {
       const routeCode = getCameraRouteCode(camera.id);
       if (freewayRegion.routes?.length) {
@@ -2720,21 +2708,58 @@ async function renderFreewayCameraList() {
   }
   const rows = dedupeCamerasByIdentity(getFilteredSortedFreewayCameras()).slice(0, CCTV_VERIFY_POOL_SIZE);
   updateFreewayCameraMetaText();
-  if (!rows.length) {
-    freewayCameraList.innerHTML = `<p class="status-warn">所選縣市交流道半徑 ${FREEWAY_INTERCHANGE_BASE_RADIUS_KM} 公里內查無國道監控點，請更換縣市、國道或關鍵字。</p>`;
-    return;
-  }
   const selectedCity = getSelectedFreewayCityName();
   const scopeLabel = selectedCity ? `${selectedCity}交流道基準` : getCctvLocationFocus().label || "所選位置";
-  const { shown } = await appendVerifiedCameraCards(freewayCameraList, rows, scopeLabel, {
-    limit: CCTV_VERIFY_POOL_SIZE,
-    isCurrent
+  if (!rows.length) {
+    freewayCameraList.innerHTML = `<p class="status-warn">所選縣市交流道半徑 ${FREEWAY_INTERCHANGE_BASE_RADIUS_KM} 公里內查無國道監控點，請更換縣市或國道範圍。</p>`;
+    return;
+  }
+
+  const loading = document.createElement("p");
+  loading.className = "timestamp camera-switching";
+  loading.dataset.cameraLoading = "1";
+  loading.innerHTML = `正在偵測國道交流道監控：${scopeLabel}｜正在讀取畫面中 <strong data-cctv-progress>0%</strong>`;
+  freewayCameraList.append(loading);
+
+  const liveCameras = await collectVerifiedLiveCameras(rows, {
+    isCurrent,
+    limit: FREEWAY_CCTV_PREVIEW_LIMIT,
+    onProgress: ({ pct }) => {
+      if (!isCurrent()) {
+        return;
+      }
+      const progressEl = freewayCameraList.querySelector("[data-cctv-progress]");
+      if (progressEl) {
+        progressEl.textContent = `${pct}%`;
+      }
+    }
   });
   if (!isCurrent()) {
     return;
   }
+
+  freewayCameraList.querySelector("[data-camera-loading]")?.remove();
+  if (!liveCameras.length) {
+    freewayCameraList.innerHTML = `<p class="status-warn">附近國道監控目前多為維修／無畫面，暫無正常顯示影像。</p>`;
+    updateFreewayCameraMetaText();
+    return;
+  }
+
+  for (const camera of liveCameras) {
+    if (!isCurrent()) {
+      return;
+    }
+    const card = createCameraCard(camera, scopeLabel, {
+      forceImage: isLikelyDirectImageStream(camera.html)
+    });
+    freewayCameraList.append(card);
+    await waitForCameraCardDecision(card, 8000);
+  }
+  if (!isCurrent()) {
+    return;
+  }
   updateFreewayCameraMetaText();
-  if (!shown && !freewayCameraList.querySelector(".camera-item-live")) {
+  if (!freewayCameraList.querySelector(".camera-item-live")) {
     freewayCameraList.innerHTML = `<p class="status-warn">附近國道監控目前多為維修／無畫面，暫無正常顯示影像。</p>`;
   }
 }
@@ -5846,10 +5871,6 @@ cameraCitySelect?.addEventListener("change", () => {
   updateCameraMetaText();
   renderAllCameraLists();
   updateCameraMapLayer();
-});
-
-freewayKeyword?.addEventListener("input", () => {
-  renderFreewayCameraList();
 });
 
 freewayRegionSelect?.addEventListener("change", () => {
