@@ -2782,17 +2782,8 @@ function updateFreewayCameraMetaText() {
   const freewayFetchedAt = freewayCameraDataset.fetchedAt
     ? formatDateTime(freewayCameraDataset.fetchedAt)
     : "未提供";
-  const matchedCount = getFilteredSortedFreewayCameras().length;
   const region = getSelectedFreewayRegion();
-  const selectedCity = getSelectedFreewayCityName();
-  const interchangeName = getSelectedFreewayInterchangeName();
-  const visibleCount = freewayCameraList?.querySelectorAll(".camera-item-live").length ?? 0;
-  const scope = interchangeName
-    ? interchangeName
-    : selectedCity
-      ? `${selectedCity}交流道`
-      : "全國交流道";
-  freewayCameraMeta.textContent = `公路局即時CCTV｜${region.label}｜${scope}｜候選 ${matchedCount} 支｜正常顯示 ${visibleCount} 支｜快照：${freewayFetchedAt}`;
+  freewayCameraMeta.textContent = `${region.label}｜快照：${freewayFetchedAt}`;
 }
 
 async function renderFreewayCameraList() {
