@@ -580,7 +580,7 @@ const LIKE_COUNTER_KEY = "likes";
 const LIKE_COUNTER_STORAGE_KEY = "siteLikeCountV1";
 const LIKE_VOTED_STORAGE_KEY = "siteLikedV1";
 const CITY_CCTV_RADIUS_KM = 2;
-const CITY_CCTV_PREVIEW_LIMIT = 8;
+const CITY_CCTV_PREVIEW_LIMIT = 6;
 const CITY_CCTV_MORE_LIMIT = 16;
 const FREEWAY_CCTV_RADIUS_KM = 40;
 const FREEWAY_INTERCHANGE_BASE_RADIUS_KM = 40;
@@ -1086,6 +1086,7 @@ function fillCameraCitySelectOptions(selectElement, defaultValue = "follow") {
 
 function initCameraCitySelect() {
   fillCameraCitySelectOptions(cameraCitySelect, "follow");
+  syncCityCameraScopeToLocator();
 }
 
 function initFreewayRegionSelect() {
@@ -1296,9 +1297,8 @@ async function locateByDevice() {
     }
 
     applyRegionSelection(getRegionForCity(nearest.city), nearest.city, nearest.town, { persist: true });
-    syncSelectValue(cameraCitySelect, "follow");
-    syncSelectValue(freewayCitySelect, "follow");
-    syncCameraRegionToLocatorArea();
+    syncCityCameraScopeToLocator();
+    syncSelectValue(freewayCitySelect, nearest.city);
     windyLocateFocus = {
       lat: latitude,
       lon: longitude,
@@ -1419,6 +1419,16 @@ function syncCameraRegionToLocatorArea() {
   } else {
     cameraRegionSelect.value = CAMERA_DISTRICT_ALL_CITY;
   }
+}
+
+function syncCityCameraScopeToLocator() {
+  const city = String(citySelect?.value || "").trim();
+  if (cameraCitySelect && city) {
+    syncSelectValue(cameraCitySelect, city);
+  } else if (cameraCitySelect) {
+    syncSelectValue(cameraCitySelect, "follow");
+  }
+  syncCameraRegionToLocatorArea();
 }
 
 function getSelectedFreewayRegion() {
@@ -2617,26 +2627,7 @@ function updateCameraMetaText() {
   }
   const cityFetchedAt = cityCameraDataset.fetchedAt ? formatDateTime(cityCameraDataset.fetchedAt) : "未提供";
   const focusLabel = getCctvLocationFocus().label || "所選位置";
-  const district = getSelectedCameraDistrict();
-  const areaLabel = district?.label || townshipSelect?.value || citySelect?.value || "所選地區";
-  cameraMeta.textContent = "";
-
-  const primary = document.createElement("span");
-  primary.className = "camera-meta-primary";
-  primary.textContent = `定位點：${focusLabel}｜地區：${areaLabel}｜快照：${cityFetchedAt}`;
-  cameraMeta.append(primary);
-
-  const source = document.createElement("span");
-  source.className = "camera-meta-source";
-  source.append("（來源：");
-  const link = document.createElement("a");
-  link.href = "https://traffic.transportdata.tw/";
-  link.target = "_blank";
-  link.rel = "noopener noreferrer";
-  link.textContent = "運輸資料流通服務";
-  source.append(link);
-  source.append("）");
-  cameraMeta.append(source);
+  cameraMeta.textContent = `定位點：${focusLabel}｜快照：${cityFetchedAt}`;
 }
 
 function resetCityCameraLists() {
@@ -3576,9 +3567,8 @@ function locateWindyEmbed() {
       applyRegionSelection(getRegionForCity(nearest.city), nearest.city, nearest.town, {
         persist: true
       });
-      syncSelectValue(cameraCitySelect, "follow");
-      syncSelectValue(freewayCitySelect, "follow");
-      syncCameraRegionToLocatorArea();
+      syncCityCameraScopeToLocator();
+      syncSelectValue(freewayCitySelect, nearest.city);
       renderAllCameraLists();
       updateMapForCityChange();
     }
@@ -4296,14 +4286,43 @@ function showInPageAlert(title, body, { timeoutMs = 8000 } = {}) {
   const alert = document.createElement("article");
   alert.className = "in-page-alert";
   alert.innerHTML = `
-    <strong>${title}</strong>
-    <p></p>
+    <strong class="in-page-alert-title"></strong>
+    <div class="in-page-alert-body"></div>
     <button type="button" class="in-page-alert-close">知道了</button>
   `;
-  alert.querySelector("p").textContent = body;
+  const titleEl = alert.querySelector(".in-page-alert-title");
+  const bodyHost = alert.querySelector(".in-page-alert-body");
+  if (titleEl) {
+    titleEl.textContent = title;
+  }
+  const lines = String(body || "")
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+  (lines.length ? lines : [""]).forEach((line) => {
+    const row = document.createElement("p");
+    row.className = "in-page-alert-line";
+    row.textContent = line;
+    bodyHost?.append(row);
+  });
   const close = () => alert.remove();
   alert.querySelector(".in-page-alert-close")?.addEventListener("click", close);
   inPageAlertHost.append(alert);
+  window.requestAnimationFrame(() => {
+    const width = Math.floor(alert.getBoundingClientRect().width || 0);
+    fitSingleLineText(titleEl, {
+      maxPx: Math.min(28, Math.max(14, Math.floor(width * 0.08))),
+      minPx: 11,
+      fillRatio: 0.98
+    });
+    bodyHost?.querySelectorAll(".in-page-alert-line").forEach((lineEl) => {
+      fitSingleLineText(lineEl, {
+        maxPx: Math.min(22, Math.max(12, Math.floor(width * 0.065))),
+        minPx: 10,
+        fillRatio: 0.98
+      });
+    });
+  });
   if (timeoutMs > 0) {
     window.setTimeout(close, timeoutMs);
   }
@@ -5926,8 +5945,7 @@ async function performFullRefresh(triggerSource) {
 citySelect.addEventListener("change", () => {
   fillTownshipSelect(citySelect.value);
   saveRegionPreference();
-  syncSelectValue(cameraCitySelect, "follow");
-  syncCameraRegionToLocatorArea();
+  syncCityCameraScopeToLocator();
   performFullRefresh("manual");
   renderAllCameraLists();
   updateMapForCityChange();
@@ -5935,8 +5953,7 @@ citySelect.addEventListener("change", () => {
 
 townshipSelect.addEventListener("change", () => {
   saveRegionPreference();
-  syncSelectValue(cameraCitySelect, "follow");
-  syncCameraRegionToLocatorArea();
+  syncCityCameraScopeToLocator();
   performFullRefresh("manual");
   renderAllCameraLists();
   updateMapForCityChange();
@@ -6118,6 +6135,23 @@ function fitSingleLineText(element, { maxPx, minPx, fillRatio = 1 } = {}) {
   }
 }
 
+function fitSubscriptionTopicTexts() {
+  document.querySelectorAll(".topic-option .topic-option-text").forEach((element) => {
+    const parent = element.parentElement;
+    const parentWidth = Math.floor(parent?.getBoundingClientRect().width || 0);
+    const checkboxWidth = Math.ceil(parent?.querySelector("input")?.getBoundingClientRect().width || 18);
+    const available = Math.max(40, parentWidth - checkboxWidth - 10);
+    // Temporarily constrain width so fitSingleLineText measures against one row.
+    element.style.width = `${available}px`;
+    element.style.maxWidth = `${available}px`;
+    fitSingleLineText(element, {
+      maxPx: 16,
+      minPx: 10,
+      fillRatio: 1
+    });
+  });
+}
+
 function fitHeroTexts() {
   const eyebrow = document.querySelector(".hero .eyebrow.hero-fit-text");
   const title = document.querySelector(".hero h1.hero-fit-text");
@@ -6146,6 +6180,7 @@ function fitHeroTexts() {
     maxPx: Math.min(44, Math.floor(riskParentWidth * 0.14)),
     minPx: 18
   });
+  fitSubscriptionTopicTexts();
 }
 
 let heroFitRaf = 0;

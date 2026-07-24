@@ -931,17 +931,33 @@ label {
   animation: alertSlideUp 0.25s ease-out;
 }
 
-.in-page-alert strong {
+.in-page-alert strong,
+.in-page-alert-title {
   display: block;
   margin-bottom: 4px;
   font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  width: 100%;
+  max-width: 100%;
 }
 
-.in-page-alert p {
+.in-page-alert-body {
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  min-width: 0;
+}
+
+.in-page-alert p,
+.in-page-alert-line {
   margin: 0;
   font-size: 13px;
-  line-height: 1.4;
-  white-space: pre-line;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  width: 100%;
+  max-width: 100%;
 }
 
 .in-page-alert-close {
@@ -1592,31 +1608,7 @@ input[type="checkbox"] {
 }
 
 #cameraMeta {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
-}
-
-.camera-meta-primary {
   display: block;
-}
-
-.camera-meta-source {
-  display: block;
-  font-size: inherit;
-  color: inherit;
-  line-height: 1.4;
-}
-
-.camera-meta-source a {
-  color: #1f5ae1;
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.camera-meta-source a:hover {
-  text-decoration: underline;
 }
 
 .camera-switching {
@@ -2313,6 +2305,21 @@ input[type="checkbox"] {
   align-items: center;
   gap: 6px;
   color: #2d3856;
+  min-width: 0;
+  width: 100%;
+  overflow: hidden;
+}
+
+.topic-option input {
+  flex: 0 0 auto;
+}
+
+.topic-option-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  line-height: 1.2;
 }
 
 .closure-group {
@@ -2732,18 +2739,29 @@ input[type="checkbox"] {
     gap: 12px;
   }
 
-  .in-page-alert strong {
-    font-size: clamp(20px, 5.6vw, 26px);
+  .in-page-alert strong,
+  .in-page-alert-title {
+    font-size: clamp(18px, 5vw, 24px);
     font-weight: 800;
-    line-height: 1.3;
+    line-height: 1.2;
     margin-bottom: 0;
+    white-space: nowrap;
+    overflow: hidden;
   }
 
-  .in-page-alert p {
+  .in-page-alert-body {
     flex: 1 1 auto;
-    overflow: auto;
-    font-size: clamp(17px, 4.6vw, 20px);
-    line-height: 1.55;
+    align-content: start;
+    overflow: hidden;
+    gap: 8px;
+  }
+
+  .in-page-alert p,
+  .in-page-alert-line {
+    overflow: hidden;
+    font-size: clamp(14px, 4vw, 18px);
+    line-height: 1.2;
+    white-space: nowrap;
   }
 
   .in-page-alert-close {

@@ -1,4 +1,4 @@
-const SW_VERSION = "jin-v23-freeway-meta-short";
+const SW_VERSION = "jin-v24-cctv6-subscribe-fit";
 const PREFS_DB = "jin-bg-prefs-v1";
 const PREFS_STORE = "prefs";
 const PREFS_KEY = "subscription";
