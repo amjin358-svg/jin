@@ -1023,13 +1023,12 @@ function getCameraCityForDistrictSelect() {
   return getSelectedCameraCityName() || citySelect?.value || "";
 }
 
-function fillCameraDistrictSelect(preferredTown = "") {
+function fillCameraDistrictSelect(_preferredTown = "") {
   if (!cameraRegionSelect) {
     return;
   }
   const cityName = getCameraCityForDistrictSelect();
   const previous = cameraRegionSelect.value;
-  const preferred = String(preferredTown || townshipSelect?.value || "").trim();
   cameraRegionSelect.innerHTML = "";
 
   const nearOption = document.createElement("option");
@@ -1049,10 +1048,8 @@ function fillCameraDistrictSelect(preferredTown = "") {
     cameraRegionSelect.append(option);
   });
 
-  const preferredValue = preferred ? `town:${preferred}` : "";
-  if (preferredValue && [...cameraRegionSelect.options].some((option) => option.value === preferredValue)) {
-    cameraRegionSelect.value = preferredValue;
-  } else if ([...cameraRegionSelect.options].some((option) => option.value === previous)) {
+  // Default is near-point (2km). Keep prior selection only when still valid for this city.
+  if (previous && [...cameraRegionSelect.options].some((option) => option.value === previous)) {
     cameraRegionSelect.value = previous;
   } else {
     cameraRegionSelect.value = CAMERA_DISTRICT_NEAR_POINT;
@@ -2295,7 +2292,7 @@ async function appendVerifiedCameraCards(
   listEl,
   cameras,
   scopeLabel,
-  { limit = CCTV_VISIBLE_LIMIT, isCurrent = () => true } = {}
+  { limit = CCTV_VISIBLE_LIMIT, isCurrent = () => true, onFirstCard = null } = {}
 ) {
   if (!listEl) {
     return { shown: 0, liveCameras: [] };
@@ -2303,6 +2300,7 @@ async function appendVerifiedCameraCards(
   let shown = 0;
   const liveCameras = [];
   const seenIds = new Set();
+  let firstCardEmitted = false;
   for (const camera of cameras) {
     if (!isCurrent()) {
       return { shown, liveCameras };
@@ -2318,7 +2316,7 @@ async function appendVerifiedCameraCards(
       continue;
     }
 
-    const probe = await probeImageStream(camera.html, { timeoutMs: 7000 });
+    const probe = await probeImageStream(camera.html, { timeoutMs: 4500 });
     if (!isCurrent()) {
       return { shown, liveCameras };
     }
@@ -2331,8 +2329,16 @@ async function appendVerifiedCameraCards(
     if (cameraId) {
       seenIds.add(cameraId);
     }
+    if (!firstCardEmitted) {
+      firstCardEmitted = true;
+      try {
+        onFirstCard?.();
+      } catch {
+        /* ignore */
+      }
+    }
     listEl.append(card);
-    const ok = await waitForCameraCardDecision(card, 10000);
+    const ok = await waitForCameraCardDecision(card, 8000);
     if (!isCurrent()) {
       return { shown, liveCameras };
     }
@@ -2418,8 +2424,15 @@ function updateCameraMetaText() {
   }
   const cityFetchedAt = cityCameraDataset.fetchedAt ? formatDateTime(cityCameraDataset.fetchedAt) : "未提供";
   const focusLabel = getCctvLocationFocus().label || "所選位置";
+  const district = getSelectedCameraDistrict();
+  const areaLabel = district?.label || "定位點附近（2km）";
   cameraMeta.textContent = "";
-  cameraMeta.append(`定位點：${focusLabel} 快照：${cityFetchedAt}`);
+
+  const primary = document.createElement("span");
+  primary.className = "camera-meta-primary";
+  primary.textContent = `定位點：${focusLabel}｜地區：${areaLabel}｜快照：${cityFetchedAt}`;
+  cameraMeta.append(primary);
+
   const source = document.createElement("span");
   source.className = "camera-meta-source";
   source.append("（來源：");
@@ -2479,54 +2492,40 @@ async function renderCameraList() {
   updateCameraMetaText();
   updateCameraMapLayer();
   const rows = getFilteredSortedCityCameras().slice(0, CCTV_VERIFY_POOL_SIZE);
+  const district = getSelectedCameraDistrict();
+  const scopeLabel = district?.label || getCctvLocationFocus().label || "所選位置";
   if (!rows.length) {
     if (cameraList) {
-      cameraList.innerHTML = `<p class="status-warn">所選位置直線距離 ${getActiveCityCctvRadiusKm()} 公里內查無市區路口監控點，請更換鄉鎮或關鍵字。</p>`;
+      cameraList.innerHTML = `<p class="status-warn">所選位置直線距離 ${getActiveCityCctvRadiusKm()} 公里內查無市區路口監控點，請更換地區範圍或關鍵字。</p>`;
     }
     return;
   }
 
-  const scopeLabel = getCctvLocationFocus().label || "所選位置";
-  const liveCameras = await collectVerifiedLiveCameras(rows, { isCurrent });
-  if (!isCurrent()) {
-    return;
+  // Show the selected area immediately, then stream in live cameras up to the preview limit.
+  if (cameraList) {
+    const loading = document.createElement("p");
+    loading.className = "timestamp camera-switching";
+    loading.dataset.cameraLoading = "1";
+    loading.textContent = `正在顯示：${scopeLabel}（最多 ${CITY_CCTV_PREVIEW_LIMIT} 處）`;
+    cameraList.append(loading);
   }
 
-  const previewCameras = liveCameras.slice(0, CITY_CCTV_PREVIEW_LIMIT);
-  const extraCameras = [];
-
-  for (const camera of previewCameras) {
-    if (!isCurrent()) {
-      return;
+  const { shown } = await appendVerifiedCameraCards(cameraList, rows, scopeLabel, {
+    limit: CITY_CCTV_PREVIEW_LIMIT,
+    isCurrent,
+    onFirstCard: () => {
+      cameraList?.querySelector("[data-camera-loading]")?.remove();
     }
-    const card = createCameraCard(camera, scopeLabel, { forceImage: true });
-    cameraList.append(card);
-    await waitForCameraCardDecision(card, 10000);
-  }
+  });
   if (!isCurrent()) {
     return;
   }
 
-  if (extraCameras.length && cameraListMore) {
-    syncCityCameraMorePanel(extraCameras.length);
-    for (const camera of extraCameras) {
-      if (!isCurrent()) {
-        return;
-      }
-      const card = createCameraCard(camera, scopeLabel, { forceImage: true });
-      cameraListMore.append(card);
-      await waitForCameraCardDecision(card, 10000);
-    }
-  } else {
-    syncCityCameraMorePanel(0);
-  }
-
-  if (!isCurrent()) {
-    return;
-  }
+  cameraList?.querySelector("[data-camera-loading]")?.remove();
+  syncCityCameraMorePanel(0);
   updateCameraMetaText();
   updateCameraMapLayer();
-  if (!cameraList?.querySelector(".camera-item-live")) {
+  if (!shown && !cameraList?.querySelector(".camera-item-live")) {
     cameraList.innerHTML = `<p class="status-warn">附近監控目前多為維修／無畫面，暫無正常顯示的路口影像。</p>`;
     syncCityCameraMorePanel(0);
   }
@@ -5665,13 +5664,17 @@ cameraKeyword.addEventListener("input", () => {
 });
 
 cameraRegionSelect.addEventListener("change", () => {
-  renderAllCameraLists();
+  updateCameraMetaText();
+  renderCameraList();
   updateCameraMapLayer();
 });
 
 cameraCitySelect?.addEventListener("change", () => {
-  fillCameraDistrictSelect(townshipSelect?.value || "");
+  fillCameraDistrictSelect();
+  cameraRegionSelect.value = CAMERA_DISTRICT_NEAR_POINT;
+  updateCameraMetaText();
   renderAllCameraLists();
+  updateCameraMapLayer();
 });
 
 freewayKeyword?.addEventListener("input", () => {
