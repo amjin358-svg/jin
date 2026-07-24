@@ -1,4 +1,4 @@
-const SW_VERSION = "jin-v14-refresh-select-smaller";
+const SW_VERSION = "jin-v15-cctv-progress-land";
 const PREFS_DB = "jin-bg-prefs-v1";
 const PREFS_STORE = "prefs";
 const PREFS_KEY = "subscription";

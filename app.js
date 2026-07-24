@@ -362,7 +362,7 @@ const REGION_GROUPS = [
 
 const CAMERA_DISTRICT_NEAR_POINT = "near-point";
 const CAMERA_DISTRICT_ALL_CITY = "all-city";
-const CAMERA_TOWN_RADIUS_KM = 6;
+const CAMERA_TOWN_RADIUS_KM = 6; // retained for map focus fallback only
 
 const FREEWAY_CAMERA_REGIONS = [
   { id: "all-freeway", label: "全部國道", lat: 23.7, lon: 120.96, radiusKm: 9999, routes: null },
@@ -1041,6 +1041,7 @@ function fillCameraDistrictSelect(preferredTown = "") {
     const option = document.createElement("option");
     option.value = `town:${item.town}`;
     option.textContent = item.town;
+    option.title = `${cityName}${item.town}（地政行政區）`;
     cameraRegionSelect.append(option);
   });
 
@@ -1538,13 +1539,33 @@ function getMinDistanceToPointsKm(lat, lon, points = []) {
   return best;
 }
 
+function resolveCameraLandDistrict(camera = {}) {
+  const city = String(camera.city || "").trim();
+  const lat = Number(camera.gisy);
+  const lon = Number(camera.gisx);
+  if (!city || !Number.isFinite(lat) || !Number.isFinite(lon)) {
+    return "";
+  }
+  const towns = TOWNSHIP_LOCATIONS.filter((item) => item.city === city);
+  if (!towns.length) {
+    return "";
+  }
+  let best = null;
+  towns.forEach((town) => {
+    const distanceKm = getDistanceKm(lat, lon, town.lat, town.lon);
+    if (!best || distanceKm < best.distanceKm) {
+      best = { town: town.town, distanceKm };
+    }
+  });
+  return best?.town || "";
+}
+
 function getFilteredSortedCityCameras() {
   if (!cityCameraDataset || !Array.isArray(cityCameraDataset.cameras)) {
     return [];
   }
   const selectedCity = getSelectedCameraCityName();
   const district = getSelectedCameraDistrict();
-  const radiusKm = getActiveCityCctvRadiusKm();
   const keyword = cameraKeyword.value.trim().toLowerCase();
   const normalize = (text) => text.toLowerCase().replaceAll("臺", "台");
   const focusPoint = getCityCameraFocusPoint();
@@ -1582,16 +1603,21 @@ function getFilteredSortedCityCameras() {
           Number.isFinite(focus.lat) && Number.isFinite(focus.lon)
             ? getDistanceKm(focus.lat, focus.lon, Number(camera.gisy), Number(camera.gisx))
             : Infinity;
-        return { ...camera, distanceKm, focusLabel: focus.label, areaLabel: camera.city || focus.label };
+        const landTown = resolveCameraLandDistrict(camera);
+        return {
+          ...camera,
+          distanceKm,
+          landTown,
+          focusLabel: focus.label,
+          areaLabel: landTown ? `${camera.city || ""}${landTown}` : camera.city || focus.label
+        };
       })
       .filter((camera) => {
-        if (district.id === CAMERA_DISTRICT_ALL_CITY) {
+        // Partition by Taiwan land-admin township/district (nearest official 鄉鎮市區).
+        if (district.id === CAMERA_DISTRICT_ALL_CITY || !district.town) {
           return true;
         }
-        if (!Number.isFinite(focus.lat) || !Number.isFinite(focus.lon)) {
-          return true;
-        }
-        return camera.distanceKm <= radiusKm;
+        return camera.landTown === district.town;
       })
       .sort((a, b) => a.distanceKm - b.distanceKm)
   );
@@ -2383,9 +2409,39 @@ async function appendVerifiedCameraCards(
   return { shown, liveCameras };
 }
 
-async function collectVerifiedLiveCameras(cameras, { isCurrent = () => true, limit = Infinity } = {}) {
+async function collectVerifiedLiveCameras(
+  cameras,
+  { isCurrent = () => true, limit = Infinity, onProgress = null } = {}
+) {
   const liveCameras = [];
   const seenIds = new Set();
+  const total = Math.max(1, cameras.length);
+  let checked = 0;
+
+  const reportProgress = () => {
+    if (typeof onProgress !== "function") {
+      return;
+    }
+    const byScan = Math.round((checked / total) * 100);
+    const byFound =
+      Number.isFinite(limit) && limit > 0 && limit < Infinity
+        ? Math.round((liveCameras.length / limit) * 100)
+        : 0;
+    const pct = Math.max(0, Math.min(99, Math.max(byScan, byFound)));
+    try {
+      onProgress({
+        pct,
+        checked,
+        total,
+        found: liveCameras.length,
+        limit
+      });
+    } catch {
+      /* ignore */
+    }
+  };
+
+  reportProgress();
   for (const camera of cameras) {
     if (!isCurrent()) {
       return liveCameras;
@@ -2398,20 +2454,38 @@ async function collectVerifiedLiveCameras(cameras, { isCurrent = () => true, lim
       continue;
     }
     if (isCameraMarkedBlackScreen(camera) || isCameraMaintenanceText(camera) || !isCameraUrlUsable(camera.html)) {
+      checked += 1;
+      reportProgress();
       continue;
     }
     const probe = await probeCameraStream(camera.html, { timeoutMs: 4500 });
+    checked += 1;
     if (!isCurrent()) {
       return liveCameras;
     }
     if (!probe.ok) {
       markCameraAsBlackScreen(camera.id);
+      reportProgress();
       continue;
     }
     if (cameraId) {
       seenIds.add(cameraId);
     }
     liveCameras.push(camera);
+    reportProgress();
+  }
+  if (typeof onProgress === "function") {
+    try {
+      onProgress({
+        pct: 100,
+        checked,
+        total,
+        found: liveCameras.length,
+        limit
+      });
+    } catch {
+      /* ignore */
+    }
   }
   return liveCameras;
 }
@@ -2541,14 +2615,23 @@ async function renderCameraList() {
     const loading = document.createElement("p");
     loading.className = "timestamp camera-switching";
     loading.dataset.cameraLoading = "1";
-    loading.textContent = `正在偵測監控串流：${scopeLabel}（預設最多 ${CITY_CCTV_PREVIEW_LIMIT} 處）`;
+    loading.innerHTML = `正在偵測監控串流：${scopeLabel}｜正在讀取畫面中 <strong data-cctv-progress>0%</strong>`;
     cameraList.append(loading);
   }
 
   const verifyLimit = CITY_CCTV_PREVIEW_LIMIT + CITY_CCTV_MORE_LIMIT;
   const liveCameras = await collectVerifiedLiveCameras(rows, {
     isCurrent,
-    limit: verifyLimit
+    limit: verifyLimit,
+    onProgress: ({ pct }) => {
+      if (!isCurrent()) {
+        return;
+      }
+      const progressEl = cameraList?.querySelector("[data-cctv-progress]");
+      if (progressEl) {
+        progressEl.textContent = `${pct}%`;
+      }
+    }
   });
   if (!isCurrent()) {
     return;

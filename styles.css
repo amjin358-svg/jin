@@ -414,7 +414,9 @@ label {
   width: 50%;
   max-width: 50%;
   box-sizing: border-box;
+  height: 42px;
   min-height: 42px;
+  max-height: 42px;
   border: 2px solid #0b7a45;
   border-radius: 10px;
   background: #0f9d58;
@@ -423,6 +425,21 @@ label {
   cursor: pointer;
   position: relative;
   z-index: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  flex-wrap: nowrap;
+  padding: 0 10px;
+  line-height: 1.1;
+}
+
+.locate-btn-label {
+  display: inline-block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .locate-btn-pulse,
@@ -1605,6 +1622,12 @@ input[type="checkbox"] {
   color: #1f5ae1;
 }
 
+.camera-switching [data-cctv-progress] {
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  color: #0b3fad;
+}
+
 .metrics {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2457,6 +2480,18 @@ input[type="checkbox"] {
   .locate-wrap .locate-btn {
     width: 50%;
     max-width: 50%;
+    height: 40px;
+    min-height: 40px;
+    max-height: 40px;
+    padding: 0 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    flex-wrap: nowrap;
+    font-size: 13px;
+  }
+
+  .locate-btn-label {
+    white-space: nowrap;
   }
 
   .grid {
