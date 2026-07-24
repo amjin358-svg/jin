@@ -1024,12 +1024,20 @@ label {
 }
 
 .camera-more-summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   cursor: pointer;
   list-style: none;
   color: #1f5ae1;
   font-weight: 700;
-  font-size: 14px;
+  font-size: 15px;
   margin: 0 0 10px;
+  padding: 8px 12px;
+  border: 1px solid #9fc9ee;
+  border-radius: 10px;
+  background: #eef6ff;
+  user-select: none;
 }
 
 .camera-more-summary::-webkit-details-marker {
@@ -1040,18 +1048,31 @@ label {
   content: "";
 }
 
+.camera-more-toggle-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.1em;
+  font-size: 1.05em;
+  line-height: 1;
+  transition: transform 0.18s ease;
+}
+
+.camera-more-details[open] > .camera-more-summary .camera-more-toggle-icon {
+  transform: rotate(90deg);
+}
+
 .camera-more-summary::after {
-  content: " ▾";
-  color: #1f5ae1;
-  font-weight: 700;
+  content: none;
 }
 
 .camera-more-details[open] > .camera-more-summary::after {
-  content: " ▴";
+  content: none;
 }
 
 .camera-more-summary:hover {
-  text-decoration: underline;
+  background: #e2f0ff;
+  text-decoration: none;
 }
 
 .freeway-camera-card {

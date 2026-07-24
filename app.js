@@ -362,7 +362,7 @@ const REGION_GROUPS = [
 
 const CAMERA_DISTRICT_NEAR_POINT = "near-point";
 const CAMERA_DISTRICT_ALL_CITY = "all-city";
-const CAMERA_TOWN_RADIUS_KM = 4;
+const CAMERA_TOWN_RADIUS_KM = 6;
 
 const FREEWAY_CAMERA_REGIONS = [
   { id: "all-freeway", label: "全部國道", lat: 23.7, lon: 120.96, radiusKm: 9999, routes: null },
@@ -581,7 +581,8 @@ const LIKE_COUNTER_KEY = "likes";
 const LIKE_COUNTER_STORAGE_KEY = "siteLikeCountV1";
 const LIKE_VOTED_STORAGE_KEY = "siteLikedV1";
 const CITY_CCTV_RADIUS_KM = 2;
-const CITY_CCTV_PREVIEW_LIMIT = 6;
+const CITY_CCTV_PREVIEW_LIMIT = 8;
+const CITY_CCTV_MORE_LIMIT = 16;
 const FREEWAY_CCTV_RADIUS_KM = 40;
 const FREEWAY_INTERCHANGE_BASE_RADIUS_KM = 40;
 const WINDY_TAIWAN_VIEW = { lat: 23.7, lon: 121.0, zoom: 5 };
@@ -1015,25 +1016,21 @@ function initRegionSelectors() {
 }
 
 function initCameraRegionSelect() {
-  fillCameraDistrictSelect(townshipSelect?.value || "");
+  syncCameraRegionToLocatorArea();
 }
 
 function getCameraCityForDistrictSelect() {
   return getSelectedCameraCityName() || citySelect?.value || "";
 }
 
-function fillCameraDistrictSelect(_preferredTown = "") {
+function fillCameraDistrictSelect(preferredTown = "") {
   if (!cameraRegionSelect) {
     return;
   }
   const cityName = getCameraCityForDistrictSelect();
   const previous = cameraRegionSelect.value;
+  const preferred = String(preferredTown || townshipSelect?.value || "").trim();
   cameraRegionSelect.innerHTML = "";
-
-  const nearOption = document.createElement("option");
-  nearOption.value = CAMERA_DISTRICT_NEAR_POINT;
-  nearOption.textContent = "定位點附近（2km）";
-  cameraRegionSelect.append(nearOption);
 
   const allOption = document.createElement("option");
   allOption.value = CAMERA_DISTRICT_ALL_CITY;
@@ -1047,11 +1044,18 @@ function fillCameraDistrictSelect(_preferredTown = "") {
     cameraRegionSelect.append(option);
   });
 
-  // Default is near-point (2km). Keep prior selection only when still valid for this city.
-  if (previous && [...cameraRegionSelect.options].some((option) => option.value === previous)) {
+  const preferredValue = preferred ? `town:${preferred}` : "";
+  const previousValid =
+    previous &&
+    previous !== CAMERA_DISTRICT_NEAR_POINT &&
+    [...cameraRegionSelect.options].some((option) => option.value === previous);
+
+  if (preferredValue && [...cameraRegionSelect.options].some((option) => option.value === preferredValue)) {
+    cameraRegionSelect.value = preferredValue;
+  } else if (previousValid) {
     cameraRegionSelect.value = previous;
   } else {
-    cameraRegionSelect.value = CAMERA_DISTRICT_NEAR_POINT;
+    cameraRegionSelect.value = CAMERA_DISTRICT_ALL_CITY;
   }
 }
 
@@ -1287,19 +1291,15 @@ function getCameraRouteCode(cameraId = "") {
 }
 
 function getSelectedCameraDistrict() {
-  const value = cameraRegionSelect?.value || CAMERA_DISTRICT_NEAR_POINT;
   const cityName = getCameraCityForDistrictSelect();
   const location = getCctvLocationFocus();
-  if (value === CAMERA_DISTRICT_NEAR_POINT) {
-    return {
-      id: CAMERA_DISTRICT_NEAR_POINT,
-      label: "定位點附近（2km）",
-      lat: location?.lat,
-      lon: location?.lon,
-      radiusKm: CITY_CCTV_RADIUS_KM,
-      town: ""
-    };
+  const locatorTown = String(townshipSelect?.value || "").trim();
+  let value = cameraRegionSelect?.value || "";
+
+  if (!value || value === CAMERA_DISTRICT_NEAR_POINT) {
+    value = locatorTown ? `town:${locatorTown}` : CAMERA_DISTRICT_ALL_CITY;
   }
+
   if (value === CAMERA_DISTRICT_ALL_CITY) {
     const city = CITY_LOCATIONS.find((item) => item.name === cityName);
     return {
@@ -1323,12 +1323,14 @@ function getSelectedCameraDistrict() {
       town
     };
   }
+
+  const city = CITY_LOCATIONS.find((item) => item.name === cityName);
   return {
-    id: CAMERA_DISTRICT_NEAR_POINT,
-    label: "定位點附近（2km）",
-    lat: location?.lat,
-    lon: location?.lon,
-    radiusKm: CITY_CCTV_RADIUS_KM,
+    id: CAMERA_DISTRICT_ALL_CITY,
+    label: cityName ? `${cityName}全部` : "本縣市全部",
+    lat: city?.lat ?? location?.lat,
+    lon: city?.lon ?? location?.lon,
+    radiusKm: 9999,
     town: ""
   };
 }
@@ -1342,17 +1344,16 @@ function getActiveCityCctvRadiusKm() {
 }
 
 function syncCameraRegionToLocatorArea() {
-  fillCameraDistrictSelect(townshipSelect?.value || "");
+  const town = String(townshipSelect?.value || "").trim();
+  fillCameraDistrictSelect(town);
   if (!cameraRegionSelect) {
     return;
   }
-  const town = String(townshipSelect?.value || "").trim();
   const townValue = town ? `town:${town}` : "";
   if (townValue && [...cameraRegionSelect.options].some((option) => option.value === townValue)) {
-    // Keep near-point as default after locate so 2km focus stays primary.
-    cameraRegionSelect.value = CAMERA_DISTRICT_NEAR_POINT;
+    cameraRegionSelect.value = townValue;
   } else {
-    cameraRegionSelect.value = CAMERA_DISTRICT_NEAR_POINT;
+    cameraRegionSelect.value = CAMERA_DISTRICT_ALL_CITY;
   }
 }
 
@@ -2178,6 +2179,49 @@ function probeImageStream(url, { timeoutMs = 8000 } = {}) {
   });
 }
 
+async function probeCameraStream(url, { timeoutMs = 4500 } = {}) {
+  if (!url || !isCameraUrlUsable(url)) {
+    return { ok: false, reason: "unusable" };
+  }
+  if (isLikelyDirectImageStream(url)) {
+    return probeImageStream(url, { timeoutMs });
+  }
+
+  // HTML / HLS player pages: confirm the endpoint is reachable, then show via iframe.
+  try {
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => controller.abort(), timeoutMs);
+    const response = await fetch(url, {
+      method: "GET",
+      mode: "cors",
+      signal: controller.signal,
+      cache: "no-store",
+      redirect: "follow"
+    });
+    window.clearTimeout(timer);
+    if (response.ok) {
+      return { ok: true, reason: "player-page", via: "cors" };
+    }
+  } catch {
+    /* fall through to no-cors reachability check */
+  }
+
+  try {
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => controller.abort(), timeoutMs);
+    await fetch(url, {
+      method: "GET",
+      mode: "no-cors",
+      signal: controller.signal,
+      cache: "no-store"
+    });
+    window.clearTimeout(timer);
+    return { ok: true, reason: "player-page-opaque", via: "no-cors" };
+  } catch {
+    return { ok: false, reason: "unreachable" };
+  }
+}
+
 function createCameraCard(camera, scopeLabel, { forceImage = false } = {}) {
   const card = document.createElement("article");
   card.className = "camera-item camera-item-pending";
@@ -2247,6 +2291,13 @@ function createCameraCard(camera, scopeLabel, { forceImage = false } = {}) {
   const frame = card.querySelector("iframe");
   if (frame) {
     let settled = false;
+    const finishOk = () => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      revealCard();
+    };
     const fail = (reason) => {
       if (settled) {
         return;
@@ -2255,32 +2306,13 @@ function createCameraCard(camera, scopeLabel, { forceImage = false } = {}) {
       hideDeadCard(reason);
     };
     frame.addEventListener("error", () => fail("iframe-error"));
-    frame.addEventListener("load", () => {
-      // Iframe players cannot be inspected; require a usable image probe instead.
-      probeImageStream(streamUrl, { timeoutMs: 5000 }).then((result) => {
-        if (!result.ok) {
-          fail(result.reason || "iframe-unverified");
-          return;
-        }
-        if (settled) {
-          return;
-        }
-        settled = true;
-        // Replace unverifiable iframe with the verified image stream.
-        const verifiedImg = document.createElement("img");
-        verifiedImg.src = streamUrl;
-        verifiedImg.alt = `${camera.id} 即時影像`;
-        verifiedImg.loading = "eager";
-        verifiedImg.referrerPolicy = "no-referrer-when-downgrade";
-        frame.replaceWith(verifiedImg);
-        revealCard();
-      });
-    });
+    frame.addEventListener("load", () => finishOk());
+    // Player pages often load slowly; keep the card if the iframe remains attached.
     window.setTimeout(() => {
-      if (!settled) {
-        fail("iframe-timeout");
+      if (!settled && card.isConnected) {
+        finishOk();
       }
-    }, 8000);
+    }, 6000);
   }
 
   scheduleCameraCrossRoadEnrichment(card, camera);
@@ -2315,7 +2347,7 @@ async function appendVerifiedCameraCards(
       continue;
     }
 
-    const probe = await probeImageStream(camera.html, { timeoutMs: 4500 });
+    const probe = await probeCameraStream(camera.html, { timeoutMs: 4500 });
     if (!isCurrent()) {
       return { shown, liveCameras };
     }
@@ -2324,7 +2356,9 @@ async function appendVerifiedCameraCards(
       continue;
     }
 
-    const card = createCameraCard(camera, scopeLabel, { forceImage: true });
+    const card = createCameraCard(camera, scopeLabel, {
+      forceImage: isLikelyDirectImageStream(camera.html)
+    });
     if (cameraId) {
       seenIds.add(cameraId);
     }
@@ -2349,12 +2383,15 @@ async function appendVerifiedCameraCards(
   return { shown, liveCameras };
 }
 
-async function collectVerifiedLiveCameras(cameras, { isCurrent = () => true } = {}) {
+async function collectVerifiedLiveCameras(cameras, { isCurrent = () => true, limit = Infinity } = {}) {
   const liveCameras = [];
   const seenIds = new Set();
   for (const camera of cameras) {
     if (!isCurrent()) {
       return liveCameras;
+    }
+    if (liveCameras.length >= limit) {
+      break;
     }
     const cameraId = String(camera.id || "");
     if (cameraId && seenIds.has(cameraId)) {
@@ -2363,7 +2400,7 @@ async function collectVerifiedLiveCameras(cameras, { isCurrent = () => true } = 
     if (isCameraMarkedBlackScreen(camera) || isCameraMaintenanceText(camera) || !isCameraUrlUsable(camera.html)) {
       continue;
     }
-    const probe = await probeImageStream(camera.html, { timeoutMs: 7000 });
+    const probe = await probeCameraStream(camera.html, { timeoutMs: 4500 });
     if (!isCurrent()) {
       return liveCameras;
     }
@@ -2424,7 +2461,7 @@ function updateCameraMetaText() {
   const cityFetchedAt = cityCameraDataset.fetchedAt ? formatDateTime(cityCameraDataset.fetchedAt) : "未提供";
   const focusLabel = getCctvLocationFocus().label || "所選位置";
   const district = getSelectedCameraDistrict();
-  const areaLabel = district?.label || "定位點附近（2km）";
+  const areaLabel = district?.label || townshipSelect?.value || citySelect?.value || "所選地區";
   cameraMeta.textContent = "";
 
   const primary = document.createElement("span");
@@ -2457,7 +2494,7 @@ function resetCityCameraLists() {
     cameraMoreDetails.open = false;
   }
   if (cameraMoreSummaryText) {
-    cameraMoreSummaryText.textContent = "查看更多路口監控";
+    cameraMoreSummaryText.textContent = "收合更多監控";
   }
 }
 
@@ -2467,12 +2504,12 @@ function syncCityCameraMorePanel(extraCount) {
   }
   if (extraCount > 0) {
     cameraMoreDetails.hidden = false;
-    cameraMoreSummaryText.textContent = `查看更多路口監控（另 ${extraCount} 支）`;
+    cameraMoreSummaryText.textContent = `收合更多監控（另 ${extraCount} 支）`;
     return;
   }
   cameraMoreDetails.hidden = true;
   cameraMoreDetails.open = false;
-  cameraMoreSummaryText.textContent = "查看更多路口監控";
+  cameraMoreSummaryText.textContent = "收合更多監控";
 }
 
 async function renderCameraList() {
@@ -2495,36 +2532,78 @@ async function renderCameraList() {
   const scopeLabel = district?.label || getCctvLocationFocus().label || "所選位置";
   if (!rows.length) {
     if (cameraList) {
-      cameraList.innerHTML = `<p class="status-warn">所選位置直線距離 ${getActiveCityCctvRadiusKm()} 公里內查無市區路口監控點，請更換地區範圍或關鍵字。</p>`;
+      cameraList.innerHTML = `<p class="status-warn">所選地區範圍內查無市區路口監控點，請更換縣市、地區範圍或關鍵字。</p>`;
     }
     return;
   }
 
-  // Show the selected area immediately, then stream in live cameras up to the preview limit.
   if (cameraList) {
     const loading = document.createElement("p");
     loading.className = "timestamp camera-switching";
     loading.dataset.cameraLoading = "1";
-    loading.textContent = `正在顯示：${scopeLabel}（最多 ${CITY_CCTV_PREVIEW_LIMIT} 處）`;
+    loading.textContent = `正在偵測監控串流：${scopeLabel}（預設最多 ${CITY_CCTV_PREVIEW_LIMIT} 處）`;
     cameraList.append(loading);
   }
 
-  const { shown } = await appendVerifiedCameraCards(cameraList, rows, scopeLabel, {
-    limit: CITY_CCTV_PREVIEW_LIMIT,
+  const verifyLimit = CITY_CCTV_PREVIEW_LIMIT + CITY_CCTV_MORE_LIMIT;
+  const liveCameras = await collectVerifiedLiveCameras(rows, {
     isCurrent,
-    onFirstCard: () => {
-      cameraList?.querySelector("[data-camera-loading]")?.remove();
-    }
+    limit: verifyLimit
   });
   if (!isCurrent()) {
     return;
   }
 
   cameraList?.querySelector("[data-camera-loading]")?.remove();
-  syncCityCameraMorePanel(0);
+  if (!liveCameras.length) {
+    if (cameraList) {
+      cameraList.innerHTML = `<p class="status-warn">附近監控目前多為維修／無畫面，暫無正常顯示的路口影像。</p>`;
+    }
+    syncCityCameraMorePanel(0);
+    updateCameraMetaText();
+    updateCameraMapLayer();
+    return;
+  }
+
+  const previewCameras = liveCameras.slice(0, CITY_CCTV_PREVIEW_LIMIT);
+  const extraCameras = liveCameras.slice(CITY_CCTV_PREVIEW_LIMIT);
+
+  for (const camera of previewCameras) {
+    if (!isCurrent()) {
+      return;
+    }
+    const card = createCameraCard(camera, scopeLabel, {
+      forceImage: isLikelyDirectImageStream(camera.html)
+    });
+    cameraList.append(card);
+    await waitForCameraCardDecision(card, 8000);
+  }
+  if (!isCurrent()) {
+    return;
+  }
+
+  if (extraCameras.length && cameraListMore) {
+    syncCityCameraMorePanel(extraCameras.length);
+    for (const camera of extraCameras) {
+      if (!isCurrent()) {
+        return;
+      }
+      const card = createCameraCard(camera, scopeLabel, {
+        forceImage: isLikelyDirectImageStream(camera.html)
+      });
+      cameraListMore.append(card);
+      await waitForCameraCardDecision(card, 8000);
+    }
+  } else {
+    syncCityCameraMorePanel(0);
+  }
+
+  if (!isCurrent()) {
+    return;
+  }
   updateCameraMetaText();
   updateCameraMapLayer();
-  if (!shown && !cameraList?.querySelector(".camera-item-live")) {
+  if (!cameraList?.querySelector(".camera-item-live")) {
     cameraList.innerHTML = `<p class="status-warn">附近監控目前多為維修／無畫面，暫無正常顯示的路口影像。</p>`;
     syncCityCameraMorePanel(0);
   }
@@ -5622,7 +5701,8 @@ async function performFullRefresh(triggerSource) {
 citySelect.addEventListener("change", () => {
   fillTownshipSelect(citySelect.value);
   saveRegionPreference();
-  fillCameraDistrictSelect(townshipSelect?.value || "");
+  syncSelectValue(cameraCitySelect, "follow");
+  syncCameraRegionToLocatorArea();
   performFullRefresh("manual");
   renderAllCameraLists();
   updateMapForCityChange();
@@ -5630,7 +5710,8 @@ citySelect.addEventListener("change", () => {
 
 townshipSelect.addEventListener("change", () => {
   saveRegionPreference();
-  fillCameraDistrictSelect(townshipSelect.value);
+  syncSelectValue(cameraCitySelect, "follow");
+  syncCameraRegionToLocatorArea();
   performFullRefresh("manual");
   renderAllCameraLists();
   updateMapForCityChange();
@@ -5666,8 +5747,19 @@ cameraRegionSelect.addEventListener("change", () => {
 });
 
 cameraCitySelect?.addEventListener("change", () => {
-  fillCameraDistrictSelect();
-  cameraRegionSelect.value = CAMERA_DISTRICT_NEAR_POINT;
+  const selectedCity = getSelectedCameraCityName() || citySelect?.value || "";
+  const locatorTown = String(townshipSelect?.value || "").trim();
+  const sameAsLocator = !cameraCitySelect || cameraCitySelect.value === "follow" || selectedCity === citySelect?.value;
+  fillCameraDistrictSelect(sameAsLocator ? locatorTown : "");
+  if (sameAsLocator && locatorTown) {
+    const townValue = `town:${locatorTown}`;
+    if ([...cameraRegionSelect.options].some((option) => option.value === townValue)) {
+      cameraRegionSelect.value = townValue;
+    }
+  } else {
+    const firstTown = TOWNSHIP_LOCATIONS.find((item) => item.city === selectedCity);
+    cameraRegionSelect.value = firstTown ? `town:${firstTown.town}` : CAMERA_DISTRICT_ALL_CITY;
+  }
   updateCameraMetaText();
   renderAllCameraLists();
   updateCameraMapLayer();
@@ -5764,10 +5856,11 @@ function fitSingleLineText(element, { maxPx, minPx, fillRatio = 1 } = {}) {
   element.style.letterSpacing = "";
   const parentWidth = Math.floor(parent.getBoundingClientRect().width);
   const selfWidth = Math.floor(element.getBoundingClientRect().width);
-  const available = Math.max(0, Math.floor((selfWidth || parentWidth) * Math.min(1, Math.max(0.85, fillRatio))));
-  if (!available) {
+  const fullWidth = Math.max(0, selfWidth || parentWidth);
+  if (!fullWidth) {
     return;
   }
+  const available = Math.max(1, Math.floor(fullWidth * Math.min(1, Math.max(0.9, fillRatio || 1))));
   const upper = Number.isFinite(maxPx) ? maxPx : Math.max(16, Math.floor(available * 0.12));
   const lower = Number.isFinite(minPx) ? minPx : 10;
   let low = lower;
