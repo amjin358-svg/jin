@@ -20,12 +20,36 @@ const STARTERS = [
 
 function buildAssistantReply(prompt: string): string {
   const lower = prompt.toLowerCase();
-  const match = products.find(
-    (product) =>
-      lower.includes(product.name.toLowerCase().split(" ")[0] ?? "") ||
-      product.tags.some((tag) => lower.includes(tag.toLowerCase())) ||
-      lower.includes(product.categorySlug.replace("-", " ")),
-  );
+
+  const scored = products
+    .map((product) => {
+      let score = 0;
+      const categoryLabel = product.categorySlug.replaceAll("-", " ");
+      if (lower.includes(categoryLabel)) score += 5;
+      if (lower.includes("apparel") && product.categorySlug === "branded-apparel") score += 5;
+      if (lower.includes("supplement") && product.categorySlug === "health-supplements") score += 5;
+      if (lower.includes("ceramic") && product.slug.includes("ceramic")) score += 4;
+      if (lower.includes("omega") && product.slug.includes("omega")) score += 4;
+      if (lower.includes("oem") && product.tags.some((tag) => tag.toLowerCase().includes("oem") || tag.toLowerCase().includes("odm"))) {
+        score += 2;
+      }
+      if (product.tags.some((tag) => lower.includes(tag.toLowerCase()))) score += 1;
+      const firstName = product.name.toLowerCase().split(" ")[0] ?? "";
+      if (firstName.length > 3 && lower.includes(firstName)) score += 2;
+
+      const priceMatch = lower.match(/under\s*\$?\s*(\d+(?:\.\d+)?)/);
+      if (priceMatch) {
+        const max = Number(priceMatch[1]);
+        if (product.unitPrice <= max) score += 3;
+        else score -= 2;
+      }
+
+      return { product, score };
+    })
+    .filter((entry) => entry.score > 0)
+    .sort((a, b) => b.score - a.score);
+
+  const match = scored[0]?.product;
 
   if (lower.includes("landed") || lower.includes("cost")) {
     const product = match ?? products[0];
