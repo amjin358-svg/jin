@@ -1170,12 +1170,12 @@ label {
   color: #8a6d00;
   background: #fffdf3;
   appearance: auto;
-  font-size: 18px;
-  font-weight: 800;
+  font-size: 14px;
+  font-weight: 700;
 }
 
 .auto-refresh-controls select option {
-  font-size: 18px;
+  font-size: 14px;
   font-weight: 700;
 }
 
@@ -2567,8 +2567,8 @@ input[type="checkbox"] {
 
   .auto-refresh-controls select,
   .auto-refresh-controls select option {
-    font-size: 15px;
-    font-weight: 800;
+    font-size: 12px;
+    font-weight: 700;
   }
 
   .closure-list {
@@ -2899,8 +2899,8 @@ input[type="checkbox"] {
 
   .auto-refresh-controls select,
   .auto-refresh-controls select option {
-    font-size: 14px;
-    font-weight: 800;
+    font-size: 11px;
+    font-weight: 700;
   }
 
   .map-pane,
