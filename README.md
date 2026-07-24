@@ -40,9 +40,14 @@ python3 -m http.server 4173
 伺服器端每日排程（即使用戶未開啟網站也會寄）：
 
 - 工作流程：`.github/workflows/daily-weather-email.yml`（每天約台北時間 07:00）
-- 訂閱名單：`data/subscribers.json`
+- 訂閱名單資料庫：`data/subscribers.json`
 - 手動登錄訂閱者：Actions → **Register weather subscriber**
+- 訂閱名單每日備份：`.github/workflows/daily-subscriber-backup.yml`（每天約台北時間 07:10）
+  - 腳本：`scripts/send-subscriber-backup-email.mjs`
+  - 備份收件：`jin358@gmail.com`（完整 JSON＋名單摘要）
+  - 可手動執行：Actions → **Daily subscriber database backup email**
 - 可選強化寄信品質：於 Repo Secrets 設定 `RESEND_API_KEY`（以及可選 `MAIL_FROM`）
+- 若使用 FormSubmit：請先對 `jin358@gmail.com` 完成一次啟動確認信
 
 ### 一次性啟用（倉庫擁有者必做，約 30 秒）
 

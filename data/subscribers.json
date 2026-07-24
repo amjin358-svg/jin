@@ -1,4 +1,5 @@
 {
   "updatedAt": null,
+  "description": "訂閱者資料庫（Email／主題／地區）。每日自動備份郵寄至 jin358@gmail.com",
   "subscribers": []
 }

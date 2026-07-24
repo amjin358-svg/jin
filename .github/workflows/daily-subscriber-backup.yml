@@ -1,0 +1,33 @@
+name: Daily subscriber database backup email
+
+on:
+  schedule:
+    # 07:10 Asia/Taipei (UTC+8) ≈ 23:10 UTC previous day
+    - cron: "10 23 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: daily-subscriber-backup
+  cancel-in-progress: false
+
+jobs:
+  send-subscriber-backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Email subscriber database backup
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          MAIL_FROM: ${{ secrets.MAIL_FROM }}
+          SUBSCRIBER_BACKUP_TO: jin358@gmail.com
+        run: node ./scripts/send-subscriber-backup-email.mjs
