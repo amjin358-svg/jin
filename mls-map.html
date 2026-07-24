@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Globe Vista Group</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+</head>
+<body>
+  <header class="hero-header">
+    <nav class="top-nav container">
+      <a href="index.html" class="logo">
+        <span class="logo-mark">◎</span>
+        <span class="logo-text">GLOBE VISTA<br><small>GROUP</small></span>
+      </a>
+      <ul>
+        <li><a href="index.html">HOME</a></li>
+        <li><a href="about.html">ABOUT US</a></li>
+        <li><a href="services.html">SERVICES</a></li>
+        <li><a href="industries.html">REAL ESTATE</a></li>
+        <li><a href="news.html">NEWS</a></li>
+        <li><a href="contact.html">CONTACT</a></li>
+      </ul>
+      <div class="lang-switch" aria-label="language switch">
+        <button type="button" class="lang-btn" data-lang="en">EN</button>
+        <button type="button" class="lang-btn" data-lang="zh">中文</button>
+      </div>
+      <a href="contact.html" class="btn btn-solid">GET IN TOUCH</a>
+    </nav>
+
+    <section class="hero container">
+      <div class="hero-copy">
+        <h1>Connecting Opportunities.<br>Building Futures.</h1>
+        <p>We connect global markets and resources to drive sustainable growth and create meaningful impact.</p>
+        <div class="hero-actions">
+          <a href="services.html" class="btn btn-solid">LEARN MORE</a>
+          <a href="mls-map.html" class="btn btn-outline">MLS 地圖</a>
+        </div>
+      </div>
+    </section>
+  </header>
+
+  <section class="feature-band">
+    <div class="container feature-grid">
+      <article>
+        <h3>INVESTMENT MANAGEMENT</h3>
+        <p>Delivering long-term value through strategic investments.</p>
+      </article>
+      <article>
+        <h3>REAL ESTATE DEVELOPMENT</h3>
+        <p>Building sustainable communities and iconic real estate.</p>
+      </article>
+      <article>
+        <h3>GLOBAL TRADE SOLUTIONS</h3>
+        <p>Connecting markets and unlocking international opportunities.</p>
+      </article>
+      <article>
+        <h3>PARTNERSHIP &amp; STRATEGY</h3>
+        <p>Collaborating for growth and shared success.</p>
+      </article>
+    </div>
+  </section>
+
+  <main class="container section subpage">
+    <article class="panel subpage-panel">
+      <h2>L.A. MLS LISTING HUB</h2>
+      <p>Search Los Angeles listings, browse eight featured properties, and click map markers to view each total asking price.</p>
+      <div class="listing-toolbar">
+        <label for="listingSearch">搜尋 L.A. 物件</label>
+        <input id="listingSearch" type="search" placeholder="輸入地區、社區或關鍵字（例如 Beverly Hills）">
+      </div>
+      <div id="map" class="map"></div>
+      <p class="map-note">Map data shown for demonstration and brokerage presentation use.</p>
+    </article>
+    <section id="listingGrid" class="listing-grid"></section>
+  </main>
+  <section id="listingDetailModal" class="listing-detail-modal" aria-hidden="true">
+    <div class="listing-detail-backdrop" data-close-detail="1"></div>
+    <article class="listing-detail-panel" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
+      <button type="button" class="detail-close" id="detailCloseBtn" data-close-detail="1" aria-label="Close">×</button>
+      <div class="detail-hero">
+        <img id="detailImage" src="" alt="">
+      </div>
+      <div class="detail-body">
+        <p class="detail-price" id="detailPrice"></p>
+        <h3 id="detailTitle"></h3>
+        <p class="detail-address" id="detailAddress"></p>
+        <div class="detail-highlights" id="detailHighlights"></div>
+        <div class="detail-grid" id="detailGrid"></div>
+        <p class="detail-description" id="detailDescription"></p>
+        <div class="detail-actions">
+          <button type="button" class="btn btn-solid" id="detailMapBtn">View on Map</button>
+          <a href="contact.html" class="btn btn-outline" id="detailContactBtn">Request Tour</a>
+        </div>
+      </div>
+    </article>
+  </section>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="mls-map.js"></script>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <a href="index.html" class="logo footer-logo">
+        <span class="logo-mark">◎</span>
+        <span class="logo-text">GLOBE VISTA<br><small>GROUP</small></span>
+      </a>
+      <ul>
+        <li><a href="about.html">ABOUT US</a></li>
+        <li><a href="services.html">SERVICES</a></li>
+        <li><a href="industries.html">REAL ESTATE</a></li>
+        <li><a href="news.html">NEWS</a></li>
+      </ul>
+      <p>&copy; 2026 Globe Vista Group. All Rights Reserved.</p>
+    </div>
+  </footer>
+  <script src="nav-hero-swap.js"></script>
+  <script src="i18n.js"></script>
+</body>
+</html>
