@@ -3148,7 +3148,7 @@ function parseTyphoonOfficialText(newsMarkdown, warnMarkdown) {
   };
 }
 
-function buildWindyEmbedUrl(lat, lon, zoom = 6, { precision = 3 } = {}) {
+function buildWindyEmbedUrl(lat, lon, zoom = 5, { precision = 3 } = {}) {
   const digits = Math.min(6, Math.max(3, Number(precision) || 3));
   const fmt = (value) => Number(value).toFixed(digits);
   const params = new URLSearchParams({
@@ -3518,16 +3518,99 @@ function decodeHtmlEntities(text) {
 }
 
 function formatFloodStationLabel(point = {}) {
-  const name = decodeHtmlEntities(point.name || point.areaName || "");
-  const numberMatch = name.match(/編號\s*([0-9]+)/);
-  if (numberMatch) {
-    return `編號${numberMatch[1]}`;
+  const county = String(point.county || "").trim();
+  const town = String(point.town || "").trim();
+  const area = `${county}${town}`.trim();
+  const name = decodeHtmlEntities(point.name || point.areaName || "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  let locationPart = name
+    .replace(/[（(]\s*編號\s*[0-9]+\s*[）)]/g, "")
+    .replace(/編號\s*[0-9]+/g, "")
+    .trim();
+
+  if (town && locationPart.startsWith(town)) {
+    locationPart = locationPart.slice(town.length).replace(/^[-－\s]+/, "").trim();
   }
-  const cleaned = name.replace(/\s+/g, " ").trim();
-  if (cleaned) {
-    return cleaned;
+  if (county && locationPart.startsWith(county)) {
+    locationPart = locationPart.slice(county.length).replace(/^[-－\s]+/, "").trim();
   }
-  return `${point.county || ""}${point.town || ""}`.trim() || "感測點";
+
+  const hasOwnHouseNumber = /\d+號/.test(locationPart) || /\d+號/.test(name);
+  const nearbyHouse = hasOwnHouseNumber
+    ? ""
+    : findNearbyFloodHouseNumber(point, {
+        excludeSensorId: point.sensorid,
+        maxKm: 0.8
+      });
+
+  const parts = [];
+  if (area) {
+    parts.push(area);
+  }
+  if (locationPart) {
+    parts.push(locationPart);
+  } else if (nearbyHouse) {
+    parts.push(`鄰近門牌${nearbyHouse}`);
+  } else if (name) {
+    parts.push(name);
+  }
+
+  let label = parts.join(" ").replace(/\s+/g, " ").trim();
+  if (
+    !hasOwnHouseNumber &&
+    nearbyHouse &&
+    label &&
+    !label.includes(nearbyHouse) &&
+    !label.includes("鄰近門牌")
+  ) {
+    label = `${label}（鄰近門牌${nearbyHouse}）`;
+  }
+
+  return label || area || "感測點";
+}
+
+function extractFloodHouseNumberHint(text = "") {
+  const raw = decodeHtmlEntities(String(text || ""));
+  if (!raw) {
+    return "";
+  }
+  const match = raw.match(
+    /(?:[\u4e00-\u9fff\w]+)?\d+(?:[-－之]\d+)*(?:巷\d+號|弄\d+號|號(?:[-－之]\d+)?)(?:前|旁|口)?/
+  );
+  if (!match) {
+    return "";
+  }
+  return match[0].replace(/^[-－\s]+/, "").trim();
+}
+
+function findNearbyFloodHouseNumber(point = {}, { excludeSensorId = "", maxKm = 0.8 } = {}) {
+  const lat = Number(point.lat);
+  const lon = Number(point.lon);
+  if (!Number.isFinite(lat) || !Number.isFinite(lon) || !appState.floodStations?.length) {
+    return "";
+  }
+
+  let best = null;
+  appState.floodStations.forEach((station) => {
+    if (excludeSensorId && station.sensorid === excludeSensorId) {
+      return;
+    }
+    const house = extractFloodHouseNumberHint(station.name);
+    if (!house) {
+      return;
+    }
+    const distanceKm = getDistanceKm(lat, lon, station.lat, station.lon);
+    if (!(distanceKm <= maxKm)) {
+      return;
+    }
+    if (!best || distanceKm < best.distanceKm) {
+      best = { house, distanceKm, county: station.county, town: station.town };
+    }
+  });
+
+  return best?.house || "";
 }
 
 function getNearbyFloodWarnings() {
@@ -4848,12 +4931,12 @@ function updateFloodMapLayer() {
     });
     marker.bindPopup(
       `
-        <strong>${point.name}</strong><br/>
-        ${point.county}${point.town}<br/>
+        <strong>${formatFloodStationLabel(point)}</strong><br/>
+        ${point.county || ""}${point.town || ""}<br/>
         警示等級：${point.level}<br/>
         即時水深：${point.depthCm} cm<br/>
         更新時間：${point.updatedAt || "-"}<br/>
-        來源：水利署 IoW 即時感測
+        來源：水利署 IoW 即時感測（智慧尺標）
       `
     );
     mapFloodLayer.addLayer(marker);
@@ -5734,8 +5817,8 @@ function fitHeroTexts() {
     riskBadge?.parentElement?.getBoundingClientRect().width || document.documentElement.clientWidth || 0
   );
   fitSingleLineText(riskBadge, {
-    maxPx: Math.min(36, Math.floor(riskParentWidth * 0.11)),
-    minPx: 15
+    maxPx: Math.min(44, Math.floor(riskParentWidth * 0.14)),
+    minPx: 18
   });
 }
 

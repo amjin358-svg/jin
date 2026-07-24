@@ -1,4 +1,4 @@
-const SW_VERSION = "jin-v4-background-notify";
+const SW_VERSION = "jin-v5-risk-flood-ui";
 const PREFS_DB = "jin-bg-prefs-v1";
 const PREFS_STORE = "prefs";
 const PREFS_KEY = "subscription";
