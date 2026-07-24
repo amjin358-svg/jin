@@ -316,12 +316,16 @@
           <p id="freewayCameraMeta" class="timestamp">國道資料讀取中...</p>
           <div class="camera-controls camera-controls-grid freeway-camera-controls">
             <div>
-              <label for="freewayCitySelect">縣市範圍</label>
-              <select id="freewayCitySelect" aria-label="選擇國道 CCTV 縣市範圍"></select>
+              <label for="freewayRegionSelect">國道路段</label>
+              <select id="freewayRegionSelect" aria-label="選擇國道路段"></select>
             </div>
             <div>
-              <label for="freewayRegionSelect">國道／交流道範圍</label>
-              <select id="freewayRegionSelect" aria-label="選擇國道交流道範圍"></select>
+              <label for="freewayCitySelect">縣市交流道</label>
+              <select id="freewayCitySelect" aria-label="選擇縣市交流道範圍"></select>
+            </div>
+            <div>
+              <label for="freewayInterchangeSelect">交流道／路段</label>
+              <select id="freewayInterchangeSelect" aria-label="選擇交流道或路段"></select>
             </div>
           </div>
           <div id="freewayCameraList" class="camera-list"></div>
@@ -431,7 +435,7 @@
             <li>區域記憶：瀏覽器 localStorage 保留上次選取的區域／縣市／鄉鎮。</li>
             <li>停班停課資料：行政院人事行政總處公告頁面（經公開鏡像讀取）。</li>
             <li>縣市路口監控：交通部運輸資料流通服務（各縣市 CCTV 公開資料快照）。</li>
-            <li>國道CCTV監控：交通部公路局即時 CCTV 公開資料（部署時快照）。</li>
+            <li>國道CCTV監控：交通部公路局即時 CCTV（預設國道1號，可選全國縣市交流道／國道路段）。</li>
             <li>積淹水警示：經濟部水利署 IoW 即時淹水深度感測（公開 API）。</li>
             <li>颱風分析：中央氣象署颱風消息／警報頁面即時解析。</li>
             <li>Windy颱風走勢圖：Windy.com 颱風／氣象動態圖嵌入。</li>
@@ -450,9 +454,9 @@
         </p>
         <button id="likeBtn" type="button" class="like-btn" aria-label="按讚">
           <span class="like-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" focusable="false">
+            <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
               <path
-                d="M12 21s-6.7-4.35-9.33-8.1C.7 10.1 1.1 6.7 3.8 5.2c2-1.1 4.4-.5 5.8 1.2C11 5 13.2 4.1 15.2 5.2c2.7 1.5 3.1 4.9 1.13 7.7C18.7 16.65 12 21 12 21z"
+                d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
               />
             </svg>
           </span>

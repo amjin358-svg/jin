@@ -1,4 +1,4 @@
-const SW_VERSION = "jin-v18-freeway-interchange-progress";
+const SW_VERSION = "jin-v19-like-freeway-n1";
 const PREFS_DB = "jin-bg-prefs-v1";
 const PREFS_STORE = "prefs";
 const PREFS_KEY = "subscription";

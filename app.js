@@ -365,13 +365,12 @@ const CAMERA_DISTRICT_ALL_CITY = "all-city";
 const CAMERA_TOWN_RADIUS_KM = 6; // retained for map focus fallback only
 
 const FREEWAY_CAMERA_REGIONS = [
-  { id: "near-city", label: "國道交流道（預設）", lat: null, lon: null, radiusKm: 40, routes: null },
-  { id: "all-freeway", label: "全部國道", lat: 23.7, lon: 120.96, radiusKm: 9999, routes: null },
   { id: "n1", label: "國道1號", lat: 24.5, lon: 120.9, radiusKm: 9999, routes: ["N1", "N1H", "N1K"] },
   { id: "n3", label: "國道3號", lat: 24.5, lon: 120.9, radiusKm: 9999, routes: ["N3", "N3A", "N3K", "N3N"] },
   { id: "n5", label: "國道5號", lat: 24.8, lon: 121.8, radiusKm: 9999, routes: ["N5"] },
   { id: "n2-n4", label: "國道2／4號", lat: 24.9, lon: 121.2, radiusKm: 9999, routes: ["N2", "N2A", "N4"] },
-  { id: "n6-n8-n10", label: "國道6／8／10號", lat: 23.8, lon: 120.6, radiusKm: 9999, routes: ["N6", "N8", "N10"] }
+  { id: "n6-n8-n10", label: "國道6／8／10號", lat: 23.8, lon: 120.6, radiusKm: 9999, routes: ["N6", "N8", "N10"] },
+  { id: "all-freeway", label: "全部國道", lat: 23.7, lon: 120.96, radiusKm: 9999, routes: null }
 ];
 
 const REGION_STORAGE_KEY = "weatherRegionPreferenceV1";
@@ -476,6 +475,7 @@ const freewayCameraMeta = document.querySelector("#freewayCameraMeta");
 const freewayCameraList = document.querySelector("#freewayCameraList");
 const freewayCitySelect = document.querySelector("#freewayCitySelect");
 const freewayRegionSelect = document.querySelector("#freewayRegionSelect");
+const freewayInterchangeSelect = document.querySelector("#freewayInterchangeSelect");
 const mapLayerList = document.querySelector("#mapLayerList");
 const airSummary = document.querySelector("#airSummary");
 const aqiMetric = document.querySelector("#aqiMetric");
@@ -514,7 +514,7 @@ let freewayCameraDataset = null;
 let freewayInterchangeIndex = null;
 let blackScreenCameraIds = new Set();
 let utilityAlertTimers = [];
-const DISABLED_CAMERA_HOSTS = new Set(["cctvs.freeway.gov.tw"]);
+const DISABLED_CAMERA_HOSTS = new Set([]);
 let warningMap = null;
 let mapFloodLayer = null;
 let mapCameraLayer = null;
@@ -1099,11 +1099,74 @@ function initFreewayRegionSelect() {
     option.textContent = region.label;
     freewayRegionSelect.append(option);
   });
-  freewayRegionSelect.value = "near-city";
+  freewayRegionSelect.value = "n1";
 }
 
 function initFreewayCitySelect() {
-  fillCameraCitySelectOptions(freewayCitySelect, "follow");
+  fillCameraCitySelectOptions(freewayCitySelect, "all");
+  // Prefer nationwide interchange browsing for freeway CCTV.
+  if (freewayCitySelect) {
+    freewayCitySelect.value = "all";
+  }
+}
+
+function fillFreewayInterchangeSelect(preferred = "") {
+  if (!freewayInterchangeSelect) {
+    return;
+  }
+  const previous = preferred || freewayInterchangeSelect.value || "all";
+  const options = getFreewayInterchangeOptions();
+  freewayInterchangeSelect.innerHTML = "";
+
+  const allOption = document.createElement("option");
+  allOption.value = "all";
+  allOption.textContent = "全部交流道／路段";
+  freewayInterchangeSelect.append(allOption);
+
+  options.forEach((item) => {
+    const option = document.createElement("option");
+    option.value = item.name;
+    option.textContent = item.city ? `${item.name}（${item.city}）` : item.name;
+    freewayInterchangeSelect.append(option);
+  });
+
+  if ([...freewayInterchangeSelect.options].some((option) => option.value === previous)) {
+    freewayInterchangeSelect.value = previous;
+  } else {
+    freewayInterchangeSelect.value = "all";
+  }
+}
+
+function getSelectedFreewayInterchangeName() {
+  const value = freewayInterchangeSelect?.value || "all";
+  return value === "all" ? "" : value;
+}
+
+function cameraMatchesFreewayRoute(camera, region) {
+  if (!region?.routes?.length) {
+    return true;
+  }
+  return region.routes.includes(getCameraRouteCode(camera.id));
+}
+
+function getFreewayInterchangeOptions() {
+  if (!freewayInterchangeIndex?.all?.length) {
+    return [];
+  }
+  const region = getSelectedFreewayRegion();
+  const selectedCity = getSelectedFreewayCityName();
+  const routeCameras = (freewayCameraDataset?.cameras || []).filter((camera) =>
+    cameraMatchesFreewayRoute(camera, region)
+  );
+  const namesOnRoute = new Set();
+  routeCameras.forEach((camera) => {
+    extractFreewayInterchangeNames(camera.stakenumber).forEach((name) => namesOnRoute.add(name));
+  });
+
+  return freewayInterchangeIndex.all
+    .filter((item) => namesOnRoute.has(item.name))
+    .filter((item) => !selectedCity || item.city === selectedCity)
+    .sort((a, b) => a.name.localeCompare(b.name, "zh-Hant"));
 }
 
 function getSelectedCameraCityNameFrom(selectElement) {
@@ -1645,17 +1708,35 @@ function getFilteredSortedFreewayCameras() {
     return [];
   }
   const selectedCity = getSelectedFreewayCityName();
-  const interchanges = getFreewayInterchangesForCity(selectedCity);
-  const radiusKm = FREEWAY_INTERCHANGE_BASE_RADIUS_KM;
+  const region = getSelectedFreewayRegion();
+  const interchangeName = getSelectedFreewayInterchangeName();
+  const interchanges = getFreewayInterchangesForCity(selectedCity).filter((item) => {
+    if (!interchangeName) {
+      return true;
+    }
+    return item.name === interchangeName;
+  });
+  const radiusKm = interchangeName
+    ? 8
+    : selectedCity
+      ? FREEWAY_INTERCHANGE_BASE_RADIUS_KM
+      : 9999;
   const weatherFocus = getCctvLocationFocus();
+  const normalize = (text) => String(text || "").toLowerCase().replaceAll("臺", "台");
+  const targetInterchange = normalize(interchangeName);
 
   return dedupeCamerasByIdentity(
     getFreewayCamerasBeforeRadiusFilter()
       .filter((camera) => !isCameraMarkedBlackScreen(camera))
       .filter((camera) => !isCameraMaintenanceText(camera))
+      .filter((camera) => cameraMatchesFreewayRoute(camera, region))
       .map((camera) => {
         const lat = Number(camera.gisy);
         const lon = Number(camera.gisx);
+        const names = extractFreewayInterchangeNames(camera.stakenumber);
+        const nameHit = targetInterchange
+          ? names.some((name) => normalize(name) === targetInterchange)
+          : false;
         const interchangeDistanceKm = interchanges.length
           ? getMinDistanceToPointsKm(lat, lon, interchanges)
           : Number.isFinite(weatherFocus.lat) && Number.isFinite(weatherFocus.lon)
@@ -1663,14 +1744,28 @@ function getFilteredSortedFreewayCameras() {
             : Infinity;
         return {
           ...camera,
-          distanceKm: interchangeDistanceKm,
+          distanceKm: nameHit ? 0 : interchangeDistanceKm,
           routeCode: getCameraRouteCode(camera.id),
-          focusLabel: selectedCity
-            ? `${selectedCity}交流道基準`
-            : weatherFocus.label || "所選位置"
+          focusLabel: interchangeName
+            ? interchangeName
+            : selectedCity
+              ? `${selectedCity}交流道｜${region.label}`
+              : `公路局即時｜${region.label}`,
+          interchangeNames: names
         };
       })
-      .filter((camera) => Number.isFinite(camera.distanceKm) && camera.distanceKm <= radiusKm)
+      .filter((camera) => {
+        if (interchangeName) {
+          return (
+            camera.interchangeNames.some((name) => normalize(name) === targetInterchange) ||
+            camera.distanceKm <= radiusKm
+          );
+        }
+        if (!selectedCity) {
+          return true;
+        }
+        return Number.isFinite(camera.distanceKm) && camera.distanceKm <= radiusKm;
+      })
       .sort((a, b) => a.distanceKm - b.distanceKm)
   );
 }
@@ -2688,11 +2783,16 @@ function updateFreewayCameraMetaText() {
     ? formatDateTime(freewayCameraDataset.fetchedAt)
     : "未提供";
   const matchedCount = getFilteredSortedFreewayCameras().length;
-  const selectedCity = getSelectedFreewayCityName() || getCctvLocationFocus().label;
-  const radiusKm = FREEWAY_INTERCHANGE_BASE_RADIUS_KM;
-  const interchangeCount = getFreewayInterchangesForCity(getSelectedFreewayCityName()).length;
+  const region = getSelectedFreewayRegion();
+  const selectedCity = getSelectedFreewayCityName();
+  const interchangeName = getSelectedFreewayInterchangeName();
   const visibleCount = freewayCameraList?.querySelectorAll(".camera-item-live").length ?? 0;
-  freewayCameraMeta.textContent = `交流道基準：${selectedCity || "所選縣市"}（${interchangeCount} 處）｜半徑 ${radiusKm} 公里｜候選 ${matchedCount} 支｜正常顯示 ${visibleCount} 支｜快照：${freewayFetchedAt}`;
+  const scope = interchangeName
+    ? interchangeName
+    : selectedCity
+      ? `${selectedCity}交流道`
+      : "全國交流道";
+  freewayCameraMeta.textContent = `公路局即時CCTV｜${region.label}｜${scope}｜候選 ${matchedCount} 支｜正常顯示 ${visibleCount} 支｜快照：${freewayFetchedAt}`;
 }
 
 async function renderFreewayCameraList() {
@@ -2709,16 +2809,22 @@ async function renderFreewayCameraList() {
   const rows = dedupeCamerasByIdentity(getFilteredSortedFreewayCameras()).slice(0, CCTV_VERIFY_POOL_SIZE);
   updateFreewayCameraMetaText();
   const selectedCity = getSelectedFreewayCityName();
-  const scopeLabel = selectedCity ? `${selectedCity}交流道基準` : getCctvLocationFocus().label || "所選位置";
+  const region = getSelectedFreewayRegion();
+  const interchangeName = getSelectedFreewayInterchangeName();
+  const scopeLabel = interchangeName
+    ? `${region.label}｜${interchangeName}`
+    : selectedCity
+      ? `${region.label}｜${selectedCity}交流道`
+      : `公路局即時｜${region.label}`;
   if (!rows.length) {
-    freewayCameraList.innerHTML = `<p class="status-warn">所選縣市交流道半徑 ${FREEWAY_INTERCHANGE_BASE_RADIUS_KM} 公里內查無國道監控點，請更換縣市或國道範圍。</p>`;
+    freewayCameraList.innerHTML = `<p class="status-warn">目前範圍查無國道監控點，請更換國道路段、縣市或交流道。</p>`;
     return;
   }
 
   const loading = document.createElement("p");
   loading.className = "timestamp camera-switching";
   loading.dataset.cameraLoading = "1";
-  loading.innerHTML = `正在偵測國道交流道監控：${scopeLabel}｜正在讀取畫面中 <strong data-cctv-progress>0%</strong>`;
+  loading.innerHTML = `正在偵測國道監控：${scopeLabel}｜正在讀取畫面中 <strong data-cctv-progress>0%</strong>`;
   freewayCameraList.append(loading);
 
   const liveCameras = await collectVerifiedLiveCameras(rows, {
@@ -3547,22 +3653,33 @@ function syncLikeButtonState(liked = hasUserLiked()) {
 }
 
 async function fetchCountApi(path, { timeoutMs = 5000 } = {}) {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    const response = await fetch(`https://api.countapi.xyz/${path}`, {
-      signal: controller.signal
-    });
-    if (!response.ok) {
-      return null;
+  const normalized = String(path || "").replace(/^\/+|\/+$/g, "");
+  const endpoints = [
+    // counterapi.dev requires a trailing slash (otherwise 301 without JSON body)
+    `https://api.counterapi.dev/v1/${normalized}/`,
+    `https://api.countapi.xyz/${normalized}`
+  ];
+  for (const endpoint of endpoints) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const response = await fetch(endpoint, { signal: controller.signal, redirect: "follow" });
+      if (!response.ok) {
+        continue;
+      }
+      const payload = await response.json();
+      // counterapi.dev uses { count }, countapi.xyz uses { value }
+      const value = Number(payload?.count ?? payload?.value);
+      if (Number.isFinite(value)) {
+        return value;
+      }
+    } catch {
+      /* try next provider */
+    } finally {
+      clearTimeout(timeoutId);
     }
-    const payload = await response.json();
-    return Number.isFinite(payload?.value) ? Number(payload.value) : null;
-  } catch {
-    return null;
-  } finally {
-    clearTimeout(timeoutId);
   }
+  return null;
 }
 
 async function initVisitorCounter() {
@@ -3575,10 +3692,14 @@ async function initVisitorCounter() {
   setVisitorCountDisplay(totalCount);
 
   const remoteCount = await fetchCountApi(
-    `hit/${VISITOR_COUNTER_NAMESPACE}/${VISITOR_COUNTER_KEY}`
+    `${VISITOR_COUNTER_NAMESPACE}/${VISITOR_COUNTER_KEY}/up`
   );
-  if (Number.isFinite(remoteCount)) {
-    totalCount = Math.max(totalCount, remoteCount);
+  // Fallback old countapi path style
+  const legacyCount = Number.isFinite(remoteCount)
+    ? remoteCount
+    : await fetchCountApi(`hit/${VISITOR_COUNTER_NAMESPACE}/${VISITOR_COUNTER_KEY}`);
+  if (Number.isFinite(legacyCount)) {
+    totalCount = Math.max(totalCount, legacyCount);
     localStorage.setItem(VISITOR_COUNTER_STORAGE_KEY, String(totalCount));
     setVisitorCountDisplay(totalCount);
   } else {
@@ -3595,9 +3716,11 @@ async function initLikeCounter() {
   setLikeCountDisplay(localCount);
   syncLikeButtonState();
 
-  const remoteCount = await fetchCountApi(`get/${VISITOR_COUNTER_NAMESPACE}/${LIKE_COUNTER_KEY}`);
-  if (Number.isFinite(remoteCount)) {
-    const totalCount = Math.max(localCount, remoteCount);
+  const remoteGet =
+    (await fetchCountApi(`${VISITOR_COUNTER_NAMESPACE}/${LIKE_COUNTER_KEY}`)) ??
+    (await fetchCountApi(`get/${VISITOR_COUNTER_NAMESPACE}/${LIKE_COUNTER_KEY}`));
+  if (Number.isFinite(remoteGet)) {
+    const totalCount = Math.max(localCount, remoteGet);
     localStorage.setItem(LIKE_COUNTER_STORAGE_KEY, String(totalCount));
     setLikeCountDisplay(totalCount);
   }
@@ -3614,7 +3737,9 @@ async function initLikeCounter() {
     setLikeCountDisplay(nextCount);
     syncLikeButtonState(true);
 
-    const remoteHit = await fetchCountApi(`hit/${VISITOR_COUNTER_NAMESPACE}/${LIKE_COUNTER_KEY}`);
+    const remoteHit =
+      (await fetchCountApi(`${VISITOR_COUNTER_NAMESPACE}/${LIKE_COUNTER_KEY}/up`)) ??
+      (await fetchCountApi(`hit/${VISITOR_COUNTER_NAMESPACE}/${LIKE_COUNTER_KEY}`));
     if (Number.isFinite(remoteHit)) {
       nextCount = Math.max(nextCount, remoteHit);
       localStorage.setItem(LIKE_COUNTER_STORAGE_KEY, String(nextCount));
@@ -5641,6 +5766,7 @@ async function fetchRoadCameras() {
     if (freewayResponse.ok) {
       freewayCameraDataset = await freewayResponse.json();
       freewayInterchangeIndex = buildFreewayInterchangeIndex(freewayCameraDataset.cameras || []);
+      fillFreewayInterchangeSelect();
     } else if (freewayCameraMeta) {
       freewayCameraMeta.textContent = `國道監控資料暫時無法更新：HTTP ${freewayResponse.status}`;
     }
@@ -5874,10 +6000,16 @@ cameraCitySelect?.addEventListener("change", () => {
 });
 
 freewayRegionSelect?.addEventListener("change", () => {
+  fillFreewayInterchangeSelect();
   renderFreewayCameraList();
 });
 
 freewayCitySelect?.addEventListener("change", () => {
+  fillFreewayInterchangeSelect();
+  renderFreewayCameraList();
+});
+
+freewayInterchangeSelect?.addEventListener("change", () => {
   renderFreewayCameraList();
 });
 
