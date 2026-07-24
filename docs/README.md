@@ -31,3 +31,4 @@ Numbered source-of-truth docs for product, architecture, and delivery.
 | [024_ANALYTICS.md](./024_ANALYTICS.md) | Analytics |
 | [025_DEPLOYMENT.md](./025_DEPLOYMENT.md) | Deployment |
 | [026_MASTER_TASKS.md](./026_MASTER_TASKS.md) | Master tasks |
+| [027_NEW_GITHUB_REPO.md](./027_NEW_GITHUB_REPO.md) | Publish to a new GitHub repo (separate from weather) |

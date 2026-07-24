@@ -77,6 +77,16 @@ Open [http://localhost:3000](http://localhost:3000).
 | `npm run test` | Foundation unit tests |
 | `npm run structure` | Print enterprise folder map |
 
+## Separate GitHub repository
+
+This Trade OS must **not** share the weather forecast repo (`amjin358-svg/jin`).
+
+See [`docs/027_NEW_GITHUB_REPO.md`](./docs/027_NEW_GITHUB_REPO.md) and:
+
+```bash
+./scripts/publish-new-github-repo.sh amjin358-svg/gvg-global-trade-os
+```
+
 ## Docs
 
 Numbered documentation set in [`docs/`](./docs) — start at [`docs/000_PROJECT_OVERVIEW.md`](./docs/000_PROJECT_OVERVIEW.md) or the [docs index](./docs/README.md).
