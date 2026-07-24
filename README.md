@@ -79,4 +79,4 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Docs
 
-See [`docs/`](./docs) for architecture, roles, roadmap, and folder structure.
+Numbered documentation set in [`docs/`](./docs) — start at [`docs/000_PROJECT_OVERVIEW.md`](./docs/000_PROJECT_OVERVIEW.md) or the [docs index](./docs/README.md).
