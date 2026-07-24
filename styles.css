@@ -269,8 +269,8 @@ body {
   max-width: 100%;
   margin: 0 0 6px;
   letter-spacing: 0.01em;
-  font-size: clamp(7px, 3.2vw, 28px);
-  line-height: 1.2;
+  font-size: clamp(8px, 3.8vw, 36px);
+  line-height: 1.15;
   opacity: 0.95;
   white-space: nowrap;
   overflow: hidden;
@@ -2423,7 +2423,7 @@ input[type="checkbox"] {
   }
 
   .hero .eyebrow {
-    font-size: clamp(6px, 3.1vw, 18px);
+    font-size: clamp(7px, 3.6vw, 22px);
     margin-bottom: 4px;
     width: 100%;
     max-width: 100%;

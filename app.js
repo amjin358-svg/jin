@@ -6118,8 +6118,8 @@ function fitSingleLineText(element, { maxPx, minPx, fillRatio = 1 } = {}) {
   const used = element.scrollWidth;
   const leftover = available - used;
   const textLength = Math.max(1, (element.textContent || "").trim().length);
-  if (leftover > 8 && textLength > 8) {
-    const tracking = Math.min(1.2, leftover / textLength);
+  if (leftover > 4 && textLength > 8) {
+    const tracking = Math.min(1.6, leftover / textLength);
     element.style.letterSpacing = `${tracking.toFixed(3)}px`;
     if (element.scrollWidth > available + 0.5) {
       element.style.letterSpacing = "";
@@ -6134,11 +6134,11 @@ function fitHeroTexts() {
   const riskBadge = document.querySelector("#typhoonRiskBadge.hero-fit-text");
   const content = document.querySelector(".hero-content");
   const width = Math.floor(content?.getBoundingClientRect().width || document.documentElement.clientWidth || 0);
-  // English eyebrow: auto-fit one line to nearly full hero width.
+  // English eyebrow: auto-fit one line to full hero width with a larger type size.
   fitSingleLineText(eyebrow, {
-    maxPx: Math.min(34, Math.max(12, Math.floor(width * 0.055))),
-    minPx: 6,
-    fillRatio: 0.995
+    maxPx: Math.min(42, Math.max(14, Math.floor(width * 0.072))),
+    minPx: 7,
+    fillRatio: 1
   });
   fitSingleLineText(title, {
     maxPx: Math.min(48, Math.floor(width * 0.088)),

@@ -1,4 +1,4 @@
-const SW_VERSION = "jin-v21-refresh-interval-font";
+const SW_VERSION = "jin-v22-eyebrow-fullwidth-font";
 const PREFS_DB = "jin-bg-prefs-v1";
 const PREFS_STORE = "prefs";
 const PREFS_KEY = "subscription";
