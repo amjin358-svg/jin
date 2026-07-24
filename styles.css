@@ -2688,164 +2688,7 @@ input[type="checkbox"] {
   .alert-block .ai-alert-body,
   .alert-block .subscription-status-box,
   .alert-block .subscription-email-note {
-    font-size: 17px;
-    line-height: 1.5;
-  }
-
-  .alert-block {
-    width: 100%;
-    max-width: 100%;
-    margin-inline: 0;
-    padding: 14px;
-    border-radius: 14px;
-  }
-
-  .alert-block .grid {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
-
-  .subscription-card {
-    width: 100%;
-    max-width: 100%;
-    min-height: min(86dvh, 920px);
-    box-sizing: border-box;
-    padding: 18px 16px;
-    border-radius: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .subscription-form {
-    gap: 12px;
-  }
-
-  .subscription-form > label:not(.topic-option) {
-    font-size: 17px;
-    font-weight: 700;
-  }
-
-  .subscription-form .topic-option {
-    align-items: flex-start;
-    gap: 10px;
-    padding: 10px 8px;
-    border-radius: 10px;
-    background: #f4f8ff;
-    border: 1px solid #d7e6fb;
-    font-size: 17px;
-    line-height: 1.45;
-  }
-
-  .subscription-form .topic-option input[type="checkbox"] {
-    width: 20px;
-    height: 20px;
-    margin-top: 2px;
-    flex-shrink: 0;
-  }
-
-  .subscription-actions {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 10px;
-    margin-top: 8px;
-  }
-
-  .subscription-actions .refresh-btn,
-  .subscription-actions .ghost-btn {
-    width: 100%;
-    min-height: 48px;
-    font-size: 17px;
-    font-weight: 800;
-  }
-
-  .subscription-status-box,
-  .subscription-email-note,
-  #notificationHint.subscription-status-box,
-  .notification-hint {
-    font-size: 16px;
-    line-height: 1.55;
-  }
-
-  .subscription-status-box {
-    padding: 14px 16px;
-  }
-
-  .subscription-form input[type="email"] {
-    font-size: 17px;
-    min-height: 48px;
-    padding: 12px 14px;
-  }
-
-  .in-page-alert-host {
-    left: 0;
-    right: 0;
-    bottom: 0;
-    top: 0;
-    transform: none;
-    width: 100%;
-    max-width: none;
-    height: 100%;
-    min-height: 100dvh;
-    padding: 0;
-    gap: 0;
-    z-index: 80;
-    background: rgba(10, 24, 48, 0.42);
-    pointer-events: auto;
-    display: flex;
-    align-items: stretch;
-    justify-content: stretch;
-  }
-
-  .in-page-alert-host:empty {
-    display: none;
-    pointer-events: none;
-    background: transparent;
-  }
-
-  .in-page-alert {
-    width: 100%;
-    max-width: none;
-    min-height: 100%;
-    height: 100%;
-    margin: 0;
-    border-radius: 0;
-    border: 0;
-    padding: max(20px, env(safe-area-inset-top)) max(18px, env(safe-area-inset-right))
-      max(20px, env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left));
-    box-shadow: none;
-    background: #f7faff;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    box-sizing: border-box;
-    animation: alertSlideUp 0.22s ease-out;
-  }
-
-  .in-page-alert strong {
-    font-size: clamp(22px, 6.2vw, 28px);
-    font-weight: 800;
-    line-height: 1.3;
-    margin-bottom: 0;
-    color: #0f2f66;
-  }
-
-  .in-page-alert p {
-    flex: 1 1 auto;
-    font-size: clamp(18px, 4.8vw, 22px);
-    line-height: 1.6;
-    overflow: auto;
-    color: #1f2a44;
-  }
-
-  .in-page-alert-close {
-    width: 100%;
-    min-height: 52px;
-    margin-top: auto;
-    padding: 14px 16px;
-    border-radius: 12px;
-    font-size: 18px;
-    font-weight: 800;
+    font-size: 14px;
   }
 
   .risk-badge {
@@ -2909,11 +2752,11 @@ input[type="checkbox"] {
   }
 
   .subscription-form {
-    gap: 12px;
+    gap: 6px;
   }
 
   .topic-option {
-    font-size: 17px;
+    font-size: 13px;
   }
 
   .notice-card ul {
