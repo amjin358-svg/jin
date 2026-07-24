@@ -1,4 +1,4 @@
-const SW_VERSION = "jin-v19-like-freeway-n1";
+const SW_VERSION = "jin-v20-subscribe-notify-rename";
 const PREFS_DB = "jin-bg-prefs-v1";
 const PREFS_STORE = "prefs";
 const PREFS_KEY = "subscription";

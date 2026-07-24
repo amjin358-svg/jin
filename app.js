@@ -5096,8 +5096,8 @@ async function sendSubscriptionNotification({ force = false } = {}) {
   appState.lastNotifiedAt = Date.now();
   const channelHint = permissionMode === "granted" ? "系統通知＋頁面提醒" : "頁面內即時提醒";
   const statusHint = hasClosureAlert
-    ? `已依訂閱順序同步送出 ${messages.length} 項通知（停班停課提醒 3 次｜${channelHint}）`
-    : `已依訂閱順序同步送出 ${messages.length} 項通知（${channelHint}）`;
+    ? `訂閱${messages.length}項通知(停班停課提醒 3 次｜${channelHint})`
+    : `訂閱${messages.length}項通知(${channelHint})`;
   renderSubscriptionStatus(statusHint);
   updateNotificationHint();
   return true;
