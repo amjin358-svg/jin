@@ -1,4 +1,4 @@
-const SW_VERSION = "jin-v9-auto-refresh-borders";
+const SW_VERSION = "jin-v10-locate-glow";
 const PREFS_DB = "jin-bg-prefs-v1";
 const PREFS_STORE = "prefs";
 const PREFS_KEY = "subscription";

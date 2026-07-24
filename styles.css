@@ -421,6 +421,26 @@ label {
   color: #fff;
   font-weight: 700;
   cursor: pointer;
+  position: relative;
+  z-index: 1;
+}
+
+.locate-btn-pulse,
+.locate-btn.locate-btn-pulse {
+  animation: locate-glow 1.8s ease-in-out infinite;
+  box-shadow:
+    0 0 0 0 rgba(46, 204, 113, 0.55),
+    0 0 14px 2px rgba(15, 157, 88, 0.55),
+    0 0 28px 4px rgba(88, 255, 170, 0.35);
+}
+
+.locate-btn-pulse:hover,
+.locate-btn.locate-btn-pulse:hover {
+  filter: brightness(1.06);
+  box-shadow:
+    0 0 0 2px rgba(46, 204, 113, 0.35),
+    0 0 18px 4px rgba(15, 157, 88, 0.7),
+    0 0 34px 8px rgba(88, 255, 170, 0.45);
 }
 
 .locate-status {
@@ -434,10 +454,29 @@ label {
   color: var(--warn);
 }
 
-.locate-btn:disabled {
+.locate-btn:disabled,
+.locate-btn-pulse:disabled {
   animation: none;
   opacity: 0.72;
   cursor: wait;
+  box-shadow: none;
+  filter: none;
+}
+
+@keyframes locate-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 0 rgba(46, 204, 113, 0.5),
+      0 0 12px 2px rgba(15, 157, 88, 0.5),
+      0 0 22px 4px rgba(88, 255, 170, 0.28);
+  }
+  50% {
+    box-shadow:
+      0 0 0 8px rgba(46, 204, 113, 0),
+      0 0 22px 6px rgba(15, 157, 88, 0.75),
+      0 0 40px 12px rgba(88, 255, 170, 0.5);
+  }
 }
 
 @keyframes locate-pulse {
