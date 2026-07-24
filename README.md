@@ -2,14 +2,37 @@
 
 Enterprise B2B / B2C international trading platform for **Global Vista Group**.
 
+```
+GVG-Global-Trade-OS/
+├── docs/           # Architecture & product docs
+├── cursor/         # Cursor agent context
+├── database/       # SQL schemas
+├── frontend/       # Features & mock domain data
+├── backend/        # Services & adapters
+├── packages/       # Shared packages
+├── supabase/       # Auth, DB, Edge Functions
+├── api/            # API contracts / BFF docs
+├── components/     # Atomic Design UI
+├── app/            # Next.js App Router
+├── lib/            # Utilities & constants
+├── hooks/          # React hooks
+├── styles/         # Global CSS tokens
+├── types/          # Domain types & roles
+├── public/         # Static assets
+├── scripts/        # Maintenance scripts
+├── tests/          # Unit / integration / e2e
+├── docker/         # Containers
+└── .github/        # CI/CD
+```
+
 ## Stack
 
 - Next.js 15 (App Router) + React 19 + TypeScript
-- Tailwind CSS 4
-- Framer Motion
-- Feature-based architecture + Atomic Design components
+- Tailwind CSS 4 + Framer Motion
+- Supabase · PostgreSQL · Edge Functions (Phase 2)
+- Vercel · Cloudflare · Docker · GitHub Actions
 
-## Modules (v1.0 foundation)
+## Modules (v1.0)
 
 | # | Module | Route |
 |---|---|---|
@@ -45,26 +68,15 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Scripts
 
-- `npm run dev` — Turbopack development server
-- `npm run build` — Production build
-- `npm run start` — Start production server
-- `npm run lint` — ESLint
+| Command | Description |
+|---|---|
+| `npm run dev` | Turbopack development server |
+| `npm run build` | Production build |
+| `npm run start` | Start production server |
+| `npm run lint` | ESLint |
+| `npm run test` | Foundation unit tests |
+| `npm run structure` | Print enterprise folder map |
 
-## Architecture notes
+## Docs
 
-- Server Components first
-- Strict TypeScript (no `any`)
-- Repository-ready domain types under `src/types`
-- Demo catalog data under `src/data/mock`
-- Reusable UI atoms/molecules/organisms under `src/components`
-- Feature modules under `src/features`
-
-## Roadmap integrations
-
-Planned backend and infrastructure bindings:
-
-- Supabase (Auth, PostgreSQL, Storage, Realtime, Edge Functions)
-- Redis, Vercel, Cloudflare
-- Sentry + OpenTelemetry
-- OpenAI embeddings / vector search / OCR / translation
-- GA4, Microsoft Clarity, Search Console, Bing Webmaster
+See [`docs/`](./docs) for architecture, roles, roadmap, and folder structure.
