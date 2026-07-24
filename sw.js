@@ -1,4 +1,4 @@
-const SW_VERSION = "jin-v20-subscribe-notify-rename";
+const SW_VERSION = "jin-v21-refresh-interval-font";
 const PREFS_DB = "jin-bg-prefs-v1";
 const PREFS_STORE = "prefs";
 const PREFS_KEY = "subscription";

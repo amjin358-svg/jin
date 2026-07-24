@@ -1190,12 +1190,12 @@ label {
   color: #8a6d00;
   background: #fffdf3;
   appearance: auto;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 700;
 }
 
 .auto-refresh-controls select option {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 700;
 }
 
@@ -2605,7 +2605,7 @@ input[type="checkbox"] {
 
   .auto-refresh-controls select,
   .auto-refresh-controls select option {
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 700;
   }
 
@@ -2999,7 +2999,7 @@ input[type="checkbox"] {
 
   .auto-refresh-controls select,
   .auto-refresh-controls select option {
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 700;
   }
 
