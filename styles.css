@@ -1308,12 +1308,12 @@ input[type="checkbox"] {
 }
 
 .weather-block .metrics dt {
-  font-size: clamp(15px, 3.8vw, 18px);
+  font-size: clamp(17px, 4.4vw, 21px);
   font-weight: 800;
 }
 
 .weather-block .metrics dd {
-  font-size: clamp(22px, 5.5vw, 28px);
+  font-size: clamp(24px, 6vw, 32px);
 }
 
 .weather-block #rainProjection,
@@ -1425,17 +1425,25 @@ input[type="checkbox"] {
 
 .weekly-forecast-below {
   margin-top: 0;
-  padding: 8px 10px;
-  border-top: 1px solid #8ebce6;
+  padding: 2px 8px;
   border: 1px solid #9fc9ee;
+  border-radius: 10px;
   background: rgba(255, 255, 255, 0.88);
-  gap: 8px;
+  gap: 6px;
+  min-height: 0;
+}
+
+.weekly-forecast-below:not([open]) {
+  padding-top: 1px;
+  padding-bottom: 1px;
 }
 
 .weekly-forecast-below > summary {
-  font-size: clamp(13px, 3.4vw, 15px);
-  font-weight: 700;
-  padding: 4px 2px;
+  font-size: clamp(15px, 4vw, 18px);
+  font-weight: 800;
+  padding: 2px 2px;
+  line-height: 1.2;
+  min-height: 0;
 }
 
 .msn-weather-card .metrics {
@@ -1450,12 +1458,12 @@ input[type="checkbox"] {
 .msn-weather-card .metrics dt {
   color: #2f5f8d;
   font-weight: 800;
-  font-size: clamp(15px, 3.8vw, 18px);
+  font-size: clamp(17px, 4.4vw, 21px);
 }
 
 .msn-weather-card .metrics dd {
   color: #072445;
-  font-size: clamp(22px, 5.5vw, 28px);
+  font-size: clamp(24px, 6vw, 32px);
 }
 
 .msn-weather-card .weather-subheading,
@@ -1491,11 +1499,11 @@ input[type="checkbox"] {
 .weekly-forecast-details > summary {
   cursor: pointer;
   list-style: none;
-  font-size: clamp(13px, 3.4vw, 15px);
-  font-weight: 700;
+  font-size: clamp(15px, 4vw, 18px);
+  font-weight: 800;
   color: #072445;
-  line-height: 1.35;
-  padding: 6px 4px;
+  line-height: 1.2;
+  padding: 2px 4px;
 }
 
 .weekly-forecast-details > summary::-webkit-details-marker {
@@ -1832,7 +1840,8 @@ input[type="checkbox"] {
   }
 
   .weekly-forecast-below > summary {
-    font-size: clamp(13px, 3.6vw, 15px);
+    font-size: clamp(15px, 4.2vw, 17px);
+    padding: 1px 2px;
   }
 
   .weekly-forecast-row {
@@ -3308,13 +3317,13 @@ body.eq-sheet-open {
 
   .weather-block .metrics dt,
   .msn-weather-card .metrics dt {
-    font-size: clamp(15px, 4.2vw, 17px);
+    font-size: clamp(16px, 4.6vw, 19px);
     font-weight: 800;
   }
 
   .weather-block .metrics dd,
   .msn-weather-card .metrics dd {
-    font-size: clamp(20px, 5.4vw, 26px);
+    font-size: clamp(22px, 5.8vw, 28px);
   }
 
   .timestamp {
@@ -3634,7 +3643,8 @@ body.eq-sheet-open {
   }
 
   .weekly-forecast-details > summary {
-    font-size: clamp(13px, 3.6vw, 15px);
+    font-size: clamp(15px, 4.2vw, 17px);
+    padding: 1px 2px;
   }
 
   .weekly-forecast-row {
