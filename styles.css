@@ -2334,6 +2334,20 @@ input[type="checkbox"] {
   color: #9a3412;
 }
 
+.earthquake-summary.intensity-4-plus {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid #7f1d1d;
+  background: linear-gradient(165deg, #7f1d1d 0%, #991b1b 55%, #b91c1c 100%);
+  color: #fff7f7;
+  font-weight: 800;
+}
+
+.earthquake-summary.intensity-4-plus .earthquake-place-label {
+  color: #fecaca;
+  font-weight: 600;
+}
+
 .earthquake-place-label {
   display: inline;
   font-size: 0.55em;
@@ -2654,6 +2668,27 @@ body.eq-sheet-open {
   background: #fef2f2;
 }
 
+.earthquake-list li.earthquake-item.intensity-4-plus {
+  border-color: #7f1d1d;
+  background: linear-gradient(165deg, #fecaca 0%, #f87171 48%, #ef4444 100%);
+  color: #450a0a;
+  box-shadow: inset 0 0 0 1px rgba(127, 29, 29, 0.25);
+}
+
+.earthquake-item.intensity-4-plus .earthquake-body strong {
+  color: #7f1d1d;
+}
+
+.earthquake-item.intensity-4-plus .earthquake-body small,
+.earthquake-item.intensity-4-plus .earthquake-place-label {
+  color: #7f1d1d;
+}
+
+.earthquake-item.intensity-4-plus .earthquake-links a {
+  color: #7f1d1d;
+  font-weight: 700;
+}
+
 .earthquake-mag {
   display: inline-flex;
   align-items: center;
@@ -2678,8 +2713,9 @@ body.eq-sheet-open {
   background: #b45309;
 }
 
-.earthquake-item.alert-red .earthquake-mag {
-  background: #991b1b;
+.earthquake-item.alert-red .earthquake-mag,
+.earthquake-item.intensity-4-plus .earthquake-mag {
+  background: #7f1d1d;
 }
 
 .earthquake-body {

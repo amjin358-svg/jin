@@ -4705,7 +4705,7 @@ function getEarthquakeMarkerStyle(quake) {
     return { color: "#a16207", fillColor: "#eab308", radius: 8, label: "國家級警戒（黃）" };
   }
   if ((quake.intensityValue || 0) >= 4) {
-    return { color: "#b45309", fillColor: "#f59e0b", radius: 8, label: "最大震度 4 級以上" };
+    return { color: "#7f1d1d", fillColor: "#b91c1c", radius: 9, label: "最大震度 4 級以上" };
   }
   if ((quake.intensityValue || 0) >= 3) {
     return { color: "#1d4ed8", fillColor: "#60a5fa", radius: 6, label: "有感地震" };
@@ -4984,9 +4984,10 @@ function renderEarthquakeSourceMeta(updatedAt = Date.now()) {
 function createEarthquakeListItem(quake) {
   const item = document.createElement("li");
   const colorKey = quake.alertColor || "gray";
-  item.className = `earthquake-item alert-${colorKey} ${
-    isNationalEarthquakeAlert(quake) ? "is-national" : ""
-  }`;
+  const intensityHigh = (quake.intensityValue || 0) >= 4;
+  item.className = `earthquake-item alert-${colorKey}${
+    isNationalEarthquakeAlert(quake) ? " is-national" : ""
+  }${intensityHigh ? " intensity-4-plus" : ""}`;
   const distanceText = Number.isFinite(quake.distanceKm)
     ? `｜約 ${quake.distanceKm.toFixed(0)} 公里`
     : "";
@@ -5020,6 +5021,7 @@ function renderEarthquakePanel() {
   if (!quakes.length) {
     if (earthquakeSummary) {
       earthquakeSummary.textContent = "目前中央氣象署無近期台灣地區有感地震";
+      earthquakeSummary.classList.remove("intensity-4-plus");
     }
     renderEarthquakeSourceMeta(Date.now());
     earthquakeList.innerHTML = "<li>目前無符合條件的地震事件。</li>";
@@ -5032,6 +5034,7 @@ function renderEarthquakePanel() {
     earthquakeSummary.innerHTML = `最新：規模 ${latest.magnitude.toFixed(1)}｜最大震度 ${formatIntensityLabel(
       latest.intensityValue
     )}<span class="earthquake-place-label">（${placeLabel}）</span>`;
+    earthquakeSummary.classList.toggle("intensity-4-plus", (latest.intensityValue || 0) >= 4);
   }
   renderEarthquakeSourceMeta(Date.now());
 
