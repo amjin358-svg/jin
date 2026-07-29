@@ -418,6 +418,10 @@ const locateBtnLabel = locateBtn?.querySelector(".locate-btn-label");
 const locateStatus = document.querySelector("#locateStatus");
 let windyLocateFocus = null;
 let cctvLocateFocus = null;
+const cameraProbeCache = new Map();
+let cameraPrefetchToken = 0;
+const CAMERA_PREFETCH_CONCURRENCY = 3;
+const CAMERA_PREFETCH_CACHE_MS = 30 * 60 * 1000;
 
 function setLocateButtonsDisabled(disabled) {
   if (locateBtn) {
@@ -1150,10 +1154,9 @@ function initFreewayRegionSelect() {
 }
 
 function initFreewayCitySelect() {
-  fillCameraCitySelectOptions(freewayCitySelect, "all");
-  // Prefer nationwide interchange browsing for freeway CCTV.
+  fillCameraCitySelectOptions(freewayCitySelect, "follow");
   if (freewayCitySelect) {
-    freewayCitySelect.value = "all";
+    freewayCitySelect.value = "follow";
   }
 }
 
@@ -1317,13 +1320,13 @@ async function locateByDevice() {
   if (!window.isSecureContext) {
     const message = "請以 HTTPS（或本機安全環境）開啟本站後再使用定位功能。";
     setLocateStatus(message, { isError: true });
-    showInPageAlert("定位無法啟用", message, { timeoutMs: 9000 });
+    showInPageAlert("定位無法啟用", message, { timeoutMs: 9000, fullscreen: true });
     return;
   }
   if (!navigator.geolocation?.getCurrentPosition) {
     const message = "此裝置瀏覽器不支援衛星定位。";
     setLocateStatus(message, { isError: true });
-    showInPageAlert("定位無法啟用", message, { timeoutMs: 9000 });
+    showInPageAlert("定位無法啟用", message, { timeoutMs: 9000, fullscreen: true });
     return;
   }
 
@@ -1344,7 +1347,7 @@ async function locateByDevice() {
 
     applyRegionSelection(getRegionForCity(nearest.city), nearest.city, nearest.town, { persist: true });
     syncCityCameraScopeToLocator();
-    syncSelectValue(freewayCitySelect, nearest.city);
+    syncFreewayCameraScopeToLocator();
     cctvLocateFocus = {
       lat: latitude,
       lon: longitude,
@@ -1359,21 +1362,24 @@ async function locateByDevice() {
     };
     updateWindyTrackEmbed({ force: true });
 
-    const message = `定位完成：${nearest.city}${nearest.town}（路口監控改依定位點 ${CITY_CCTV_RADIUS_KM} 公里內）`;
-    setLocateStatus(message);
-    showInPageAlert("定位完成", message, { timeoutMs: 3500 });
+    const message = `定位完成：${nearest.city}${nearest.town}\n路口／國道監控跟隨 ${nearest.city}，並背景預載全市串流`;
+    setLocateStatus(message.replace("\n", "｜"));
+    showInPageAlert("定位完成", message, { timeoutMs: 4500, fullscreen: true });
 
     setLocateButtonsDisabled(false);
     setLocateButtonText();
     performFullRefresh("manual");
     renderAllCameraLists();
     updateMapForCityChange();
+    prefetchCityMonitorStreams(nearest.city, { label: nearest.city }).catch(() => {
+      /* background prefetch should not block locate UX */
+    });
   };
 
   const failWith = (error) => {
     const message = getGeolocationErrorMessage(error);
     setLocateStatus(message, { isError: true });
-    showInPageAlert("定位無法啟用", message, { timeoutMs: 10000 });
+    showInPageAlert("定位無法啟用", message, { timeoutMs: 10000, fullscreen: true });
     setLocateButtonsDisabled(false);
     setLocateButtonText();
   };
@@ -1474,13 +1480,17 @@ function syncCameraRegionToLocatorArea() {
 }
 
 function syncCityCameraScopeToLocator() {
-  const city = String(citySelect?.value || "").trim();
-  if (cameraCitySelect && city) {
-    syncSelectValue(cameraCitySelect, city);
-  } else if (cameraCitySelect) {
+  if (cameraCitySelect) {
     syncSelectValue(cameraCitySelect, "follow");
   }
   syncCameraRegionToLocatorArea();
+}
+
+function syncFreewayCameraScopeToLocator() {
+  if (freewayCitySelect) {
+    syncSelectValue(freewayCitySelect, "follow");
+  }
+  fillFreewayInterchangeSelect("all");
 }
 
 function getSelectedFreewayRegion() {
@@ -2425,6 +2435,153 @@ async function probeCameraStream(url, { timeoutMs = 4500 } = {}) {
   }
 }
 
+function getCachedCameraProbe(url) {
+  const key = String(url || "").trim();
+  if (!key) {
+    return null;
+  }
+  const hit = cameraProbeCache.get(key);
+  if (!hit) {
+    return null;
+  }
+  if (Date.now() - Number(hit.at || 0) > CAMERA_PREFETCH_CACHE_MS) {
+    cameraProbeCache.delete(key);
+    return null;
+  }
+  return hit;
+}
+
+async function probeCameraStreamCached(url, options = {}) {
+  const cached = getCachedCameraProbe(url);
+  if (cached) {
+    return cached;
+  }
+  const result = await probeCameraStream(url, options);
+  cameraProbeCache.set(String(url || "").trim(), {
+    ...result,
+    at: Date.now()
+  });
+  return result;
+}
+
+function getCityCamerasForPrefetch(cityName) {
+  if (!cityName || !cityCameraDataset || !Array.isArray(cityCameraDataset.cameras)) {
+    return [];
+  }
+  return cityCameraDataset.cameras
+    .filter((camera) => camera.city === cityName)
+    .filter((camera) => isCameraUrlUsable(camera.html))
+    .filter((camera) => !isCameraMarkedBlackScreen(camera))
+    .filter((camera) => !isCameraMaintenanceText(camera));
+}
+
+function getFreewayCamerasForPrefetch(cityName) {
+  if (!cityName || !freewayCameraDataset || !Array.isArray(freewayCameraDataset.cameras)) {
+    return [];
+  }
+  const focus = CITY_LOCATIONS.find((item) => item.name === cityName) || getCctvLocationFocus();
+  return freewayCameraDataset.cameras
+    .filter((camera) => isCameraUrlUsable(camera.html))
+    .filter((camera) => !isCameraMarkedBlackScreen(camera))
+    .filter((camera) => !isCameraMaintenanceText(camera))
+    .map((camera) => {
+      const lat = Number(camera.gisy);
+      const lon = Number(camera.gisx);
+      const distanceKm =
+        Number.isFinite(focus?.lat) && Number.isFinite(focus?.lon)
+          ? getDistanceKm(focus.lat, focus.lon, lat, lon)
+          : Infinity;
+      return { ...camera, distanceKm };
+    })
+    .filter((camera) => Number.isFinite(camera.distanceKm) && camera.distanceKm <= FREEWAY_CCTV_RADIUS_KM)
+    .sort((a, b) => a.distanceKm - b.distanceKm)
+    .slice(0, 60);
+}
+
+async function prefetchCityMonitorStreams(cityName, { label = "" } = {}) {
+  const token = ++cameraPrefetchToken;
+  const city = String(cityName || "").trim();
+  if (!city) {
+    return { city: "", total: 0, done: 0 };
+  }
+  // Wait briefly if camera snapshots are still loading after locate.
+  for (let i = 0; i < 20 && (!cityCameraDataset || !freewayCameraDataset); i += 1) {
+    await sleep(250);
+    if (token !== cameraPrefetchToken) {
+      return { city, total: 0, done: 0, cancelled: true };
+    }
+  }
+  const queue = [
+    ...getCityCamerasForPrefetch(city),
+    ...getFreewayCamerasForPrefetch(city)
+  ];
+  const unique = [];
+  const seen = new Set();
+  queue.forEach((camera) => {
+    const url = String(camera.html || "").trim();
+    if (!url || seen.has(url)) {
+      return;
+    }
+    seen.add(url);
+    unique.push(camera);
+  });
+  let done = 0;
+  let index = 0;
+  const updatePrefetchMeta = () => {
+    if (!cameraMeta || token !== cameraPrefetchToken) {
+      return;
+    }
+    const base = cameraMeta.dataset.baseText || cameraMeta.textContent || "";
+    if (!cameraMeta.dataset.baseText) {
+      cameraMeta.dataset.baseText = base;
+    }
+    cameraMeta.textContent = `${cameraMeta.dataset.baseText}｜背景預載 ${label || city} 監控 ${done}/${unique.length}`;
+  };
+  updatePrefetchMeta();
+
+  const worker = async () => {
+    while (index < unique.length) {
+      if (token !== cameraPrefetchToken) {
+        return;
+      }
+      const current = unique[index];
+      index += 1;
+      const url = String(current?.html || "").trim();
+      if (!url) {
+        done += 1;
+        updatePrefetchMeta();
+        continue;
+      }
+      if (!getCachedCameraProbe(url)) {
+        const probe = await probeCameraStreamCached(url, { timeoutMs: 3200 });
+        if (!probe.ok) {
+          markCameraAsBlackScreen(current.id);
+        }
+        await sleep(40);
+      }
+      done += 1;
+      if (done % 4 === 0 || done === unique.length) {
+        updatePrefetchMeta();
+      }
+    }
+  };
+
+  await Promise.all(
+    Array.from({ length: Math.min(CAMERA_PREFETCH_CONCURRENCY, Math.max(1, unique.length)) }, () => worker())
+  );
+  if (token === cameraPrefetchToken && cameraMeta) {
+    const base = cameraMeta.dataset.baseText || cameraMeta.textContent || "";
+    cameraMeta.textContent = `${base}｜${label || city} 監控已背景預載 ${done}/${unique.length}`;
+    window.setTimeout(() => {
+      if (token === cameraPrefetchToken && cameraMeta?.dataset.baseText) {
+        cameraMeta.textContent = cameraMeta.dataset.baseText;
+        delete cameraMeta.dataset.baseText;
+      }
+    }, 5000);
+  }
+  return { city, total: unique.length, done };
+}
+
 function createCameraCard(camera, scopeLabel, { forceImage = false } = {}) {
   const card = document.createElement("article");
   card.className = "camera-item camera-item-pending";
@@ -2635,7 +2792,7 @@ async function collectVerifiedLiveCameras(
       reportProgress();
       continue;
     }
-    const probe = await probeCameraStream(camera.html, { timeoutMs: 4500 });
+    const probe = await probeCameraStreamCached(camera.html, { timeoutMs: 4500 });
     checked += 1;
     if (!isCurrent()) {
       return liveCameras;
@@ -2705,6 +2862,17 @@ function waitForCameraCardDecision(card, timeoutMs = 10000) {
   });
 }
 
+function getCameraCityScopeMetaLabel(selectElement) {
+  const resolvedCity = getSelectedCameraCityNameFrom(selectElement) || citySelect?.value || "";
+  if (selectElement?.value === "follow") {
+    return resolvedCity ? `跟隨上方所選縣市：${resolvedCity}` : "跟隨上方所選縣市";
+  }
+  if (selectElement?.value === "all") {
+    return "全國";
+  }
+  return resolvedCity || "所選縣市";
+}
+
 function updateCameraMetaText() {
   if (!cameraMeta || !cityCameraDataset) {
     return;
@@ -2712,13 +2880,14 @@ function updateCameraMetaText() {
   const cityFetchedAt = cityCameraDataset.fetchedAt ? formatDateTime(cityCameraDataset.fetchedAt) : "未提供";
   const focus = getCctvLocationFocus();
   const focusLabel = focus.label || "所選位置";
+  const scopeLabel = getCameraCityScopeMetaLabel(cameraCitySelect);
   const filtered = getFilteredSortedCityCameras();
   const nearbyCount = filtered.filter((camera) => camera.withinLocateRadius).length;
   const fallback = filtered.some((camera) => camera.locateFallback);
   const radiusText = fallback
     ? `${CITY_CCTV_RADIUS_KM} 公里內無鏡頭，改顯示最近路口`
     : `半徑 ${CITY_CCTV_RADIUS_KM} 公里｜符合 ${nearbyCount || filtered.length} 組`;
-  cameraMeta.textContent = `定位點：${focusLabel}｜${radiusText}｜預設顯示最多 ${CITY_CCTV_PREVIEW_LIMIT} 組｜快照：${cityFetchedAt}`;
+  cameraMeta.textContent = `範圍：${scopeLabel}｜定位點：${focusLabel}｜${radiusText}｜預設顯示最多 ${CITY_CCTV_PREVIEW_LIMIT} 組｜快照：${cityFetchedAt}`;
 }
 
 function resetCityCameraLists() {
@@ -2875,8 +3044,8 @@ function updateFreewayCameraMetaText() {
     ? formatDateTime(freewayCameraDataset.fetchedAt)
     : "未提供";
   const region = getSelectedFreewayRegion();
-  const cityName = getSelectedFreewayCityName() || citySelect?.value || "全國";
-  freewayCameraMeta.textContent = `${region.label}｜${cityName}｜預設最近最多 ${FREEWAY_CCTV_PREVIEW_LIMIT} 組｜快照：${freewayFetchedAt}`;
+  const scopeLabel = getCameraCityScopeMetaLabel(freewayCitySelect);
+  freewayCameraMeta.textContent = `${region.label}｜${scopeLabel}｜預設最近最多 ${FREEWAY_CCTV_PREVIEW_LIMIT} 組｜快照：${freewayFetchedAt}`;
 }
 
 async function renderFreewayCameraList() {
@@ -3706,12 +3875,13 @@ function locateWindyEmbed() {
   }
   if (!window.isSecureContext) {
     showInPageAlert("定位無法啟用", "請以 HTTPS（或本機安全環境）開啟本站後再使用 Windy 定位。", {
-      timeoutMs: 9000
+      timeoutMs: 9000,
+      fullscreen: true
     });
     return;
   }
   if (!navigator.geolocation?.getCurrentPosition) {
-    showInPageAlert("定位無法啟用", "此裝置瀏覽器不支援衛星定位。", { timeoutMs: 9000 });
+    showInPageAlert("定位無法啟用", "此裝置瀏覽器不支援衛星定位。", { timeoutMs: 9000, fullscreen: true });
     return;
   }
 
@@ -3745,18 +3915,32 @@ function locateWindyEmbed() {
         persist: true
       });
       syncCityCameraScopeToLocator();
-      syncSelectValue(freewayCitySelect, nearest.city);
+      syncFreewayCameraScopeToLocator();
+      cctvLocateFocus = {
+        lat: latitude,
+        lon: longitude,
+        label: `${nearest.city}${nearest.town}｜裝置定位`,
+        accuracy
+      };
       renderAllCameraLists();
       updateMapForCityChange();
+      prefetchCityMonitorStreams(nearest.city, { label: nearest.city }).catch(() => {
+        /* background prefetch should not block locate UX */
+      });
     }
 
-    const message = `定位完成：${nearest ? `${nearest.city}${nearest.town}` : "目前位置"}`;
-    showInPageAlert("定位完成", message, { timeoutMs: 3500 });
+    const message = nearest
+      ? `定位完成：${nearest.city}${nearest.town}\n路口／國道監控跟隨 ${nearest.city}，並背景預載全市串流`
+      : "定位完成：目前位置";
+    showInPageAlert("定位完成", message, { timeoutMs: 4500, fullscreen: true });
     finish();
   };
 
   const failWith = (error) => {
-    showInPageAlert("Windy 定位失敗", getGeolocationErrorMessage(error), { timeoutMs: 10000 });
+    showInPageAlert("Windy 定位失敗", getGeolocationErrorMessage(error), {
+      timeoutMs: 10000,
+      fullscreen: true
+    });
     finish();
   };
 
@@ -6836,18 +7020,26 @@ citySelect.addEventListener("change", () => {
   cctvLocateFocus = null;
   saveRegionPreference();
   syncCityCameraScopeToLocator();
+  syncFreewayCameraScopeToLocator();
   performFullRefresh("manual");
   renderAllCameraLists();
   updateMapForCityChange();
+  prefetchCityMonitorStreams(citySelect.value, { label: citySelect.value }).catch(() => {
+    /* background prefetch should not block region switching */
+  });
 });
 
 townshipSelect.addEventListener("change", () => {
   cctvLocateFocus = null;
   saveRegionPreference();
   syncCityCameraScopeToLocator();
+  syncFreewayCameraScopeToLocator();
   performFullRefresh("manual");
   renderAllCameraLists();
   updateMapForCityChange();
+  prefetchCityMonitorStreams(citySelect.value, { label: citySelect.value }).catch(() => {
+    /* background prefetch should not block region switching */
+  });
 });
 
 locateBtn?.addEventListener("click", (event) => {
