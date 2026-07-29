@@ -417,6 +417,7 @@ const WINDY_LOCATE_BTN_LABEL = "定位";
 const locateBtnLabel = locateBtn?.querySelector(".locate-btn-label");
 const locateStatus = document.querySelector("#locateStatus");
 let windyLocateFocus = null;
+let cctvLocateFocus = null;
 
 function setLocateButtonsDisabled(disabled) {
   if (locateBtn) {
@@ -611,12 +612,12 @@ const VISITOR_COUNTER_STORAGE_KEY = "siteVisitCountV1";
 const LIKE_COUNTER_KEY = "likes";
 const LIKE_COUNTER_STORAGE_KEY = "siteLikeCountV1";
 const LIKE_VOTED_STORAGE_KEY = "siteLikedV1";
-const CITY_CCTV_RADIUS_KM = 2;
+const CITY_CCTV_RADIUS_KM = 1.5;
 const CITY_CCTV_PREVIEW_LIMIT = 6;
-const CITY_CCTV_MORE_LIMIT = 16;
+const CITY_CCTV_MORE_LIMIT = 40;
 const FREEWAY_CCTV_RADIUS_KM = 40;
 const FREEWAY_INTERCHANGE_BASE_RADIUS_KM = 40;
-const FREEWAY_CCTV_PREVIEW_LIMIT = 8;
+const FREEWAY_CCTV_PREVIEW_LIMIT = 6;
 const WINDY_TAIWAN_VIEW = { lat: 23.7, lon: 121.0, zoom: 5 };
 const POWER_OUTAGE_NOTIFY_RADIUS_KM = 10;
 const FLOOD_NOTIFY_RADIUS_KM = 80;
@@ -688,6 +689,17 @@ function getActiveWeatherLocation() {
 }
 
 function getCctvLocationFocus() {
+  if (
+    cctvLocateFocus &&
+    Number.isFinite(cctvLocateFocus.lat) &&
+    Number.isFinite(cctvLocateFocus.lon)
+  ) {
+    return {
+      lat: cctvLocateFocus.lat,
+      lon: cctvLocateFocus.lon,
+      label: cctvLocateFocus.label || "裝置定位點"
+    };
+  }
   const location = getActiveWeatherLocation();
   if (location && Number.isFinite(location.lat) && Number.isFinite(location.lon)) {
     return {
@@ -1333,6 +1345,12 @@ async function locateByDevice() {
     applyRegionSelection(getRegionForCity(nearest.city), nearest.city, nearest.town, { persist: true });
     syncCityCameraScopeToLocator();
     syncSelectValue(freewayCitySelect, nearest.city);
+    cctvLocateFocus = {
+      lat: latitude,
+      lon: longitude,
+      label: `${nearest.city}${nearest.town}｜裝置定位`,
+      accuracy
+    };
     windyLocateFocus = {
       lat: latitude,
       lon: longitude,
@@ -1341,7 +1359,7 @@ async function locateByDevice() {
     };
     updateWindyTrackEmbed({ force: true });
 
-    const message = `定位完成：${nearest.city}${nearest.town}`;
+    const message = `定位完成：${nearest.city}${nearest.town}（路口監控改依定位點 ${CITY_CCTV_RADIUS_KM} 公里內）`;
     setLocateStatus(message);
     showInPageAlert("定位完成", message, { timeoutMs: 3500 });
 
@@ -1487,6 +1505,10 @@ function getCameraFocusPoint(region, selectedCityName) {
 }
 
 function getCityCameraFocusPoint() {
+  const locate = getCctvLocationFocus();
+  if (cctvLocateFocus) {
+    return { lat: locate.lat, lon: locate.lon };
+  }
   return getCameraFocusPoint(getSelectedCameraDistrict(), getSelectedCameraCityName() || citySelect.value);
 }
 
@@ -1671,14 +1693,15 @@ function getFilteredSortedCityCameras() {
     label: focusLabel
   };
   const locatorCity = selectedCity || citySelect?.value || "";
+  const radiusKm = CITY_CCTV_RADIUS_KM;
+  const useLocateRadius = Boolean(cctvLocateFocus) || Boolean(locatorCity);
 
-  return dedupeCamerasByIdentity(
+  const scored = dedupeCamerasByIdentity(
     cityCameraDataset.cameras
       .filter((camera) => isCameraUrlUsable(camera.html))
       .filter((camera) => !isCameraMarkedBlackScreen(camera))
       .filter((camera) => !isCameraMaintenanceText(camera))
       .filter((camera) => {
-        // Always scope monitors to the locator / selected city area.
         if (!locatorCity) {
           return true;
         }
@@ -1704,11 +1727,15 @@ function getFilteredSortedCityCameras() {
           distanceKm,
           landTown,
           focusLabel: focus.label,
-          areaLabel: landTown ? `${camera.city || ""}${landTown}` : camera.city || focus.label
+          areaLabel: landTown ? `${camera.city || ""}${landTown}` : camera.city || focus.label,
+          withinLocateRadius: Number.isFinite(distanceKm) && distanceKm <= radiusKm
         };
       })
       .filter((camera) => {
-        // Partition by Taiwan land-admin township/district (nearest official 鄉鎮市區).
+        // When device locate is active, prefer radius around the GPS point (ignore town partition).
+        if (cctvLocateFocus) {
+          return true;
+        }
         if (district.id === CAMERA_DISTRICT_ALL_CITY || !district.town) {
           return true;
         }
@@ -1716,10 +1743,23 @@ function getFilteredSortedCityCameras() {
       })
       .sort((a, b) => a.distanceKm - b.distanceKm)
   );
+
+  if (!useLocateRadius) {
+    return scored;
+  }
+  const nearby = scored.filter((camera) => camera.withinLocateRadius);
+  if (nearby.length) {
+    return nearby;
+  }
+  // Soft fallback: keep nearest cameras in city when the 1.5km ring is empty.
+  return scored.slice(0, CITY_CCTV_PREVIEW_LIMIT + CITY_CCTV_MORE_LIMIT).map((camera) => ({
+    ...camera,
+    locateFallback: true
+  }));
 }
 
 function getCityCamerasForDisasterMap() {
-  // Match the CCTV list shown above the disaster map (selected city + focus radius).
+  // Plot every city CCTV inside the active locate/city radius on the disaster map.
   return getFilteredSortedCityCameras().filter(
     (camera) => Number.isFinite(Number(camera.gisy)) && Number.isFinite(Number(camera.gisx))
   );
@@ -1760,12 +1800,12 @@ function getFilteredSortedFreewayCameras() {
     }
     return item.name === interchangeName;
   });
+  const weatherFocus = getCctvLocationFocus();
   const radiusKm = interchangeName
     ? 8
     : selectedCity
-      ? FREEWAY_INTERCHANGE_BASE_RADIUS_KM
+      ? FREEWAY_CCTV_RADIUS_KM
       : 9999;
-  const weatherFocus = getCctvLocationFocus();
   const normalize = (text) => String(text || "").toLowerCase().replaceAll("臺", "台");
   const targetInterchange = normalize(interchangeName);
 
@@ -1781,14 +1821,24 @@ function getFilteredSortedFreewayCameras() {
         const nameHit = targetInterchange
           ? names.some((name) => normalize(name) === targetInterchange)
           : false;
-        const interchangeDistanceKm = interchanges.length
-          ? getMinDistanceToPointsKm(lat, lon, interchanges)
-          : Number.isFinite(weatherFocus.lat) && Number.isFinite(weatherFocus.lon)
+        const focusDistanceKm =
+          Number.isFinite(weatherFocus.lat) && Number.isFinite(weatherFocus.lon)
             ? getDistanceKm(weatherFocus.lat, weatherFocus.lon, lat, lon)
             : Infinity;
+        const interchangeDistanceKm = interchanges.length
+          ? getMinDistanceToPointsKm(lat, lon, interchanges)
+          : focusDistanceKm;
+        // Prefer proximity to the current locate/city focus when browsing a county.
+        const distanceKm = nameHit
+          ? 0
+          : interchangeName
+            ? interchangeDistanceKm
+            : Number.isFinite(focusDistanceKm)
+              ? focusDistanceKm
+              : interchangeDistanceKm;
         return {
           ...camera,
-          distanceKm: nameHit ? 0 : interchangeDistanceKm,
+          distanceKm,
           routeCode: getCameraRouteCode(camera.id),
           focusLabel: interchangeName
             ? interchangeName
@@ -2660,8 +2710,15 @@ function updateCameraMetaText() {
     return;
   }
   const cityFetchedAt = cityCameraDataset.fetchedAt ? formatDateTime(cityCameraDataset.fetchedAt) : "未提供";
-  const focusLabel = getCctvLocationFocus().label || "所選位置";
-  cameraMeta.textContent = `定位點：${focusLabel}｜快照：${cityFetchedAt}`;
+  const focus = getCctvLocationFocus();
+  const focusLabel = focus.label || "所選位置";
+  const filtered = getFilteredSortedCityCameras();
+  const nearbyCount = filtered.filter((camera) => camera.withinLocateRadius).length;
+  const fallback = filtered.some((camera) => camera.locateFallback);
+  const radiusText = fallback
+    ? `${CITY_CCTV_RADIUS_KM} 公里內無鏡頭，改顯示最近路口`
+    : `半徑 ${CITY_CCTV_RADIUS_KM} 公里｜符合 ${nearbyCount || filtered.length} 組`;
+  cameraMeta.textContent = `定位點：${focusLabel}｜${radiusText}｜預設顯示最多 ${CITY_CCTV_PREVIEW_LIMIT} 組｜快照：${cityFetchedAt}`;
 }
 
 function resetCityCameraLists() {
@@ -2676,7 +2733,7 @@ function resetCityCameraLists() {
     cameraMoreDetails.open = false;
   }
   if (cameraMoreSummaryText) {
-    cameraMoreSummaryText.textContent = "收合更多監控";
+    cameraMoreSummaryText.textContent = "▸ 展開其餘路口監控";
   }
 }
 
@@ -2686,12 +2743,19 @@ function syncCityCameraMorePanel(extraCount) {
   }
   if (extraCount > 0) {
     cameraMoreDetails.hidden = false;
-    cameraMoreSummaryText.textContent = `收合更多監控（另 ${extraCount} 支）`;
+    cameraMoreDetails.open = false;
+    cameraMoreSummaryText.textContent = `▸ 展開其餘 ${extraCount} 組路口監控`;
+    cameraMoreDetails.onchange = null;
+    cameraMoreDetails.ontoggle = () => {
+      cameraMoreSummaryText.textContent = cameraMoreDetails.open
+        ? `▾ 收合其餘 ${extraCount} 組路口監控`
+        : `▸ 展開其餘 ${extraCount} 組路口監控`;
+    };
     return;
   }
   cameraMoreDetails.hidden = true;
   cameraMoreDetails.open = false;
-  cameraMoreSummaryText.textContent = "收合更多監控";
+  cameraMoreSummaryText.textContent = "▸ 展開其餘路口監控";
 }
 
 async function renderCameraList() {
@@ -2711,10 +2775,10 @@ async function renderCameraList() {
   updateCameraMapLayer();
   const rows = getFilteredSortedCityCameras().slice(0, CCTV_VERIFY_POOL_SIZE);
   const district = getSelectedCameraDistrict();
-  const scopeLabel = district?.label || getCctvLocationFocus().label || "所選位置";
+  const scopeLabel = getCctvLocationFocus().label || district?.label || "所選位置";
   if (!rows.length) {
     if (cameraList) {
-      cameraList.innerHTML = `<p class="status-warn">所選地區範圍內查無市區路口監控點，請更換縣市、地區範圍或關鍵字。</p>`;
+      cameraList.innerHTML = `<p class="status-warn">定位點 ${CITY_CCTV_RADIUS_KM} 公里內查無市區路口監控點，請改用關鍵字或調整縣市範圍。</p>`;
     }
     return;
   }
@@ -2723,11 +2787,14 @@ async function renderCameraList() {
     const loading = document.createElement("p");
     loading.className = "timestamp camera-switching";
     loading.dataset.cameraLoading = "1";
-    loading.innerHTML = `正在偵測監控串流：${scopeLabel}｜正在讀取畫面中 <strong data-cctv-progress>0%</strong>`;
+    loading.innerHTML = `正在偵測監控串流：${scopeLabel}（${CITY_CCTV_RADIUS_KM} 公里）｜正在讀取畫面中 <strong data-cctv-progress>0%</strong>`;
     cameraList.append(loading);
   }
 
-  const verifyLimit = CITY_CCTV_PREVIEW_LIMIT + CITY_CCTV_MORE_LIMIT;
+  const verifyLimit = Math.min(
+    rows.length,
+    Math.max(CITY_CCTV_PREVIEW_LIMIT + CITY_CCTV_MORE_LIMIT, CITY_CCTV_PREVIEW_LIMIT)
+  );
   const liveCameras = await collectVerifiedLiveCameras(rows, {
     isCurrent,
     limit: verifyLimit,
@@ -2808,7 +2875,8 @@ function updateFreewayCameraMetaText() {
     ? formatDateTime(freewayCameraDataset.fetchedAt)
     : "未提供";
   const region = getSelectedFreewayRegion();
-  freewayCameraMeta.textContent = `${region.label}｜快照：${freewayFetchedAt}`;
+  const cityName = getSelectedFreewayCityName() || citySelect?.value || "全國";
+  freewayCameraMeta.textContent = `${region.label}｜${cityName}｜預設最近最多 ${FREEWAY_CCTV_PREVIEW_LIMIT} 組｜快照：${freewayFetchedAt}`;
 }
 
 async function renderFreewayCameraList() {
@@ -2830,7 +2898,7 @@ async function renderFreewayCameraList() {
   const scopeLabel = interchangeName
     ? `${region.label}｜${interchangeName}`
     : selectedCity
-      ? `${region.label}｜${selectedCity}交流道`
+      ? `${region.label}｜${selectedCity}（最近最多 ${FREEWAY_CCTV_PREVIEW_LIMIT} 組）`
       : `公路局即時｜${region.label}`;
   if (!rows.length) {
     freewayCameraList.innerHTML = `<p class="status-warn">目前範圍查無國道監控點，請更換國道路段、縣市或交流道。</p>`;
@@ -6336,7 +6404,7 @@ function updateCameraMapLayer() {
   }
   mapCameraLayer.clearLayers();
   mapLegendMarkers.cctv = [];
-  // Plot the same city CCTV set used by the monitor section / legend (coords required).
+  // Plot every city CCTV inside the active locate radius / city selection.
   const camerasToPlot = getCityCamerasForDisasterMap();
   camerasToPlot.forEach((camera) => {
     const lat = Number(camera.gisy);
@@ -6346,13 +6414,16 @@ function updateCameraMapLayer() {
     }
     const [roadA, roadB] = getCameraIntersectionRoads(camera);
     const distanceText = Number.isFinite(camera.distanceKm)
-      ? `約 ${camera.distanceKm.toFixed(1)} km`
+      ? `約 ${camera.distanceKm.toFixed(2)} km`
       : "--";
     const mapsUrl = `https://www.google.com/maps?q=${lat},${lon}&z=18`;
     const areaText = camera.city || camera.areaLabel || "";
+    const previewHtml = isLikelyDirectImageStream(camera.html)
+      ? `<img src="${camera.html}" alt="${camera.id} 即時影像" style="width:100%;max-height:140px;object-fit:cover;border-radius:8px;margin:6px 0;background:#111;" loading="lazy" />`
+      : "";
     const marker = L.circleMarker([lat, lon], {
       pane: "cameraPane",
-      radius: 8,
+      radius: Number.isFinite(camera.distanceKm) && camera.distanceKm <= CITY_CCTV_RADIUS_KM ? 8 : 6,
       color: "#b8f2ff",
       fillColor: "#0096c7",
       fillOpacity: 0.95,
@@ -6360,14 +6431,18 @@ function updateCameraMapLayer() {
     });
     marker.bindPopup(
       `
-        <strong>${camera.id}</strong><br/>
-        交叉路口：${roadA} × ${roadB}<br/>
-        ${areaText ? `所在縣市：${areaText}<br/>` : ""}
-        距離定位點：${distanceText}<br/>
-        <a href="${camera.html}" target="_blank" rel="noopener noreferrer">即時影像</a>
-        ｜
-        <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer">地圖位置</a>
-      `
+        <div class="cctv-map-popup">
+          <strong>${camera.id}</strong><br/>
+          交叉路口：${roadA} × ${roadB}<br/>
+          ${areaText ? `所在縣市：${areaText}<br/>` : ""}
+          距離定位點：${distanceText}<br/>
+          ${previewHtml}
+          <a href="${camera.html}" target="_blank" rel="noopener noreferrer">開啟監控鏡頭</a>
+          ｜
+          <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer">地圖位置</a>
+        </div>
+      `,
+      { maxWidth: 280, className: "cctv-popup-wrap" }
     );
     mapCameraLayer.addLayer(marker);
     mapLegendMarkers.cctv.push(marker);
@@ -6752,6 +6827,7 @@ async function performFullRefresh(triggerSource) {
 
 citySelect.addEventListener("change", () => {
   fillTownshipSelect(citySelect.value);
+  cctvLocateFocus = null;
   saveRegionPreference();
   syncCityCameraScopeToLocator();
   performFullRefresh("manual");
@@ -6760,6 +6836,7 @@ citySelect.addEventListener("change", () => {
 });
 
 townshipSelect.addEventListener("change", () => {
+  cctvLocateFocus = null;
   saveRegionPreference();
   syncCityCameraScopeToLocator();
   performFullRefresh("manual");
