@@ -2405,6 +2405,7 @@ input[type="checkbox"] {
   font-weight: 600;
   color: #9a6b4a;
   margin-left: 0;
+  padding-left: 1em;
   line-height: 1.2;
 }
 
