@@ -9,7 +9,7 @@
 - 停班停課通知整合顯示（連結官方公告來源）
 - 全台政府國道 CCTV 交流道監控清單（依所選縣市交流道近距排序）
 - 高對比精簡地圖（積淹水／停電／CCTV 圖層）
-- AI 災害提醒、颱風分析、空氣品質、會員訂閱通知
+- AI 災害提醒、颱風分析、地震通報、空氣品質、會員訂閱通知
 - 自動更新（15／30／60 分鐘可選）
 
 ## 本地啟動
@@ -84,3 +84,8 @@ python3 -m http.server 4173
 
 - `https://www.cwa.gov.tw/V8/C/P/Typhoon/TY_NEWS.html`
 - `https://www.cwa.gov.tw/V8/C/P/Typhoon/TY_WARN.html`
+
+地震通報資料：
+
+- USGS FDSN（台灣鄰近 M3.5+）：`https://earthquake.usgs.gov/fdsnws/event/1/query`
+- 官方對照頁：`https://www.cwa.gov.tw/V8/C/E/index.html`

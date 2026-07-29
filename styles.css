@@ -2192,6 +2192,102 @@ input[type="checkbox"] {
   border-color: #66d9ff;
 }
 
+.legend-swatch.earthquake-point {
+  background: #f97316;
+  border-color: #9a3412;
+  border-radius: 50%;
+}
+
+.earthquake-card {
+  display: grid;
+  gap: 10px;
+}
+
+.earthquake-head {
+  align-items: center;
+}
+
+.earthquake-summary {
+  margin: 0;
+  color: #9a3412;
+}
+
+.earthquake-list {
+  gap: 10px;
+}
+
+.earthquake-list li.earthquake-item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  list-style: none;
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--border, #dce4f4);
+  border-radius: 12px;
+  background: #fffaf5;
+}
+
+.earthquake-list li.earthquake-item.mag-high {
+  border-color: #fca5a5;
+  background: #fef2f2;
+}
+
+.earthquake-list li.earthquake-item.mag-watch {
+  border-color: #fcd34d;
+  background: #fffbeb;
+}
+
+.earthquake-mag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 58px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: #9a3412;
+  color: #fff;
+  font-weight: 800;
+  font-size: 14px;
+}
+
+.earthquake-item.mag-low .earthquake-mag {
+  background: #1d4ed8;
+}
+
+.earthquake-item.mag-watch .earthquake-mag {
+  background: #b45309;
+}
+
+.earthquake-body {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.earthquake-body strong {
+  font-size: 15px;
+  line-height: 1.35;
+}
+
+.earthquake-body small {
+  color: #63708a;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.earthquake-item a {
+  color: #1f5ae1;
+  text-decoration: none;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.visual-break-earthquake {
+  --visual-fallback: linear-gradient(120deg, #7c2d12, #c2410c 55%, #ea580c);
+}
+
 .legend-swatch.power-outage-disaster {
   background: #d00000;
   border-color: #9d0208;

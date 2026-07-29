@@ -128,6 +128,28 @@
       </section>
 
       <div
+        class="visual-break section-title-bar visual-break-earthquake"
+        style="--visual-image: url('https://images.unsplash.com/photo-1541872703-74c5e44368f9?auto=format&fit=crop&w=1400&q=80')"
+      >
+        <div class="visual-break-overlay"></div>
+        <h2 class="visual-break-caption">地震即時通報</h2>
+      </div>
+
+      <section class="card earthquake-card" aria-label="地震即時通報">
+        <div class="section-head earthquake-head">
+          <p id="earthquakeMeta" class="timestamp">讀取中...</p>
+          <a
+            href="https://www.cwa.gov.tw/V8/C/E/index.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            >開啟中央氣象署地震資訊</a
+          >
+        </div>
+        <p id="earthquakeSummary" class="big-text earthquake-summary">資料讀取中...</p>
+        <ul id="earthquakeList" class="analysis-list earthquake-list" aria-live="polite"></ul>
+      </section>
+
+      <div
         class="visual-break section-title-bar visual-break-weather"
         style="--visual-image: url('https://images.unsplash.com/photo-1428908728789-d2de25dbd4e2?auto=format&fit=crop&w=1400&q=80')"
       >
@@ -253,6 +275,10 @@
             <label class="topic-option"
               ><input type="checkbox" name="topic" value="water-outage" checked />
               <span class="topic-option-text">停水公告（所選縣市）</span></label
+            >
+            <label class="topic-option"
+              ><input type="checkbox" name="topic" value="earthquake" checked />
+              <span class="topic-option-text">地震通報（台灣鄰近 M3.5+）</span></label
             >
             <div class="subscription-actions">
               <button type="submit" class="refresh-btn">儲存訂閱</button>
@@ -407,6 +433,13 @@
                   </button>
                 </li>
                 <li>
+                  <button type="button" class="legend-item-btn" data-legend-key="earthquake">
+                    <span class="legend-swatch earthquake-point" aria-hidden="true"></span>
+                    <span class="legend-label">地震震央（近期 M3.5+）</span>
+                    <span class="legend-count" data-legend-count aria-hidden="true">0</span>
+                  </button>
+                </li>
+                <li>
                   <button type="button" class="legend-item-btn" data-legend-key="cctv">
                     <span class="legend-swatch cctv-point" aria-hidden="true"></span>
                     <span class="legend-label">縣市路口 CCTV（地圖標示）</span>
@@ -441,6 +474,9 @@
             <li>積淹水警示：經濟部水利署 IoW 即時淹水深度感測（公開 API）。</li>
             <li>颱風分析：中央氣象署颱風消息／警報頁面即時解析。</li>
             <li>Windy颱風走勢圖：Windy.com 颱風／氣象動態圖嵌入。</li>
+            <li>
+              地震通報：USGS FDSN 台灣鄰近區域地震（M3.5+），並連結中央氣象署地震資訊頁。
+            </li>
             <li>停電區域：台電災害停電通報（XML）與計畫性工作停電公開資料（ZIP）。</li>
             <li>若公告暫無資料或來源暫時無法連線，頁面會顯示提示並保留上一筆成功結果。</li>
           </ul>

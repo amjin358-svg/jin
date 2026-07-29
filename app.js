@@ -501,6 +501,9 @@ const powerOutageMeta = document.querySelector("#powerOutageMeta");
 const mapFloodCountBtn = document.querySelector("#mapFloodCountBtn");
 const mapFloodCountValue = document.querySelector("#mapFloodCountValue");
 const aiAlertList = document.querySelector("#aiAlertList");
+const earthquakeMeta = document.querySelector("#earthquakeMeta");
+const earthquakeSummary = document.querySelector("#earthquakeSummary");
+const earthquakeList = document.querySelector("#earthquakeList");
 const rainProjection = document.querySelector("#rainProjection");
 const subscriptionForm = document.querySelector("#subscriptionForm");
 const subscriberEmail = document.querySelector("#subscriberEmail");
@@ -522,6 +525,7 @@ let mapFloodLayer = null;
 let mapCameraLayer = null;
 let mapCityFocusLayer = null;
 let mapPowerOutageLayer = null;
+let mapEarthquakeLayer = null;
 const mapLegendMarkers = {
   "flood-4": [],
   "flood-3": [],
@@ -529,19 +533,22 @@ const mapLegendMarkers = {
   "flood-1": [],
   "power-disaster": [],
   "power-planned": [],
+  earthquake: [],
   cctv: [],
   "city-focus": []
 };
-const mapLayerOrder = ["city-focus", "flood-warning", "power-outage", "cctv-points"];
+const mapLayerOrder = ["city-focus", "flood-warning", "power-outage", "earthquake-points", "cctv-points"];
 const mapLayerVisibility = {
   "power-outage": true,
   "flood-warning": true,
+  "earthquake-points": true,
   "cctv-points": true,
   "city-focus": true
 };
 const mapLayerConfig = {
   "power-outage": { label: "停電區域標示", pane: "outagePane", hiddenInControl: true },
   "flood-warning": { label: "即時積淹水感測", pane: "floodPane", hiddenInControl: true },
+  "earthquake-points": { label: "地震震央", pane: "earthquakePane", hiddenInControl: true },
   "cctv-points": { label: "縣市路口 CCTV", pane: "cameraPane", hiddenInControl: true },
   "city-focus": { label: "所選位置焦點範圍", pane: "focusPane", hiddenInControl: true }
 };
@@ -555,8 +562,21 @@ const DEFAULT_AUTO_REFRESH_MINUTES = 15;
 const SUBSCRIPTION_STORAGE_KEY = "weatherMemberSubscriptionV1";
 const NOTIFICATION_DIGEST_STORAGE_KEY = "subscriptionNotificationDigestV1";
 const DAILY_WEATHER_EMAIL_DATE_KEY = "dailyWeatherEmailDateV1";
-const SUBSCRIPTION_TOPIC_ORDER = ["weather", "air", "closure", "flood", "power-outage", "water-outage"];
+const SUBSCRIPTION_TOPIC_ORDER = [
+  "weather",
+  "air",
+  "closure",
+  "flood",
+  "power-outage",
+  "water-outage",
+  "earthquake"
+];
 const SITE_PUBLIC_URL = "https://amjin358-svg.github.io/jin/";
+const EARTHQUAKE_USGS_API =
+  "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&minmagnitude=3.5&limit=12&minlatitude=21.5&maxlatitude=26.5&minlongitude=118&maxlongitude=123&orderby=time";
+const EARTHQUAKE_CWA_PAGE = "https://www.cwa.gov.tw/V8/C/E/index.html";
+const EARTHQUAKE_ALERT_MAGNITUDE = 4.5;
+const EARTHQUAKE_RECENT_HOURS = 72;
 const SUBSCRIBE_OWNER_INBOX = "amjin358@gmail.com";
 const VAPID_PUBLIC_KEY =
   "BJXXT1l-q5eu0Obt6DDDndh1NeVqGL9jR3mS8aoH1-cB6W3Cqk_UM9jLLF9PLyc1RguSVPmki1bxbOsNcYeOVbI";
@@ -615,6 +635,8 @@ const appState = {
   powerOutageMetaText: "",
   waterOutageItems: [],
   waterOutageMetaText: "",
+  earthquakes: [],
+  earthquakeMetaText: "",
   typhoon: null,
   typhoonOfficial: null,
   aiAlerts: [],
@@ -4025,6 +4047,7 @@ function createDefaultRecoveryState() {
     floodSensors: {},
     powerOutages: {},
     waterOutages: {},
+    earthquakes: {},
     hasLandTyphoonWarning: false
   };
 }
@@ -4040,6 +4063,7 @@ function loadRecoveryState() {
       floodSensors: parsed.floodSensors ?? {},
       powerOutages: parsed.powerOutages ?? {},
       waterOutages: parsed.waterOutages ?? {},
+      earthquakes: parsed.earthquakes ?? {},
       hasLandTyphoonWarning: Boolean(parsed.hasLandTyphoonWarning)
     };
   } catch {
@@ -4163,6 +4187,46 @@ function updateRecoveryTrackingState() {
   }
   next.waterOutages = currentWater;
 
+  const currentEarthquakes = {};
+  (appState.earthquakes || []).forEach((quake) => {
+    if (quake.magnitude < EARTHQUAKE_ALERT_MAGNITUDE) {
+      return;
+    }
+    if (Date.now() - quake.timeMs > EARTHQUAKE_RECENT_HOURS * 60 * 60 * 1000) {
+      return;
+    }
+    currentEarthquakes[quake.id] = {
+      place: quake.place,
+      magnitude: quake.magnitude,
+      timeMs: quake.timeMs,
+      distanceKm: quake.distanceKm
+    };
+  });
+  if (isSubscribed && topics.has("earthquake")) {
+    Object.entries(currentEarthquakes).forEach(([id, quake]) => {
+      if (prev.earthquakes?.[id]) {
+        return;
+      }
+      const distanceText = Number.isFinite(quake.distanceKm)
+        ? `，距離所選位置約 ${quake.distanceKm.toFixed(0)} km`
+        : "";
+      messages.push({
+        kind: "earthquake-alert",
+        text: `【地震通報】規模 ${quake.magnitude.toFixed(1)}，${quake.place}${distanceText}（${formatDateTime(quake.timeMs)}）。`
+      });
+    });
+  }
+  next.earthquakes = {
+    ...(prev.earthquakes || {}),
+    ...currentEarthquakes
+  };
+  const pruneBefore = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  Object.entries(next.earthquakes).forEach(([id, quake]) => {
+    if (!Number.isFinite(quake?.timeMs) || quake.timeMs < pruneBefore) {
+      delete next.earthquakes[id];
+    }
+  });
+
   const hasLandWarning = Boolean(appState.typhoonOfficial?.hasLandWarning);
   if (isSubscribed && prev.hasLandTyphoonWarning && !hasLandWarning) {
     const typhoonName = appState.typhoonOfficial?.name;
@@ -4192,7 +4256,7 @@ function parseAiAlertPresentation(text) {
     tone = "high";
   } else if (tag.includes("積淹水警示") || tag.includes("積淹水監測")) {
     tone = floodLevel >= 1 ? `flood-${floodLevel}` : "flood-1";
-  } else if (tag.includes("注意")) {
+  } else if (tag.includes("注意") || tag.includes("地震")) {
     tone = "watch";
   } else if (tag.includes("空品")) {
     tone = "air";
@@ -4204,6 +4268,10 @@ function parseAiAlertPresentation(text) {
     tone = `flood-${floodLevel}`;
   }
 
+  if (tag.includes("地震") && /規模\s*(?:[5-9](?:\.\d)?|4\.[5-9])/.test(raw)) {
+    tone = "high";
+  }
+
   return {
     tag: tag ? `【${tag}】` : "",
     body,
@@ -4212,12 +4280,233 @@ function parseAiAlertPresentation(text) {
   };
 }
 
+function getEarthquakeMarkerStyle(magnitude) {
+  if (magnitude >= 6) {
+    return { color: "#7f1d1d", fillColor: "#dc2626", radius: 10 };
+  }
+  if (magnitude >= 5) {
+    return { color: "#9a3412", fillColor: "#f97316", radius: 8 };
+  }
+  if (magnitude >= 4.5) {
+    return { color: "#a16207", fillColor: "#eab308", radius: 7 };
+  }
+  return { color: "#1d4ed8", fillColor: "#60a5fa", radius: 5 };
+}
+
+function enrichEarthquakeDistances(quakes) {
+  const location = getSubscriptionWeatherLocation() || getSelectedTownship();
+  if (!location) {
+    return quakes;
+  }
+  return quakes.map((quake) => ({
+    ...quake,
+    distanceKm: getDistanceKm(location.lat, location.lon, quake.lat, quake.lon)
+  }));
+}
+
+function renderEarthquakePanel() {
+  if (!earthquakeList) {
+    return;
+  }
+  const quakes = enrichEarthquakeDistances(appState.earthquakes || []);
+  appState.earthquakes = quakes;
+  earthquakeList.innerHTML = "";
+
+  if (!quakes.length) {
+    if (earthquakeSummary) {
+      earthquakeSummary.textContent = "近期無 M3.5+ 台灣鄰近地震";
+    }
+    if (earthquakeMeta) {
+      earthquakeMeta.textContent = appState.earthquakeMetaText || "資料來源：USGS／中央氣象署地震資訊";
+    }
+    earthquakeList.innerHTML = "<li>目前無符合條件的地震事件。</li>";
+    return;
+  }
+
+  const latest = quakes[0];
+  if (earthquakeSummary) {
+    const distanceText = Number.isFinite(latest.distanceKm)
+      ? `｜距所選位置約 ${latest.distanceKm.toFixed(0)} km`
+      : "";
+    earthquakeSummary.textContent = `最新：M${latest.magnitude.toFixed(1)} ${latest.place}${distanceText}`;
+  }
+  if (earthquakeMeta) {
+    earthquakeMeta.textContent =
+      appState.earthquakeMetaText ||
+      `資料來源：USGS（台灣鄰近）｜共 ${quakes.length} 筆｜官方頁面：中央氣象署`;
+  }
+
+  quakes.slice(0, 8).forEach((quake) => {
+    const item = document.createElement("li");
+    item.className = `earthquake-item mag-${quake.magnitude >= 5 ? "high" : quake.magnitude >= 4.5 ? "watch" : "low"}`;
+    const distanceText = Number.isFinite(quake.distanceKm)
+      ? `｜約 ${quake.distanceKm.toFixed(0)} km`
+      : "";
+    item.innerHTML = `
+      <span class="earthquake-mag">M${quake.magnitude.toFixed(1)}</span>
+      <span class="earthquake-body">
+        <strong>${quake.place}</strong>
+        <small>${formatDateTime(quake.timeMs)}${distanceText}｜深度 ${
+          Number.isFinite(quake.depthKm) ? `${quake.depthKm.toFixed(1)} km` : "--"
+        }</small>
+      </span>
+      <a href="${quake.url || EARTHQUAKE_CWA_PAGE}" target="_blank" rel="noopener noreferrer">詳情</a>
+    `;
+    earthquakeList.append(item);
+  });
+}
+
+function updateEarthquakeMapLayer() {
+  if (!warningMap) {
+    return;
+  }
+  if (!mapEarthquakeLayer) {
+    mapEarthquakeLayer = L.layerGroup();
+  }
+  mapEarthquakeLayer.clearLayers();
+  mapLegendMarkers.earthquake = [];
+
+  (appState.earthquakes || []).forEach((quake) => {
+    if (!Number.isFinite(quake.lat) || !Number.isFinite(quake.lon)) {
+      return;
+    }
+    const style = getEarthquakeMarkerStyle(quake.magnitude);
+    const marker = L.circleMarker([quake.lat, quake.lon], {
+      pane: "earthquakePane",
+      radius: style.radius,
+      color: style.color,
+      fillColor: style.fillColor,
+      fillOpacity: 0.85,
+      weight: 2
+    });
+    const distanceText = Number.isFinite(quake.distanceKm)
+      ? `<br/>距所選位置約 ${quake.distanceKm.toFixed(0)} km`
+      : "";
+    marker.bindPopup(
+      `
+        <strong>地震 M${quake.magnitude.toFixed(1)}</strong><br/>
+        ${quake.place}<br/>
+        ${formatDateTime(quake.timeMs)}
+        ${distanceText}<br/>
+        深度 ${Number.isFinite(quake.depthKm) ? `${quake.depthKm.toFixed(1)} km` : "--"}<br/>
+        <a href="${quake.url || EARTHQUAKE_CWA_PAGE}" target="_blank" rel="noopener noreferrer">開啟詳情</a>
+      `
+    );
+    mapEarthquakeLayer.addLayer(marker);
+    mapLegendMarkers.earthquake.push(marker);
+  });
+
+  syncMapLayerVisibility("earthquake-points");
+  syncMapLegendState();
+}
+
+async function fetchEarthquakeData() {
+  try {
+    const response = await fetch(EARTHQUAKE_USGS_API, { cache: "no-store" });
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    const payload = await response.json();
+    const quakes = (payload.features || [])
+      .map((feature) => {
+        const props = feature.properties || {};
+        const coords = feature.geometry?.coordinates || [];
+        const lon = Number(coords[0]);
+        const lat = Number(coords[1]);
+        const depthKm = Number(coords[2]);
+        const magnitude = Number(props.mag);
+        const timeMs = Number(props.time);
+        if (!Number.isFinite(lat) || !Number.isFinite(lon) || !Number.isFinite(magnitude) || !Number.isFinite(timeMs)) {
+          return null;
+        }
+        return {
+          id: String(feature.id || props.code || `${timeMs}-${magnitude}`),
+          place: String(props.place || "台灣鄰近地震"),
+          magnitude,
+          timeMs,
+          lat,
+          lon,
+          depthKm: Number.isFinite(depthKm) ? depthKm : null,
+          url: props.url || EARTHQUAKE_CWA_PAGE
+        };
+      })
+      .filter(Boolean)
+      .map((quake) => ({
+        ...quake,
+        place: quake.place
+          .replace(/,\s*Taiwan$/i, "")
+          .replace(/\bTaiwan\b/gi, "台灣")
+          .replace(/\bkm\b/gi, "公里")
+      }));
+
+    appState.earthquakes = enrichEarthquakeDistances(quakes);
+    appState.earthquakeMetaText = `資料來源：USGS｜更新時間 ${formatDateTime(Date.now())}｜共 ${quakes.length} 筆（M3.5+）`;
+    renderEarthquakePanel();
+    updateEarthquakeMapLayer();
+    return appState.earthquakes;
+  } catch (error) {
+    appState.earthquakes = [];
+    appState.earthquakeMetaText = `地震資料暫時無法更新：${error.message}`;
+    if (earthquakeMeta) {
+      earthquakeMeta.textContent = appState.earthquakeMetaText;
+    }
+    if (earthquakeSummary) {
+      earthquakeSummary.textContent = "地震資料讀取失敗";
+    }
+    if (earthquakeList) {
+      earthquakeList.innerHTML = `<li class="status-warn">請稍後重試，或改看 <a href="${EARTHQUAKE_CWA_PAGE}" target="_blank" rel="noopener noreferrer">中央氣象署地震資訊</a>。</li>`;
+    }
+    updateEarthquakeMapLayer();
+    return [];
+  }
+}
+
+function getSubscriptionEarthquakeMessage() {
+  const locationLabel = getSubscriptionLocationLabel();
+  const quakes = enrichEarthquakeDistances(appState.earthquakes || []);
+  const recentStrong = quakes.filter(
+    (quake) =>
+      quake.magnitude >= EARTHQUAKE_ALERT_MAGNITUDE &&
+      Date.now() - quake.timeMs <= EARTHQUAKE_RECENT_HOURS * 60 * 60 * 1000
+  );
+  if (recentStrong.length) {
+    const top = recentStrong[0];
+    const distanceText = Number.isFinite(top.distanceKm)
+      ? `，距 ${locationLabel} 約 ${top.distanceKm.toFixed(0)} km`
+      : "";
+    return `【地震通報】規模 ${top.magnitude.toFixed(1)}，${top.place}${distanceText}（${formatDateTime(top.timeMs)}）。請就近掩護並留意餘震與官方指示。`;
+  }
+  if (quakes.length) {
+    const top = quakes[0];
+    return `【地震監測】${locationLabel} 鄰近最新事件 M${top.magnitude.toFixed(1)}（${formatDateTime(top.timeMs)}），暫無 M${EARTHQUAKE_ALERT_MAGNITUDE}+ 新通報。`;
+  }
+  return `【地震監測】${locationLabel} 鄰近目前無 M3.5+ 地震事件。`;
+}
+
 function renderAiAlerts() {
   const alerts = [];
   const typhoon = appState.typhoon;
   const air = appState.airQuality;
   const cityClosure = appState.closureRows.find((row) => row.city === citySelect.value);
   const nearbyFlood = getNearbyFloodWarnings();
+  const recentQuakes = (appState.earthquakes || []).filter(
+    (quake) => Date.now() - quake.timeMs <= EARTHQUAKE_RECENT_HOURS * 60 * 60 * 1000
+  );
+  const strongQuake = recentQuakes.find((quake) => quake.magnitude >= EARTHQUAKE_ALERT_MAGNITUDE);
+
+  if (strongQuake) {
+    const distanceText = Number.isFinite(strongQuake.distanceKm)
+      ? `，距所選位置約 ${strongQuake.distanceKm.toFixed(0)} km`
+      : "";
+    alerts.push(
+      `【地震通報】規模 ${strongQuake.magnitude.toFixed(1)}，${strongQuake.place}${distanceText}（${formatDateTime(strongQuake.timeMs)}）。請保持冷靜、就近掩護，並關注餘震與官方指示。`
+    );
+  } else if (recentQuakes.length) {
+    const top = recentQuakes[0];
+    alerts.push(
+      `【地震監測】最近 72 小時有 ${recentQuakes.length} 筆 M3.5+ 事件，最新 M${top.magnitude.toFixed(1)}（${top.place}）。`
+    );
+  }
 
   if (typhoon) {
     if (typhoon.hasWarning || typhoon.level === "高") {
@@ -4983,7 +5272,8 @@ function buildSubscriptionNotificationMessages() {
     "power-outage": getSubscriptionPowerOutageMessage,
     "water-outage": getSubscriptionWaterOutageMessage,
     weather: getSubscriptionWeatherMessage,
-    air: getSubscriptionAirQualityMessage
+    air: getSubscriptionAirQualityMessage,
+    earthquake: getSubscriptionEarthquakeMessage
   };
   return getSelectedSubscriptionTopics().map((topic) => topicBuilders[topic]?.()).filter(Boolean);
 }
@@ -5006,7 +5296,8 @@ async function sendRecoveryNotifications(messages) {
     "water-alert",
     "water-recovery",
     "flood-alert",
-    "flood-recovery"
+    "flood-recovery",
+    "earthquake-alert"
   ]);
   const utilityMessages = normalized.filter((item) => utilityKinds.has(item.kind));
   const otherMessages = normalized.filter((item) => !utilityKinds.has(item.kind));
@@ -5219,6 +5510,9 @@ function getMapLayerInstance(layerKey) {
   }
   if (layerKey === "flood-warning") {
     return mapFloodLayer;
+  }
+  if (layerKey === "earthquake-points") {
+    return mapEarthquakeLayer;
   }
   if (layerKey === "cctv-points") {
     return mapCameraLayer;
@@ -5744,6 +6038,7 @@ function updateMapForCityChange() {
   }
   updateCityFocusLayer();
   updateCameraMapLayer();
+  updateEarthquakeMapLayer();
   fetchPowerOutageData().catch((error) => {
     appState.powerOutageMetaText = `停電區域資料暫時無法更新：${error.message}`;
     if (powerOutageMeta) {
@@ -5802,11 +6097,16 @@ function initWarningMap() {
 
   warningMap.createPane("outagePane");
   warningMap.createPane("floodPane");
+  warningMap.createPane("earthquakePane");
   warningMap.createPane("cameraPane");
   warningMap.createPane("focusPane");
   const focusPane = warningMap.getPane("focusPane");
   if (focusPane) {
     focusPane.style.zIndex = "680";
+  }
+  const earthquakePane = warningMap.getPane("earthquakePane");
+  if (earthquakePane) {
+    earthquakePane.style.zIndex = "670";
   }
 
   addDisasterMapBaseTiles(warningMap);
@@ -5997,6 +6297,12 @@ async function performFullRefresh(triggerSource) {
       }),
       fetchWaterOutageData().catch(() => {
         appState.waterOutageItems = appState.waterOutageItems || [];
+      }),
+      fetchEarthquakeData().catch((error) => {
+        appState.earthquakeMetaText = `地震資料暫時無法更新：${error.message}`;
+        if (earthquakeMeta) {
+          earthquakeMeta.textContent = appState.earthquakeMetaText;
+        }
       })
     ]);
     renderTyphoonAnalysis();

@@ -1,4 +1,4 @@
-const SW_VERSION = "jin-v25-weekly-forecast";
+const SW_VERSION = "jin-v26-earthquake-alert";
 const PREFS_DB = "jin-bg-prefs-v1";
 const PREFS_STORE = "prefs";
 const PREFS_KEY = "subscription";
@@ -7,6 +7,9 @@ const FLOOD_LATEST_API =
   "https://opendata.wra.gov.tw/api/v2/1b991bbb-ad85-4e7a-b931-06ce8749d3ed?format=JSON";
 const FLOOD_SAFE_DEPTH_CM = 5;
 const FLOOD_RADIUS_KM = 20;
+const EARTHQUAKE_USGS_API =
+  "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&minmagnitude=4.5&limit=5&minlatitude=21.5&maxlatitude=26.5&minlongitude=118&maxlongitude=123&orderby=time";
+const EARTHQUAKE_RECENT_MS = 72 * 60 * 60 * 1000;
 
 self.addEventListener("install", (event) => {
   event.waitUntil(self.skipWaiting());
@@ -167,6 +170,43 @@ async function buildBackgroundAlertMessages(prefs) {
       }
     } catch {
       /* ignore */
+    }
+  }
+
+  if (topics.has("earthquake")) {
+    try {
+      const response = await fetch(EARTHQUAKE_USGS_API, { cache: "no-store" });
+      if (response.ok) {
+        const payload = await response.json();
+        const now = Date.now();
+        const recent = (payload.features || [])
+          .map((feature) => {
+            const props = feature.properties || {};
+            const magnitude = Number(props.mag);
+            const timeMs = Number(props.time);
+            if (!Number.isFinite(magnitude) || !Number.isFinite(timeMs) || now - timeMs > EARTHQUAKE_RECENT_MS) {
+              return null;
+            }
+            return {
+              magnitude,
+              timeMs,
+              place: String(props.place || "台灣鄰近地震")
+                .replace(/,\s*Taiwan$/i, "")
+                .replace(/\bTaiwan\b/gi, "台灣")
+            };
+          })
+          .filter(Boolean)
+          .sort((a, b) => b.timeMs - a.timeMs);
+        if (recent.length) {
+          const top = recent[0];
+          const when = new Date(top.timeMs).toLocaleString("zh-TW", { hour12: false });
+          messages.push(
+            `【地震通報】規模 ${top.magnitude.toFixed(1)}，${top.place}（${when}）。請就近掩護並留意餘震。`
+          );
+        }
+      }
+    } catch {
+      /* ignore network errors in background */
     }
   }
 
