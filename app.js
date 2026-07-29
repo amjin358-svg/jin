@@ -4994,9 +4994,9 @@ function createEarthquakeListItem(quake) {
   item.innerHTML = `
     <span class="earthquake-mag">${formatEarthquakeMagnitudeLabel(quake.magnitude)}</span>
     <span class="earthquake-body">
-      <strong>${serialText}｜震度 ${formatIntensityLabel(quake.intensityValue)}｜${getEarthquakeLocatedLabel(
+      <strong>${serialText}｜震度 ${formatIntensityLabel(quake.intensityValue)}｜<span class="earthquake-place-label">${getEarthquakeLocatedLabel(
         quake.place
-      )}</strong>
+      )}</span></strong>
       <small>${formatDateTime(quake.timeMs)}${distanceText}｜深度 ${
         Number.isFinite(quake.depthKm) ? `${quake.depthKm.toFixed(1)} 公里` : "--"
       }${isNationalEarthquakeAlert(quake) ? "｜國家警報同步" : ""}</small>
