@@ -3172,9 +3172,9 @@ async function renderAllCameraLists() {
 function formatEarthquakeMagnitudeLabel(magnitude) {
   const value = Number(magnitude);
   if (!Number.isFinite(value)) {
-    return "--(M)級";
+    return "--(級)";
   }
-  return `${value.toFixed(1)}(M)級`;
+  return `${value.toFixed(1)}(級)`;
 }
 
 function getWeatherIconSvg(code) {
@@ -4944,7 +4944,7 @@ function renderEarthquakeSourceMeta(updatedAt = Date.now()) {
   }
   earthquakeMeta.innerHTML = `來源：<a href="${EARTHQUAKE_CWA_PAGE}" target="_blank" rel="noopener noreferrer">中央氣象署</a>｜更新 ${formatDateTime(
     updatedAt
-  )}｜<a href="${EARTHQUAKE_SCWEB_PAGE}" target="_blank" rel="noopener noreferrer">測報中心／PWS</a>`;
+  )}｜<a href="${EARTHQUAKE_SCWEB_PAGE}" target="_blank" rel="noopener noreferrer">測報中心／公眾警示</a>`;
 }
 
 function createEarthquakeListItem(quake) {
@@ -4954,7 +4954,7 @@ function createEarthquakeListItem(quake) {
     isNationalEarthquakeAlert(quake) ? "is-national" : ""
   }`;
   const distanceText = Number.isFinite(quake.distanceKm)
-    ? `｜約 ${quake.distanceKm.toFixed(0)} km`
+    ? `｜約 ${quake.distanceKm.toFixed(0)} 公里`
     : "";
   const serialText = quake.serial && quake.serial !== "小區域" ? `第${quake.serial}號` : "小區域";
   item.innerHTML = `
@@ -4964,11 +4964,11 @@ function createEarthquakeListItem(quake) {
         quake.place
       )}</strong>
       <small>${formatDateTime(quake.timeMs)}${distanceText}｜深度 ${
-        Number.isFinite(quake.depthKm) ? `${quake.depthKm.toFixed(1)} km` : "--"
+        Number.isFinite(quake.depthKm) ? `${quake.depthKm.toFixed(1)} 公里` : "--"
       }${isNationalEarthquakeAlert(quake) ? "｜國家警報同步" : ""}</small>
     </span>
     <span class="earthquake-links">
-      <a href="${quake.pwsUrl || quake.url}" target="_blank" rel="noopener noreferrer">PWS通報</a>
+      <a href="${quake.pwsUrl || quake.url}" target="_blank" rel="noopener noreferrer">公眾警示</a>
       <a href="${quake.url || EARTHQUAKE_CWA_PAGE}" target="_blank" rel="noopener noreferrer">詳情</a>
     </span>
   `;
@@ -5065,14 +5065,14 @@ function buildEarthquakePopupHtml(quake) {
       <div>${getEarthquakeLocatedLabel(quake.place)}</div>
       <div>${quake.place}</div>
       <div>${formatDateTime(quake.timeMs)}</div>
-      <div>深度 ${Number.isFinite(quake.depthKm) ? `${quake.depthKm.toFixed(1)} km` : "--"}${
+      <div>深度 ${Number.isFinite(quake.depthKm) ? `${quake.depthKm.toFixed(1)} 公里` : "--"}${
         quake.approxCoords ? "（暫估位置）" : ""
       }</div>
       ${distanceText}
       <div class="eq-popup-report">${report}</div>
       ${areas ? `<ul class="eq-popup-areas">${areas}</ul>` : ""}
       <div class="eq-popup-links">
-        <a href="${quake.pwsUrl || quake.url}" target="_blank" rel="noopener noreferrer">開啟國家緊急訊息（PWS）</a>
+        <a href="${quake.pwsUrl || quake.url}" target="_blank" rel="noopener noreferrer">開啟國家緊急訊息（公眾警示）</a>
         <a href="${quake.url}" target="_blank" rel="noopener noreferrer">測報中心詳情</a>
         <a href="${EARTHQUAKE_CWA_PAGE}" target="_blank" rel="noopener noreferrer">中央氣象署</a>
       </div>
@@ -5246,7 +5246,7 @@ async function fetchEarthquakeData() {
         earthquakeSummary.textContent = "地震資料讀取失敗";
       }
       if (earthquakeList) {
-        earthquakeList.innerHTML = `<li class="status-warn">請稍後重試，或改看 <a href="${EARTHQUAKE_CWA_PAGE}" target="_blank" rel="noopener noreferrer">中央氣象署</a>／<a href="${EARTHQUAKE_SCWEB_PAGE}" target="_blank" rel="noopener noreferrer">測報中心／PWS</a>。</li>`;
+        earthquakeList.innerHTML = `<li class="status-warn">請稍後重試，或改看 <a href="${EARTHQUAKE_CWA_PAGE}" target="_blank" rel="noopener noreferrer">中央氣象署</a>／<a href="${EARTHQUAKE_SCWEB_PAGE}" target="_blank" rel="noopener noreferrer">測報中心／公眾警示</a>。</li>`;
       }
       updateEarthquakeMapLayer();
       return [];
