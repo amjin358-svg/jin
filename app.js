@@ -557,7 +557,7 @@ const mapLayerConfig = {
   "power-outage": { label: "停電區域標示", pane: "outagePane", hiddenInControl: true },
   "flood-warning": { label: "即時積淹水感測", pane: "floodPane", hiddenInControl: true },
   "earthquake-points": { label: "地震震央", pane: "earthquakePane", hiddenInControl: true },
-  "cctv-points": { label: "縣市路口 CCTV", pane: "cameraPane", hiddenInControl: true },
+  "cctv-points": { label: "定位中心點區域CCTV", pane: "cameraPane", hiddenInControl: true },
   "city-focus": { label: "所選位置焦點範圍", pane: "focusPane", hiddenInControl: true }
 };
 const AUTO_REFRESH_OPTIONS = {
@@ -1769,10 +1769,51 @@ function getFilteredSortedCityCameras() {
 }
 
 function getCityCamerasForDisasterMap() {
-  // Plot every city CCTV inside the active locate/city radius on the disaster map.
-  return getFilteredSortedCityCameras().filter(
-    (camera) => Number.isFinite(Number(camera.gisy)) && Number.isFinite(Number(camera.gisx))
+  // Mark every usable city CCTV inside the locate-center radius (ignore list keyword / live verify).
+  if (!cityCameraDataset || !Array.isArray(cityCameraDataset.cameras)) {
+    return [];
+  }
+  const selectedCity = getSelectedCameraCityName() || citySelect?.value || "";
+  const focusPoint = getCityCameraFocusPoint();
+  const focus = getCctvLocationFocus();
+  const focusLat = Number(focusPoint?.lat);
+  const focusLon = Number(focusPoint?.lon);
+  const radiusKm = CITY_CCTV_RADIUS_KM;
+
+  const scored = dedupeCamerasByIdentity(
+    cityCameraDataset.cameras
+      .filter((camera) => isCameraUrlUsable(camera.html))
+      .filter((camera) => !selectedCity || camera.city === selectedCity)
+      .map((camera) => {
+        const lat = Number(camera.gisy);
+        const lon = Number(camera.gisx);
+        const distanceKm =
+          Number.isFinite(focusLat) && Number.isFinite(focusLon) && Number.isFinite(lat) && Number.isFinite(lon)
+            ? getDistanceKm(focusLat, focusLon, lat, lon)
+            : Infinity;
+        const landTown = resolveCameraLandDistrict(camera);
+        return {
+          ...camera,
+          distanceKm,
+          landTown,
+          focusLabel: focus?.label || selectedCity || "",
+          areaLabel: landTown ? `${camera.city || ""}${landTown}` : camera.city || focus?.label || "",
+          withinLocateRadius: Number.isFinite(distanceKm) && distanceKm <= radiusKm
+        };
+      })
+      .filter((camera) => Number.isFinite(Number(camera.gisy)) && Number.isFinite(Number(camera.gisx)))
+      .sort((a, b) => a.distanceKm - b.distanceKm)
   );
+
+  const nearby = scored.filter((camera) => camera.withinLocateRadius);
+  if (nearby.length) {
+    return nearby;
+  }
+  // Soft fallback: nearest cameras in the same city when the ring is empty.
+  return scored.slice(0, Math.max(CITY_CCTV_PREVIEW_LIMIT * 2, 12)).map((camera) => ({
+    ...camera,
+    locateFallback: true
+  }));
 }
 
 function dedupeCamerasByIdentity(cameras = []) {
@@ -2887,7 +2928,7 @@ function updateCameraMetaText() {
   const radiusText = fallback
     ? `${CITY_CCTV_RADIUS_KM} 公里內無鏡頭，改顯示最近路口`
     : `半徑 ${CITY_CCTV_RADIUS_KM} 公里｜符合 ${nearbyCount || filtered.length} 組`;
-  cameraMeta.textContent = `範圍：${scopeLabel}｜定位點：${focusLabel}｜${radiusText}｜預設顯示最多 ${CITY_CCTV_PREVIEW_LIMIT} 組｜快照：${cityFetchedAt}`;
+  cameraMeta.textContent = `定位中心點區域CCTV｜範圍：${scopeLabel}｜定位點：${focusLabel}｜${radiusText}｜預設顯示最多 ${CITY_CCTV_PREVIEW_LIMIT} 組｜快照：${cityFetchedAt}`;
 }
 
 function resetCityCameraLists() {
@@ -6596,7 +6637,6 @@ function updateCameraMapLayer() {
   }
   mapCameraLayer.clearLayers();
   mapLegendMarkers.cctv = [];
-  // Plot every city CCTV inside the active locate radius / city selection.
   const camerasToPlot = getCityCamerasForDisasterMap();
   camerasToPlot.forEach((camera) => {
     const lat = Number(camera.gisy);
@@ -6610,35 +6650,43 @@ function updateCameraMapLayer() {
       : "--";
     const mapsUrl = `https://www.google.com/maps?q=${lat},${lon}&z=18`;
     const areaText = camera.city || camera.areaLabel || "";
-    const previewHtml = isLikelyDirectImageStream(camera.html)
-      ? `<img src="${camera.html}" alt="${camera.id} 即時影像" style="width:100%;max-height:140px;object-fit:cover;border-radius:8px;margin:6px 0;background:#111;" loading="lazy" />`
-      : "";
+    const scopeNote = camera.locateFallback
+      ? `範圍外最近鏡頭（定位中心 ${CITY_CCTV_RADIUS_KM} 公里內無點）`
+      : `定位中心點區域 ${CITY_CCTV_RADIUS_KM} 公里內`;
+    const useImage = isLikelyDirectImageStream(camera.html);
+    const previewHtml = useImage
+      ? `<img class="cctv-map-popup-media" src="${camera.html}" alt="${camera.id} 路口監控預覽" loading="lazy" referrerpolicy="no-referrer-when-downgrade" />`
+      : `<iframe class="cctv-map-popup-media cctv-map-popup-frame" src="${camera.html}" title="${camera.id} 路口監控預覽" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>`;
     const marker = L.circleMarker([lat, lon], {
       pane: "cameraPane",
-      radius: Number.isFinite(camera.distanceKm) && camera.distanceKm <= CITY_CCTV_RADIUS_KM ? 8 : 6,
+      radius: camera.withinLocateRadius ? 8 : 6,
       color: "#b8f2ff",
-      fillColor: "#0096c7",
+      fillColor: camera.withinLocateRadius ? "#0096c7" : "#5b8ea6",
       fillOpacity: 0.95,
       weight: 3
     });
     marker.bindPopup(
       `
         <div class="cctv-map-popup">
-          <strong>${camera.id}</strong><br/>
-          交叉路口：${roadA} × ${roadB}<br/>
-          ${areaText ? `所在縣市：${areaText}<br/>` : ""}
-          距離定位點：${distanceText}<br/>
-          ${previewHtml}
-          <a href="${camera.html}" target="_blank" rel="noopener noreferrer">開啟監控鏡頭</a>
-          ｜
-          <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer">地圖位置</a>
+          <strong class="cctv-map-popup-title">${camera.id}</strong>
+          <p class="cctv-map-popup-line">交叉路口：${roadA} × ${roadB}</p>
+          ${areaText ? `<p class="cctv-map-popup-line">所在縣市：${areaText}</p>` : ""}
+          <p class="cctv-map-popup-line">距離定位點：${distanceText}</p>
+          <p class="cctv-map-popup-note">${scopeNote}</p>
+          <div class="cctv-map-popup-preview">${previewHtml}</div>
+          <div class="cctv-map-popup-links">
+            <a href="${camera.html}" target="_blank" rel="noopener noreferrer">開啟監控鏡頭</a>
+            <span aria-hidden="true">｜</span>
+            <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer">地圖位置</a>
+          </div>
         </div>
       `,
-      { maxWidth: 280, className: "cctv-popup-wrap" }
+      { maxWidth: 300, className: "cctv-popup-wrap", autoPanPadding: [24, 24] }
     );
     mapCameraLayer.addLayer(marker);
     mapLegendMarkers.cctv.push(marker);
   });
+  mapLayerVisibility["cctv-points"] = true;
   syncMapLayerVisibility("cctv-points");
   syncMapLegendState();
 }
