@@ -3352,9 +3352,11 @@ function renderWeeklyForecast(days = [], locationLabel = "") {
         <strong>${index === 0 ? "今天" : day.weekday}</strong>
         <span>${day.monthDay}</span>
       </div>
-      <div class="weekly-forecast-icon" aria-hidden="true">${getWeatherIconSvg(day.weatherCode)}</div>
-      <div class="weekly-forecast-meta">
+      <div class="weekly-forecast-main">
+        <div class="weekly-forecast-icon" aria-hidden="true">${getWeatherIconSvg(day.weatherCode)}</div>
         <span class="weekly-forecast-label">${day.label}</span>
+      </div>
+      <div class="weekly-forecast-meta">
         <span class="weekly-forecast-temps">${minText} / ${maxText}</span>
         <span class="weekly-forecast-rain">降雨 ${rainProbText}｜${rainSumText}</span>
       </div>
