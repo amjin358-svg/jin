@@ -1308,11 +1308,12 @@ input[type="checkbox"] {
 }
 
 .weather-block .metrics dt {
-  font-size: 13px;
+  font-size: clamp(15px, 3.8vw, 18px);
+  font-weight: 800;
 }
 
 .weather-block .metrics dd {
-  font-size: 19px;
+  font-size: clamp(22px, 5.5vw, 28px);
 }
 
 .weather-block #rainProjection,
@@ -1448,11 +1449,13 @@ input[type="checkbox"] {
 
 .msn-weather-card .metrics dt {
   color: #2f5f8d;
-  font-weight: 700;
+  font-weight: 800;
+  font-size: clamp(15px, 3.8vw, 18px);
 }
 
 .msn-weather-card .metrics dd {
   color: #072445;
+  font-size: clamp(22px, 5.5vw, 28px);
 }
 
 .msn-weather-card .weather-subheading,
@@ -3303,12 +3306,15 @@ body.eq-sheet-open {
     font-size: 16px;
   }
 
-  .weather-block .metrics dt {
-    font-size: 12px;
+  .weather-block .metrics dt,
+  .msn-weather-card .metrics dt {
+    font-size: clamp(15px, 4.2vw, 17px);
+    font-weight: 800;
   }
 
-  .weather-block .metrics dd {
-    font-size: 18px;
+  .weather-block .metrics dd,
+  .msn-weather-card .metrics dd {
+    font-size: clamp(20px, 5.4vw, 26px);
   }
 
   .timestamp {
