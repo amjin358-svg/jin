@@ -4471,22 +4471,34 @@ function updateRecoveryTrackingState() {
     currentWater[item.id] = item;
   });
   if (isSubscribed && topics.has("water-outage")) {
-    Object.entries(prev.waterOutages || {}).forEach(([id, item]) => {
+    const { townshipName } = getActiveWaterOutageScope();
+    const prevLocalWater = Object.fromEntries(
+      Object.entries(prev.waterOutages || {}).filter(([, item]) => {
+        if (!townshipName) {
+          return false;
+        }
+        if (item?.township && item.township === townshipName) {
+          return true;
+        }
+        return areaMentionsTownship(`${item?.area || ""} ${item?.summary || ""}`, townshipName);
+      })
+    );
+    Object.entries(prevLocalWater).forEach(([id, item]) => {
       if (currentWater[id]) {
         return;
       }
       messages.push({
         kind: "water-recovery",
-        text: `【停水解除】${item.area || item.summary || "所選縣市停水案件"} 已恢復供水／降壓解除，請確認用水恢復正常。`
+        text: `【停水解除】${item.area || item.summary || "本鄉鎮停水案件"} 已恢復供水／降壓解除，請確認用水恢復正常。`
       });
     });
     Object.entries(currentWater).forEach(([id, item]) => {
-      if (prev.waterOutages?.[id]) {
+      if (prevLocalWater[id] || prev.waterOutages?.[id]) {
         return;
       }
       messages.push({
         kind: "water-alert",
-        text: `【停水警戒】${item.area || "所選縣市"}：${item.summary || "有停水／降壓公告"}（${item.period || "期間詳見台水公告"}）。`
+        text: `【停水警戒】${item.township ? `${item.city || ""}${item.township}` : item.area || "本鄉鎮"}：${item.summary || "有停水／降壓公告"}（${item.period || "期間詳見台水公告"}）。`
       });
     });
   }
@@ -5639,6 +5651,46 @@ function getSubscriptionCityName() {
   return appState.subscription?.city || citySelect.value || "";
 }
 
+function getSubscriptionTownshipName() {
+  return townshipSelect?.value || appState.subscription?.township || "";
+}
+
+function getActiveWaterOutageScope() {
+  // Utility water alerts follow the locator/selectors first (not the whole subscribed county).
+  return {
+    cityName: citySelect?.value || getSubscriptionCityName() || "",
+    townshipName: townshipSelect?.value || appState.subscription?.township || ""
+  };
+}
+
+function areaMentionsTownship(areaText, townshipName) {
+  const area = normalizeTaiwanPlaceText(areaText);
+  const town = normalizeTaiwanPlaceText(townshipName);
+  if (!area || !town) {
+    return false;
+  }
+  if (area.includes(town)) {
+    return true;
+  }
+  const bare = town.replace(/(區|鄉|鎮|市)$/u, "");
+  if (bare.length < 2) {
+    return false;
+  }
+  // Match bare + common admin endings used in 台水 announcements.
+  return [`${bare}區`, `${bare}鄉`, `${bare}鎮`, `${bare}市`].some((token) => area.includes(token));
+}
+
+function filterWaterOutagesForTownship(items = [], cityName = "", townshipName = "") {
+  const town = String(townshipName || "").trim();
+  if (!town) {
+    return [];
+  }
+  return (items || []).filter((item) => {
+    const haystack = `${item?.area || ""} ${item?.summary || ""} ${item?.reason || ""}`;
+    return areaMentionsTownship(haystack, town);
+  });
+}
+
 function getSubscriptionWeatherLocation() {
   const city = appState.subscription?.city || citySelect.value;
   const township = appState.subscription?.township || townshipSelect.value;
@@ -6106,9 +6158,15 @@ async function flushPendingUtilityAlerts() {
 }
 
 async function fetchWaterOutageData() {
-  const cityName = getSubscriptionCityName() || citySelect.value;
+  const { cityName, townshipName } = getActiveWaterOutageScope();
   if (!cityName) {
     appState.waterOutageItems = [];
+    appState.waterOutageMetaText = "";
+    return [];
+  }
+  if (!townshipName) {
+    appState.waterOutageItems = [];
+    appState.waterOutageMetaText = `${cityName}：請選定鄉鎮市區後顯示當區停水（不發全縣市通知）`;
     return [];
   }
   const encodedCity = encodeURIComponent(cityName);
@@ -6123,7 +6181,7 @@ async function fetchWaterOutageData() {
     const cardPattern =
       /停水期間\s*起\s*([0-9/\s:]+)\s*迄\s*([0-9/\s:]+)\s*停水區域\s*([^\n]*?)\s*停水原因\s*([^\n]*?)\s*客服專線[\s\S]*?案件編號\s*([0-9]+)/g;
     let match;
-    while ((match = cardPattern.exec(markdown)) && items.length < 20) {
+    while ((match = cardPattern.exec(markdown)) && items.length < 40) {
       const area = String(match[3] || "").trim();
       const reason = String(match[4] || "").trim();
       const id = String(match[5] || "").trim();
@@ -6135,15 +6193,17 @@ async function fetchWaterOutageData() {
       items.push({
         id,
         city: cityName,
+        township: townshipName,
         area,
         reason,
         period: `${start}～${end}`,
         summary: `${area}${reason ? `（${reason.slice(0, 36)}）` : ""}`
       });
     }
-    appState.waterOutageItems = items;
-    appState.waterOutageMetaText = `${cityName} 停水公告 ${items.length} 筆`;
-    return items;
+    const localItems = filterWaterOutagesForTownship(items, cityName, townshipName);
+    appState.waterOutageItems = localItems;
+    appState.waterOutageMetaText = `${cityName}${townshipName} 停水公告 ${localItems.length} 筆（僅本鄉鎮｜全市抓取 ${items.length} 筆）`;
+    return localItems;
   } catch (error) {
     appState.waterOutageItems = [];
     appState.waterOutageMetaText = `停水資料暫時無法更新：${error.message}`;
@@ -6152,13 +6212,17 @@ async function fetchWaterOutageData() {
 }
 
 function getSubscriptionWaterOutageMessage() {
-  const locationLabel = getSubscriptionLocationLabel();
+  const { cityName, townshipName } = getActiveWaterOutageScope();
+  const locationLabel = townshipName ? `${cityName}${townshipName}` : getSubscriptionLocationLabel();
   const items = appState.waterOutageItems || [];
+  if (!townshipName) {
+    return `【停水監測】${cityName || locationLabel}：請選定鄉鎮市區後再顯示當區停水（不發全縣市通知）。`;
+  }
   if (!items.length) {
-    return `【停水監測】${locationLabel} 目前未抓到有效停水／降壓公告。`;
+    return `【停水監測】${locationLabel} 目前無本鄉鎮停水／降壓公告。`;
   }
   const top = items[0];
-  return `【停水公告】${top.area || locationLabel}：${top.summary || "有停水案件"}（${top.period || "期間詳見台水"}）。`;
+  return `【停水公告】${locationLabel}：${top.summary || top.area || "有停水案件"}（${top.period || "期間詳見台水"}）。`;
 }
 
 async function sendSubscriptionNotification({ force = false } = {}) {
