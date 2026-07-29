@@ -1366,7 +1366,11 @@ async function locateByDevice() {
 
     const message = `定位完成：${nearest.city}${nearest.town}\n路口／國道監控跟隨 ${nearest.city}，並背景預載全市串流`;
     setLocateStatus(message.replace("\n", "｜"));
-    showInPageAlert("定位完成", message, { timeoutMs: 4500, fullscreen: true });
+    showInPageAlert("定位完成", message, {
+      timeoutMs: 4500,
+      fullscreen: true,
+      variant: "locate-done"
+    });
 
     armForecastNotifyByDeviceLocate();
     if (appState.subscription?.email) {
@@ -4078,7 +4082,11 @@ function locateWindyEmbed() {
     const message = nearest
       ? `定位完成：${nearest.city}${nearest.town}\n路口／國道監控跟隨 ${nearest.city}，並背景預載全市串流`
       : "定位完成：目前位置";
-    showInPageAlert("定位完成", message, { timeoutMs: 4500, fullscreen: true });
+    showInPageAlert("定位完成", message, {
+      timeoutMs: 4500,
+      fullscreen: true,
+      variant: "locate-done"
+    });
     finish();
   };
 
@@ -5480,14 +5488,21 @@ function updateNotificationHint(extraMessage = "") {
   }
 }
 
-function showInPageAlert(title, body, { timeoutMs = 8000, fullscreen = false } = {}) {
+function showInPageAlert(title, body, { timeoutMs = 8000, fullscreen = false, variant = "" } = {}) {
   if (!inPageAlertHost) {
     return false;
   }
   const alert = document.createElement("article");
-  alert.className = fullscreen ? "in-page-alert in-page-alert-fullscreen" : "in-page-alert";
+  alert.className = [
+    "in-page-alert",
+    fullscreen ? "in-page-alert-fullscreen" : "",
+    variant === "locate-done" ? "in-page-alert-locate-done" : ""
+  ]
+    .filter(Boolean)
+    .join(" ");
+  const titleTag = variant === "locate-done" ? "p" : "strong";
   alert.innerHTML = `
-    <strong class="in-page-alert-title"></strong>
+    <${titleTag} class="in-page-alert-title"></${titleTag}>
     <div class="in-page-alert-body"></div>
     <button type="button" class="in-page-alert-close">知道了</button>
   `;
