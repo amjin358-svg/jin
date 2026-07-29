@@ -137,28 +137,29 @@
 
       <section class="card earthquake-card" aria-label="地震即時通報">
         <div class="section-head earthquake-head">
-          <p id="earthquakeMeta" class="timestamp">讀取中...</p>
-          <div class="earthquake-official-links">
-            <a
-              href="https://www.cwa.gov.tw/V8/C/E/index.html"
-              target="_blank"
-              rel="noopener noreferrer"
-              >氣象署最近地震</a
-            >
-            <a
-              href="https://scweb.cwa.gov.tw/zh-tw/earthquake/data"
-              target="_blank"
-              rel="noopener noreferrer"
-              >測報中心／PWS</a
-            >
-          </div>
+          <p id="earthquakeMeta" class="timestamp earthquake-meta">讀取中...</p>
         </div>
         <p id="earthquakeSummary" class="big-text earthquake-summary">資料讀取中...</p>
-        <p class="timestamp earthquake-sync-note">
-          同步中央氣象署台灣地區有感／顯著有感地震，並對齊國家緊急訊息（PWS）通報內容。
-        </p>
         <ul id="earthquakeList" class="analysis-list earthquake-list" aria-live="polite"></ul>
       </section>
+
+      <div
+        id="earthquakeDetailSheet"
+        class="eq-detail-sheet"
+        hidden
+        role="dialog"
+        aria-modal="true"
+        aria-label="地震震央通報詳情"
+      >
+        <button type="button" class="eq-detail-sheet-backdrop" aria-label="關閉地震詳情"></button>
+        <div class="eq-detail-sheet-panel">
+          <div class="eq-detail-sheet-toolbar">
+            <strong>地震震央通報</strong>
+            <button id="earthquakeDetailSheetClose" type="button" class="ghost-btn">關閉</button>
+          </div>
+          <div id="earthquakeDetailSheetBody" class="eq-detail-sheet-body"></div>
+        </div>
+      </div>
 
       <div
         class="visual-break section-title-bar visual-break-weather"

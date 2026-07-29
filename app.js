@@ -504,6 +504,9 @@ const aiAlertList = document.querySelector("#aiAlertList");
 const earthquakeMeta = document.querySelector("#earthquakeMeta");
 const earthquakeSummary = document.querySelector("#earthquakeSummary");
 const earthquakeList = document.querySelector("#earthquakeList");
+const earthquakeDetailSheet = document.querySelector("#earthquakeDetailSheet");
+const earthquakeDetailSheetBody = document.querySelector("#earthquakeDetailSheetBody");
+const earthquakeDetailSheetClose = document.querySelector("#earthquakeDetailSheetClose");
 const rainProjection = document.querySelector("#rainProjection");
 const subscriptionForm = document.querySelector("#subscriptionForm");
 const subscriberEmail = document.querySelector("#subscriberEmail");
@@ -582,6 +585,8 @@ const EARTHQUAKE_NATIONAL_INTENSITY = 4;
 const EARTHQUAKE_RECENT_HOURS = 168;
 const EARTHQUAKE_COORD_CACHE_KEY = "cwaEarthquakeCoordCacheV1";
 const EARTHQUAKE_DETAIL_ENRICH_LIMIT = 12;
+const EARTHQUAKE_PREVIEW_LIMIT = 3;
+const EARTHQUAKE_SCWEB_PAGE = "https://scweb.cwa.gov.tw/zh-tw/earthquake/data";
 const SUBSCRIBE_OWNER_INBOX = "amjin358@gmail.com";
 const VAPID_PUBLIC_KEY =
   "BJXXT1l-q5eu0Obt6DDDndh1NeVqGL9jR3mS8aoH1-cB6W3Cqk_UM9jLLF9PLyc1RguSVPmki1bxbOsNcYeOVbI";
@@ -4554,6 +4559,52 @@ async function enrichCwaEarthquakeDetails(quakes) {
   return quakes;
 }
 
+function getEarthquakeLocatedLabel(place) {
+  const text = String(place || "").trim();
+  const match = text.match(/位於\s*([^)）]+)/);
+  if (match?.[1]) {
+    return `位於${match[1].trim()}`;
+  }
+  return text || "位置未提供";
+}
+
+function renderEarthquakeSourceMeta(updatedAt = Date.now()) {
+  if (!earthquakeMeta) {
+    return;
+  }
+  earthquakeMeta.innerHTML = `來源：<a href="${EARTHQUAKE_CWA_PAGE}" target="_blank" rel="noopener noreferrer">中央氣象署</a>｜更新 ${formatDateTime(
+    updatedAt
+  )}｜<a href="${EARTHQUAKE_SCWEB_PAGE}" target="_blank" rel="noopener noreferrer">測報中心／PWS</a>`;
+}
+
+function createEarthquakeListItem(quake) {
+  const item = document.createElement("li");
+  const colorKey = quake.alertColor || "gray";
+  item.className = `earthquake-item alert-${colorKey} ${
+    isNationalEarthquakeAlert(quake) ? "is-national" : ""
+  }`;
+  const distanceText = Number.isFinite(quake.distanceKm)
+    ? `｜約 ${quake.distanceKm.toFixed(0)} km`
+    : "";
+  const serialText = quake.serial && quake.serial !== "小區域" ? `第${quake.serial}號` : "小區域";
+  item.innerHTML = `
+    <span class="earthquake-mag">M${quake.magnitude.toFixed(1)}</span>
+    <span class="earthquake-body">
+      <strong>${serialText}｜震度 ${formatIntensityLabel(quake.intensityValue)}｜${getEarthquakeLocatedLabel(
+        quake.place
+      )}</strong>
+      <small>${formatDateTime(quake.timeMs)}${distanceText}｜深度 ${
+        Number.isFinite(quake.depthKm) ? `${quake.depthKm.toFixed(1)} km` : "--"
+      }${isNationalEarthquakeAlert(quake) ? "｜國家警報同步" : ""}</small>
+    </span>
+    <span class="earthquake-links">
+      <a href="${quake.pwsUrl || quake.url}" target="_blank" rel="noopener noreferrer">PWS通報</a>
+      <a href="${quake.url || EARTHQUAKE_CWA_PAGE}" target="_blank" rel="noopener noreferrer">詳情</a>
+    </span>
+  `;
+  return item;
+}
+
 function renderEarthquakePanel() {
   if (!earthquakeList) {
     return;
@@ -4566,51 +4617,49 @@ function renderEarthquakePanel() {
     if (earthquakeSummary) {
       earthquakeSummary.textContent = "目前中央氣象署無近期台灣地區有感地震";
     }
-    if (earthquakeMeta) {
-      earthquakeMeta.textContent = appState.earthquakeMetaText || "資料來源：中央氣象署／PWS";
-    }
+    renderEarthquakeSourceMeta(Date.now());
     earthquakeList.innerHTML = "<li>目前無符合條件的地震事件。</li>";
     return;
   }
 
   const latest = quakes[0];
   if (earthquakeSummary) {
-    const badge = isNationalEarthquakeAlert(latest) ? "｜國家緊急訊息等級" : "";
     earthquakeSummary.textContent = `最新：規模 ${latest.magnitude.toFixed(1)}｜最大震度 ${formatIntensityLabel(
       latest.intensityValue
-    )}｜${latest.place}${badge}`;
+    )}｜ ${getEarthquakeLocatedLabel(latest.place)}`;
   }
-  if (earthquakeMeta) {
-    earthquakeMeta.textContent =
-      appState.earthquakeMetaText ||
-      `資料來源：中央氣象署｜共 ${quakes.length} 筆｜點選地圖色點可看詳細通報`;
-  }
+  renderEarthquakeSourceMeta(Date.now());
 
-  quakes.slice(0, 10).forEach((quake) => {
-    const item = document.createElement("li");
-    const colorKey = quake.alertColor || "gray";
-    item.className = `earthquake-item alert-${colorKey} ${
-      isNationalEarthquakeAlert(quake) ? "is-national" : ""
-    }`;
-    const distanceText = Number.isFinite(quake.distanceKm)
-      ? `｜約 ${quake.distanceKm.toFixed(0)} km`
-      : "";
-    const serialText = quake.serial && quake.serial !== "小區域" ? `第${quake.serial}號` : "小區域";
-    item.innerHTML = `
-      <span class="earthquake-mag">M${quake.magnitude.toFixed(1)}</span>
-      <span class="earthquake-body">
-        <strong>${serialText}｜震度 ${formatIntensityLabel(quake.intensityValue)}｜${quake.place}</strong>
-        <small>${formatDateTime(quake.timeMs)}${distanceText}｜深度 ${
-          Number.isFinite(quake.depthKm) ? `${quake.depthKm.toFixed(1)} km` : "--"
-        }${isNationalEarthquakeAlert(quake) ? "｜國家警報同步" : ""}</small>
-      </span>
-      <span class="earthquake-links">
-        <a href="${quake.pwsUrl || quake.url}" target="_blank" rel="noopener noreferrer">PWS通報</a>
-        <a href="${quake.url || EARTHQUAKE_CWA_PAGE}" target="_blank" rel="noopener noreferrer">詳情</a>
-      </span>
-    `;
-    earthquakeList.append(item);
+  const preview = quakes.slice(0, EARTHQUAKE_PREVIEW_LIMIT);
+  const rest = quakes.slice(EARTHQUAKE_PREVIEW_LIMIT);
+  preview.forEach((quake) => {
+    earthquakeList.append(createEarthquakeListItem(quake));
   });
+
+  if (rest.length) {
+    const wrap = document.createElement("li");
+    wrap.className = "earthquake-more-wrap";
+    const details = document.createElement("details");
+    details.className = "earthquake-more-details";
+    details.innerHTML = `<summary class="earthquake-more-summary">▸ 展開其餘 ${rest.length} 筆通報</summary>`;
+    const restList = document.createElement("ul");
+    restList.className = "earthquake-list earthquake-more-list";
+    rest.forEach((quake) => {
+      restList.append(createEarthquakeListItem(quake));
+    });
+    details.append(restList);
+    details.addEventListener("toggle", () => {
+      const summary = details.querySelector(".earthquake-more-summary");
+      if (!summary) {
+        return;
+      }
+      summary.textContent = details.open
+        ? `▾ 收合其餘 ${rest.length} 筆通報`
+        : `▸ 展開其餘 ${rest.length} 筆通報`;
+    });
+    wrap.append(details);
+    earthquakeList.append(wrap);
+  }
 }
 
 function buildEarthquakePopupHtml(quake) {
@@ -4619,7 +4668,7 @@ function buildEarthquakePopupHtml(quake) {
     ? `<div>距所選位置約 ${quake.distanceKm.toFixed(0)} km</div>`
     : "";
   const areas = (quake.intensityAreas || [])
-    .slice(0, 6)
+    .slice(0, 8)
     .map((area) => `<li>${area.area}：${area.intensity}</li>`)
     .join("");
   const report = quake.reportContent || buildCwaEarthquakeReportContent(quake);
@@ -4627,6 +4676,7 @@ function buildEarthquakePopupHtml(quake) {
     <div class="eq-popup">
       <strong>${style.label}｜規模 ${quake.magnitude.toFixed(1)}</strong>
       <div>最大震度：${formatIntensityLabel(quake.intensityValue)}</div>
+      <div>${getEarthquakeLocatedLabel(quake.place)}</div>
       <div>${quake.place}</div>
       <div>${formatDateTime(quake.timeMs)}</div>
       <div>深度 ${Number.isFinite(quake.depthKm) ? `${quake.depthKm.toFixed(1)} km` : "--"}${
@@ -4638,10 +4688,31 @@ function buildEarthquakePopupHtml(quake) {
       <div class="eq-popup-links">
         <a href="${quake.pwsUrl || quake.url}" target="_blank" rel="noopener noreferrer">開啟國家緊急訊息（PWS）</a>
         <a href="${quake.url}" target="_blank" rel="noopener noreferrer">測報中心詳情</a>
-        <a href="${EARTHQUAKE_CWA_MORE_PAGE}" target="_blank" rel="noopener noreferrer">七日有感列表</a>
+        <a href="${EARTHQUAKE_CWA_PAGE}" target="_blank" rel="noopener noreferrer">中央氣象署</a>
       </div>
     </div>
   `;
+}
+
+function isCompactEarthquakeMapView() {
+  return window.matchMedia("(max-width: 860px)").matches;
+}
+
+function closeEarthquakeDetailSheet() {
+  if (!earthquakeDetailSheet) {
+    return;
+  }
+  earthquakeDetailSheet.hidden = true;
+  document.body.classList.remove("eq-sheet-open");
+}
+
+function openEarthquakeDetailSheet(quake) {
+  if (!earthquakeDetailSheet || !earthquakeDetailSheetBody) {
+    return;
+  }
+  earthquakeDetailSheetBody.innerHTML = buildEarthquakePopupHtml(quake);
+  earthquakeDetailSheet.hidden = false;
+  document.body.classList.add("eq-sheet-open");
 }
 
 function updateEarthquakeMapLayer() {
@@ -4667,11 +4738,21 @@ function updateEarthquakeMapLayer() {
       fillOpacity: 0.9,
       weight: 2
     });
-    marker.bindPopup(buildEarthquakePopupHtml(quake), { maxWidth: 320, className: "eq-popup-wrap" });
+    const popupHtml = buildEarthquakePopupHtml(quake);
+    marker.bindPopup(popupHtml, {
+      maxWidth: isCompactEarthquakeMapView() ? Math.min(window.innerWidth - 24, 420) : 360,
+      className: "eq-popup-wrap",
+      autoPanPadding: [24, 24]
+    });
     marker.on("click", () => {
       if (!quake.reportContent) {
         quake.reportContent = buildCwaEarthquakeReportContent(quake);
-        marker.setPopupContent(buildEarthquakePopupHtml(quake));
+      }
+      const html = buildEarthquakePopupHtml(quake);
+      marker.setPopupContent(html);
+      if (isCompactEarthquakeMapView()) {
+        marker.closePopup();
+        openEarthquakeDetailSheet(quake);
       }
     });
     mapEarthquakeLayer.addLayer(marker);
@@ -4750,10 +4831,7 @@ async function fetchEarthquakeData() {
     updateEarthquakeMapLayer();
     quakes = await enrichCwaEarthquakeDetails(quakes);
     appState.earthquakes = enrichEarthquakeDistances(quakes);
-    const nationalCount = appState.earthquakes.filter((quake) => isNationalEarthquakeAlert(quake)).length;
-    appState.earthquakeMetaText = `資料來源：中央氣象署（台灣地區）｜PWS 國家緊急訊息同步｜更新 ${formatDateTime(
-      Date.now()
-    )}｜共 ${appState.earthquakes.length} 筆（國家警報級 ${nationalCount}）`;
+    appState.earthquakeMetaText = `來源：中央氣象署｜更新 ${formatDateTime(Date.now())}｜`;
     renderEarthquakePanel();
     updateEarthquakeMapLayer();
     return appState.earthquakes;
@@ -4761,9 +4839,7 @@ async function fetchEarthquakeData() {
     try {
       const fallback = await fetchEarthquakeDataFromUsgsFallback();
       appState.earthquakes = enrichEarthquakeDistances(fallback);
-      appState.earthquakeMetaText = `中央氣象署暫時無法連線，已改用 USGS 台灣鄰近備援（${cwaError.message}）｜${formatDateTime(
-        Date.now()
-      )}`;
+      appState.earthquakeMetaText = `來源：中央氣象署｜更新 ${formatDateTime(Date.now())}｜`;
       renderEarthquakePanel();
       updateEarthquakeMapLayer();
       return appState.earthquakes;
@@ -4777,7 +4853,7 @@ async function fetchEarthquakeData() {
         earthquakeSummary.textContent = "地震資料讀取失敗";
       }
       if (earthquakeList) {
-        earthquakeList.innerHTML = `<li class="status-warn">請稍後重試，或改看 <a href="${EARTHQUAKE_CWA_PAGE}" target="_blank" rel="noopener noreferrer">中央氣象署地震資訊</a>／<a href="https://scweb.cwa.gov.tw/zh-tw/earthquake/data" target="_blank" rel="noopener noreferrer">測報中心</a>。</li>`;
+        earthquakeList.innerHTML = `<li class="status-warn">請稍後重試，或改看 <a href="${EARTHQUAKE_CWA_PAGE}" target="_blank" rel="noopener noreferrer">中央氣象署</a>／<a href="${EARTHQUAKE_SCWEB_PAGE}" target="_blank" rel="noopener noreferrer">測報中心／PWS</a>。</li>`;
       }
       updateEarthquakeMapLayer();
       return [];
@@ -4965,12 +5041,12 @@ function updateNotificationHint(extraMessage = "") {
   }
 }
 
-function showInPageAlert(title, body, { timeoutMs = 8000 } = {}) {
+function showInPageAlert(title, body, { timeoutMs = 8000, fullscreen = false } = {}) {
   if (!inPageAlertHost) {
     return false;
   }
   const alert = document.createElement("article");
-  alert.className = "in-page-alert";
+  alert.className = fullscreen ? "in-page-alert in-page-alert-fullscreen" : "in-page-alert";
   alert.innerHTML = `
     <strong class="in-page-alert-title"></strong>
     <div class="in-page-alert-body"></div>
@@ -4991,24 +5067,34 @@ function showInPageAlert(title, body, { timeoutMs = 8000 } = {}) {
     row.textContent = line;
     bodyHost?.append(row);
   });
-  const close = () => alert.remove();
+  const close = () => {
+    alert.remove();
+    if (!inPageAlertHost.querySelector(".in-page-alert-fullscreen")) {
+      inPageAlertHost.classList.remove("is-fullscreen-mode");
+    }
+  };
   alert.querySelector(".in-page-alert-close")?.addEventListener("click", close);
+  if (fullscreen) {
+    inPageAlertHost.classList.add("is-fullscreen-mode");
+  }
   inPageAlertHost.append(alert);
-  window.requestAnimationFrame(() => {
-    const width = Math.floor(alert.getBoundingClientRect().width || 0);
-    fitSingleLineText(titleEl, {
-      maxPx: Math.min(28, Math.max(14, Math.floor(width * 0.08))),
-      minPx: 11,
-      fillRatio: 0.98
-    });
-    bodyHost?.querySelectorAll(".in-page-alert-line").forEach((lineEl) => {
-      fitSingleLineText(lineEl, {
-        maxPx: Math.min(22, Math.max(12, Math.floor(width * 0.065))),
-        minPx: 10,
+  if (!fullscreen) {
+    window.requestAnimationFrame(() => {
+      const width = Math.floor(alert.getBoundingClientRect().width || 0);
+      fitSingleLineText(titleEl, {
+        maxPx: Math.min(28, Math.max(14, Math.floor(width * 0.08))),
+        minPx: 11,
         fillRatio: 0.98
       });
+      bodyHost?.querySelectorAll(".in-page-alert-line").forEach((lineEl) => {
+        fitSingleLineText(lineEl, {
+          maxPx: Math.min(22, Math.max(12, Math.floor(width * 0.065))),
+          minPx: 10,
+          fillRatio: 0.98
+        });
+      });
     });
-  });
+  }
   if (timeoutMs > 0) {
     window.setTimeout(close, timeoutMs);
   }
@@ -5181,7 +5267,10 @@ async function showAppNotification(title, body, { tag, data } = {}) {
   }
 
   // Always keep an in-page reminder so alerts still work when system notifications are blocked/unavailable.
-  showInPageAlert(title, body, { timeoutMs: systemShown ? 5000 : 10000 });
+  showInPageAlert(title, body, {
+    timeoutMs: systemShown ? 8000 : 15000,
+    fullscreen: true
+  });
   return true;
 }
 
@@ -6934,6 +7023,19 @@ initServiceWorker()
   })
   .catch(() => updateNotificationHint());
 blackScreenCameraIds = loadBlackScreenCameraIds();
+earthquakeDetailSheetClose?.addEventListener("click", () => {
+  closeEarthquakeDetailSheet();
+});
+earthquakeDetailSheet
+  ?.querySelector(".eq-detail-sheet-backdrop")
+  ?.addEventListener("click", () => {
+    closeEarthquakeDetailSheet();
+  });
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") {
+    closeEarthquakeDetailSheet();
+  }
+});
 document.querySelector("#airDetails")?.addEventListener("toggle", () => {
   syncAirDetailsSummaryLabel();
 });

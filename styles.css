@@ -2207,6 +2207,22 @@ input[type="checkbox"] {
   align-items: center;
 }
 
+.earthquake-meta {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.earthquake-meta a {
+  color: #1f5ae1;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.earthquake-meta a:hover,
+.earthquake-meta a:focus-visible {
+  text-decoration: underline;
+}
+
 .earthquake-summary {
   margin: 0;
   color: #9a3412;
@@ -2214,6 +2230,184 @@ input[type="checkbox"] {
 
 .earthquake-list {
   gap: 10px;
+}
+
+.earthquake-more-wrap {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.earthquake-more-details {
+  border: 1px solid var(--border, #dce4f4);
+  border-radius: 12px;
+  background: #f8fafc;
+  padding: 0;
+}
+
+.earthquake-more-summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 12px 14px;
+  font-weight: 700;
+  color: #1f5ae1;
+  user-select: none;
+}
+
+.earthquake-more-summary::-webkit-details-marker {
+  display: none;
+}
+
+.earthquake-more-list {
+  margin: 0;
+  padding: 0 10px 10px;
+  display: grid;
+  gap: 10px;
+}
+
+.eq-detail-sheet[hidden] {
+  display: none !important;
+}
+
+.eq-detail-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: end center;
+}
+
+.eq-detail-sheet-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(15, 22, 34, 0.48);
+}
+
+.eq-detail-sheet-panel {
+  position: relative;
+  z-index: 1;
+  width: min(96vw, 560px);
+  max-height: 90dvh;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 0 0 env(safe-area-inset-bottom);
+  border-radius: 18px 18px 0 0;
+  background: #fff;
+  box-shadow: 0 -12px 40px rgba(15, 22, 34, 0.28);
+  padding: 14px 14px 18px;
+  display: grid;
+  gap: 10px;
+}
+
+.eq-detail-sheet-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.eq-detail-sheet-body {
+  min-width: 0;
+}
+
+.eq-detail-sheet-body .eq-popup {
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.eq-detail-sheet-body .eq-popup-report {
+  white-space: normal;
+  word-break: break-word;
+}
+
+body.eq-sheet-open {
+  overflow: hidden;
+}
+
+.leaflet-container .eq-popup-wrap .leaflet-popup-content {
+  margin: 12px 14px;
+  max-height: min(70vh, 420px);
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.leaflet-container .eq-popup-wrap .eq-popup {
+  max-width: 100%;
+  word-break: break-word;
+}
+
+.leaflet-container .eq-popup-wrap .eq-popup-report {
+  white-space: normal;
+}
+
+.in-page-alert-host.is-fullscreen-mode {
+  left: 50%;
+  top: 50%;
+  bottom: auto;
+  right: auto;
+  transform: translate(-50%, -50%);
+  width: 90vw;
+  max-width: 90vw;
+  height: 90dvh;
+  max-height: 90dvh;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  z-index: 120;
+  pointer-events: none;
+}
+
+.in-page-alert-host.is-fullscreen-mode .in-page-alert-fullscreen {
+  pointer-events: auto;
+  width: 100%;
+  height: 100%;
+  max-height: 90dvh;
+  margin: 0;
+  box-sizing: border-box;
+  border-radius: 18px;
+  border: 1px solid #9eb6e8;
+  padding: clamp(16px, 3vw, 28px);
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 18px 48px rgba(15, 22, 34, 0.3);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.in-page-alert-host.is-fullscreen-mode .in-page-alert-title {
+  font-size: clamp(22px, 4.8vw, 34px);
+  font-weight: 800;
+  line-height: 1.25;
+  white-space: normal;
+  overflow: visible;
+  margin: 0;
+}
+
+.in-page-alert-host.is-fullscreen-mode .in-page-alert-body {
+  flex: 1 1 auto;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  gap: 10px;
+  align-content: start;
+}
+
+.in-page-alert-host.is-fullscreen-mode .in-page-alert-line {
+  white-space: normal;
+  overflow: visible;
+  word-break: break-word;
+  font-size: clamp(18px, 4.2vw, 28px);
+  line-height: 1.45;
+}
+
+.in-page-alert-host.is-fullscreen-mode .in-page-alert-close {
+  width: 100%;
+  min-height: 52px;
+  margin-top: auto;
+  padding: 14px 16px;
+  border-radius: 12px;
+  font-size: clamp(16px, 3.5vw, 20px);
+  font-weight: 800;
 }
 
 .earthquake-list li.earthquake-item {
@@ -2288,22 +2482,16 @@ input[type="checkbox"] {
 }
 
 .earthquake-links,
-.earthquake-item a,
-.earthquake-official-links {
+.earthquake-item a {
   display: grid;
   gap: 4px;
 }
 
-.earthquake-item a,
-.earthquake-official-links a {
+.earthquake-item a {
   color: #1f5ae1;
   text-decoration: none;
   font-size: 13px;
   white-space: nowrap;
-}
-
-.earthquake-sync-note {
-  margin: 0;
 }
 
 .eq-popup {
