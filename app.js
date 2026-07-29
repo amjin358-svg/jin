@@ -597,6 +597,7 @@ const SUBSCRIBE_OWNER_INBOX = "amjin358@gmail.com";
 const VAPID_PUBLIC_KEY =
   "BJXXT1l-q5eu0Obt6DDDndh1NeVqGL9jR3mS8aoH1-cB6W3Cqk_UM9jLLF9PLyc1RguSVPmki1bxbOsNcYeOVbI";
 const RECOVERY_STATE_STORAGE_KEY = "subscriptionRecoveryStateV1";
+const FORECAST_NOTIFY_ARM_KEY = "jinForecastNotifyArmedByLocateV1";
 const FLOOD_LATEST_API =
   "https://opendata.wra.gov.tw/api/v2/1b991bbb-ad85-4e7a-b931-06ce8749d3ed?format=JSON";
 const TAIPOWER_DISASTER_OUTAGE_URL =
@@ -1367,9 +1368,20 @@ async function locateByDevice() {
     setLocateStatus(message.replace("\n", "｜"));
     showInPageAlert("定位完成", message, { timeoutMs: 4500, fullscreen: true });
 
+    armForecastNotifyByDeviceLocate();
+    if (appState.subscription?.email) {
+      persistSubscriptionForBackground(appState.subscription).catch(() => {});
+    }
+
     setLocateButtonsDisabled(false);
     setLocateButtonText();
-    performFullRefresh("manual");
+    performFullRefresh("manual")
+      .then(async () => {
+        if (appState.subscription?.email) {
+          await sendSubscriptionNotification({ force: true });
+        }
+      })
+      .catch(() => {});
     renderAllCameraLists();
     updateMapForCityChange();
     prefetchCityMonitorStreams(nearest.city, { label: nearest.city }).catch(() => {
@@ -4636,6 +4648,9 @@ function updateRecoveryTrackingState() {
   next.hasLandTyphoonWarning = hasLandWarning;
 
   saveRecoveryState(next);
+  if (!isForecastNotifyArmedByLocate()) {
+    return [];
+  }
   return messages
     .map((item) => (typeof item === "string" ? { kind: "generic", text: item } : item))
     .filter((item) => item?.text);
@@ -5545,6 +5560,7 @@ function buildBackgroundSubscriptionPrefs(subscription = appState.subscription) 
     label: location?.label || `${subscription?.city || ""}${subscription?.township || ""}`,
     lat: Number(location?.lat),
     lon: Number(location?.lon),
+    notifyArmedByLocate: isForecastNotifyArmedByLocate(),
     updatedAt: new Date().toISOString()
   };
 }
@@ -5728,6 +5744,26 @@ async function ensureNotificationPermission() {
   }
   updateNotificationHint("尚未允許系統通知，已改用頁面內即時提醒。");
   return "fallback";
+}
+
+function isForecastNotifyArmedByLocate() {
+  try {
+    return sessionStorage.getItem(FORECAST_NOTIFY_ARM_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function armForecastNotifyByDeviceLocate() {
+  try {
+    sessionStorage.setItem(FORECAST_NOTIFY_ARM_KEY, "1");
+  } catch {
+    /* ignore */
+  }
+}
+
+function getForecastNotifyGateMessage() {
+  return "請先按「依設備定位選區」，定位完成後才會發布預報／警戒通知。";
 }
 
 function getSubscriptionCityName() {
@@ -6140,6 +6176,9 @@ function buildSubscriptionNotificationMessages() {
 }
 
 async function sendRecoveryNotifications(messages) {
+  if (!isForecastNotifyArmedByLocate()) {
+    return false;
+  }
   const normalized = (messages || [])
     .map((item) => (typeof item === "string" ? { kind: "generic", text: item } : item))
     .filter((item) => item?.text);
@@ -6194,6 +6233,9 @@ function savePendingUtilityAlerts(items) {
 }
 
 async function queueUtilityAlertBurst(text, kind = "utility") {
+  if (!isForecastNotifyArmedByLocate()) {
+    return;
+  }
   const now = Date.now();
   const burstId = `${kind}-${now}-${Math.random().toString(36).slice(2, 7)}`;
   const pending = loadPendingUtilityAlerts().filter((item) => item.dueAt > now - UTILITY_ALERT_REPEAT_MS);
@@ -6211,6 +6253,9 @@ async function queueUtilityAlertBurst(text, kind = "utility") {
 }
 
 async function flushPendingUtilityAlerts() {
+  if (!isForecastNotifyArmedByLocate()) {
+    return;
+  }
   const now = Date.now();
   const pending = loadPendingUtilityAlerts();
   let changed = false;
@@ -6313,6 +6358,11 @@ async function sendSubscriptionNotification({ force = false } = {}) {
     renderSubscriptionStatus("請先輸入 Email 並儲存訂閱。");
     return false;
   }
+  if (!isForecastNotifyArmedByLocate()) {
+    renderSubscriptionStatus(getForecastNotifyGateMessage());
+    updateNotificationHint(getForecastNotifyGateMessage());
+    return false;
+  }
   const permissionMode = await ensureNotificationPermission();
   if (!permissionMode) {
     return false;
@@ -6356,6 +6406,9 @@ async function sendSubscriptionNotification({ force = false } = {}) {
 
 async function maybeNotifySubscribers(triggerSource, recoveryMessages = []) {
   if (!appState.subscription?.email) {
+    return;
+  }
+  if (!isForecastNotifyArmedByLocate()) {
     return;
   }
   // Daily weather email: once per Taipei calendar day, independent of browser notifications.
@@ -7331,12 +7384,24 @@ subscriptionForm.addEventListener("submit", async (event) => {
   } catch {
     /* ignore */
   }
+  if (!isForecastNotifyArmedByLocate()) {
+    renderSubscriptionStatus(`訂閱已儲存。${getForecastNotifyGateMessage()}`);
+    updateNotificationHint(getForecastNotifyGateMessage());
+    clearSubscriptionHint();
+    return;
+  }
   await sendSubscriptionNotification({ force: true });
   renderSubscriptionStatus("訂閱完成。");
   clearSubscriptionHint();
 });
 
 testNotificationBtn?.addEventListener("click", async () => {
+  if (!isForecastNotifyArmedByLocate()) {
+    renderSubscriptionStatus(getForecastNotifyGateMessage());
+    updateNotificationHint(getForecastNotifyGateMessage());
+    showInPageAlert("尚未開放通知", getForecastNotifyGateMessage(), { timeoutMs: 5000 });
+    return;
+  }
   await sendSubscriptionNotification({ force: true });
 });
 
@@ -7425,8 +7490,8 @@ function fitSubscriptionTopicTexts() {
     element.style.width = `${available}px`;
     element.style.maxWidth = `${available}px`;
     fitSingleLineText(element, {
-      maxPx: 16,
-      minPx: 10,
+      maxPx: 13,
+      minPx: 9,
       fillRatio: 1
     });
   });

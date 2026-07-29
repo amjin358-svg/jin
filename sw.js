@@ -1,4 +1,4 @@
-const SW_VERSION = "jin-v27-cwa-earthquake-pws";
+const SW_VERSION = "jin-v28-locate-before-notify";
 const PREFS_DB = "jin-bg-prefs-v1";
 const PREFS_STORE = "prefs";
 const PREFS_KEY = "subscription";
@@ -260,6 +260,9 @@ async function runBackgroundSubscriptionCheck() {
   const prefs = await idbGet(PREFS_KEY);
   if (!prefs?.email || !Array.isArray(prefs.topics) || !prefs.topics.length) {
     return { checked: false, reason: "no-prefs" };
+  }
+  if (!prefs.notifyArmedByLocate) {
+    return { checked: true, notified: false, reason: "locate-required" };
   }
   const messages = await buildBackgroundAlertMessages(prefs);
   if (!messages.length) {

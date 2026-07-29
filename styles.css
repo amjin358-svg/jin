@@ -1676,7 +1676,16 @@ input[type="checkbox"] {
 .alert-block .ai-alert-body,
 .alert-block .subscription-status-box,
 .alert-block .subscription-email-note {
-  font-size: 14px;
+  font-size: 12px;
+}
+
+.topic-option-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  line-height: 1.2;
+  font-size: 12px;
 }
 
 #notificationHint.subscription-status-box {
@@ -2985,6 +2994,7 @@ body.eq-sheet-open {
   white-space: nowrap;
   overflow: hidden;
   line-height: 1.2;
+  font-size: 12px;
 }
 
 .closure-group {
@@ -3375,7 +3385,7 @@ body.eq-sheet-open {
   .alert-block .ai-alert-body,
   .alert-block .subscription-status-box,
   .alert-block .subscription-email-note {
-    font-size: 14px;
+    font-size: 12px;
   }
 
   .in-page-alert-host {
