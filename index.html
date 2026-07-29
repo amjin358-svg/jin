@@ -138,14 +138,25 @@
       <section class="card earthquake-card" aria-label="地震即時通報">
         <div class="section-head earthquake-head">
           <p id="earthquakeMeta" class="timestamp">讀取中...</p>
-          <a
-            href="https://www.cwa.gov.tw/V8/C/E/index.html"
-            target="_blank"
-            rel="noopener noreferrer"
-            >開啟中央氣象署地震資訊</a
-          >
+          <div class="earthquake-official-links">
+            <a
+              href="https://www.cwa.gov.tw/V8/C/E/index.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              >氣象署最近地震</a
+            >
+            <a
+              href="https://scweb.cwa.gov.tw/zh-tw/earthquake/data"
+              target="_blank"
+              rel="noopener noreferrer"
+              >測報中心／PWS</a
+            >
+          </div>
         </div>
         <p id="earthquakeSummary" class="big-text earthquake-summary">資料讀取中...</p>
+        <p class="timestamp earthquake-sync-note">
+          同步中央氣象署台灣地區有感／顯著有感地震，並對齊國家緊急訊息（PWS）通報內容。
+        </p>
         <ul id="earthquakeList" class="analysis-list earthquake-list" aria-live="polite"></ul>
       </section>
 
@@ -278,7 +289,7 @@
             >
             <label class="topic-option"
               ><input type="checkbox" name="topic" value="earthquake" checked />
-              <span class="topic-option-text">地震通報（台灣鄰近 M3.5+）</span></label
+              <span class="topic-option-text">地震通報（氣象署／國家級警報同步）</span></label
             >
             <div class="subscription-actions">
               <button type="submit" class="refresh-btn">儲存訂閱</button>
@@ -435,7 +446,7 @@
                 <li>
                   <button type="button" class="legend-item-btn" data-legend-key="earthquake">
                     <span class="legend-swatch earthquake-point" aria-hidden="true"></span>
-                    <span class="legend-label">地震震央（近期 M3.5+）</span>
+                    <span class="legend-label">地震震央（氣象署／國家警報色）</span>
                     <span class="legend-count" data-legend-count aria-hidden="true">0</span>
                   </button>
                 </li>
@@ -475,7 +486,8 @@
             <li>颱風分析：中央氣象署颱風消息／警報頁面即時解析。</li>
             <li>Windy颱風走勢圖：Windy.com 颱風／氣象動態圖嵌入。</li>
             <li>
-              地震通報：USGS FDSN 台灣鄰近區域地震（M3.5+），並連結中央氣象署地震資訊頁。
+              地震通報：中央氣象署台灣地區有感／顯著有感地震（測報中心公開頁面鏡像），並串接
+              PWS 國家緊急訊息通報內容；災害警示圖以燈號色標示震央，點選可看詳細通報。
             </li>
             <li>停電區域：台電災害停電通報（XML）與計畫性工作停電公開資料（ZIP）。</li>
             <li>若公告暫無資料或來源暫時無法連線，頁面會顯示提示並保留上一筆成功結果。</li>

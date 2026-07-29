@@ -87,5 +87,7 @@ python3 -m http.server 4173
 
 地震通報資料：
 
-- USGS FDSN（台灣鄰近 M3.5+）：`https://earthquake.usgs.gov/fdsnws/event/1/query`
+- 中央氣象署／測報中心台灣地區有感與顯著有感地震：`https://scweb.cwa.gov.tw/zh-tw/earthquake/data`
+- 國家緊急訊息（PWS）通報頁：`https://scweb.cwa.gov.tw/zh-tw/earthquake/pws/{eventId}`
 - 官方對照頁：`https://www.cwa.gov.tw/V8/C/E/index.html`
+- 備援：USGS FDSN 台灣鄰近區域（僅在氣象署暫時無法連線時）

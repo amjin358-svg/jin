@@ -1,4 +1,4 @@
-const SW_VERSION = "jin-v26-earthquake-alert";
+const SW_VERSION = "jin-v27-cwa-earthquake-pws";
 const PREFS_DB = "jin-bg-prefs-v1";
 const PREFS_STORE = "prefs";
 const PREFS_KEY = "subscription";
@@ -7,9 +7,10 @@ const FLOOD_LATEST_API =
   "https://opendata.wra.gov.tw/api/v2/1b991bbb-ad85-4e7a-b931-06ce8749d3ed?format=JSON";
 const FLOOD_SAFE_DEPTH_CM = 5;
 const FLOOD_RADIUS_KM = 20;
-const EARTHQUAKE_USGS_API =
-  "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&minmagnitude=4.5&limit=5&minlatitude=21.5&maxlatitude=26.5&minlongitude=118&maxlongitude=123&orderby=time";
-const EARTHQUAKE_RECENT_MS = 72 * 60 * 60 * 1000;
+const EARTHQUAKE_CWA_LIST_MIRROR =
+  "https://r.jina.ai/https://scweb.cwa.gov.tw/zh-tw/earthquake/data";
+const EARTHQUAKE_NATIONAL_INTENSITY = 4;
+const EARTHQUAKE_RECENT_MS = 168 * 60 * 60 * 1000;
 
 self.addEventListener("install", (event) => {
   event.waitUntil(self.skipWaiting());
@@ -175,33 +176,51 @@ async function buildBackgroundAlertMessages(prefs) {
 
   if (topics.has("earthquake")) {
     try {
-      const response = await fetch(EARTHQUAKE_USGS_API, { cache: "no-store" });
+      const response = await fetch(EARTHQUAKE_CWA_LIST_MIRROR, { cache: "no-store" });
       if (response.ok) {
-        const payload = await response.json();
+        const markdown = await response.text();
         const now = Date.now();
-        const recent = (payload.features || [])
-          .map((feature) => {
-            const props = feature.properties || {};
-            const magnitude = Number(props.mag);
-            const timeMs = Number(props.time);
-            if (!Number.isFinite(magnitude) || !Number.isFinite(timeMs) || now - timeMs > EARTHQUAKE_RECENT_MS) {
-              return null;
-            }
-            return {
-              magnitude,
-              timeMs,
-              place: String(props.place || "台灣鄰近地震")
-                .replace(/,\s*Taiwan$/i, "")
-                .replace(/\bTaiwan\b/gi, "台灣")
-            };
-          })
-          .filter(Boolean)
-          .sort((a, b) => b.timeMs - a.timeMs);
-        if (recent.length) {
-          const top = recent[0];
+        const rows = [];
+        markdown.split(/\r?\n/).forEach((line) => {
+          if (!line.includes("/earthquake/details/") || !line.includes("規模：")) {
+            return;
+          }
+          const metaMatch = line.match(
+            /([0-9]{4}-[0-9]{2}-[0-9]{2}\s+[0-9]{2}:[0-9]{2}:[0-9]{2})\s*規模：([0-9.]+)\s*深度：([0-9.]+)\s*\[([^\]]+)\]/
+          );
+          const intensityMatch = line.match(
+            /\|\s*(?:[0-9]{2,3}|!\[[^\]]*\]\([^)]*\))\s*\|\s*([0-9]+(?:\s*[弱強])?)\s*級\s*\|/
+          );
+          if (!metaMatch) {
+            return;
+          }
+          const timeMs = Date.parse(`${metaMatch[1].replace(" ", "T")}+08:00`);
+          const magnitude = Number(metaMatch[2]);
+          const intensityText = String(intensityMatch?.[1] || "").replace(/\s+/g, "");
+          let intensityValue = Number(intensityText.replace(/[弱強]/g, ""));
+          if (intensityText.includes("5強")) intensityValue = 5.5;
+          if (intensityText.includes("6強")) intensityValue = 6.5;
+          if (intensityText.includes("5弱")) intensityValue = 5;
+          if (intensityText.includes("6弱")) intensityValue = 6;
+          if (!Number.isFinite(timeMs) || now - timeMs > EARTHQUAKE_RECENT_MS) {
+            return;
+          }
+          if (!(intensityValue >= EARTHQUAKE_NATIONAL_INTENSITY || (magnitude >= 5.5 && intensityValue >= 4))) {
+            return;
+          }
+          rows.push({
+            magnitude,
+            intensityText: intensityText || "--",
+            place: metaMatch[4],
+            timeMs
+          });
+        });
+        rows.sort((a, b) => b.timeMs - a.timeMs);
+        if (rows.length) {
+          const top = rows[0];
           const when = new Date(top.timeMs).toLocaleString("zh-TW", { hour12: false });
           messages.push(
-            `【地震通報】規模 ${top.magnitude.toFixed(1)}，${top.place}（${when}）。請就近掩護並留意餘震。`
+            `【國家緊急訊息／地震通報｜中央氣象署】規模 ${top.magnitude.toFixed(1)}、最大震度 ${top.intensityText}級，${top.place}（${when}）。請就近掩護並留意餘震。`
           );
         }
       }

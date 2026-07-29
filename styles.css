@@ -2229,14 +2229,18 @@ input[type="checkbox"] {
   background: #fffaf5;
 }
 
-.earthquake-list li.earthquake-item.mag-high {
-  border-color: #fca5a5;
-  background: #fef2f2;
-}
-
+.earthquake-list li.earthquake-item.alert-yellow,
 .earthquake-list li.earthquake-item.mag-watch {
   border-color: #fcd34d;
   background: #fffbeb;
+}
+
+.earthquake-list li.earthquake-item.alert-orange,
+.earthquake-list li.earthquake-item.mag-high,
+.earthquake-list li.earthquake-item.alert-red,
+.earthquake-list li.earthquake-item.is-national {
+  border-color: #fca5a5;
+  background: #fef2f2;
 }
 
 .earthquake-mag {
@@ -2252,12 +2256,18 @@ input[type="checkbox"] {
   font-size: 14px;
 }
 
+.earthquake-item.alert-gray .earthquake-mag,
 .earthquake-item.mag-low .earthquake-mag {
   background: #1d4ed8;
 }
 
+.earthquake-item.alert-yellow .earthquake-mag,
 .earthquake-item.mag-watch .earthquake-mag {
   background: #b45309;
+}
+
+.earthquake-item.alert-red .earthquake-mag {
+  background: #991b1b;
 }
 
 .earthquake-body {
@@ -2277,11 +2287,52 @@ input[type="checkbox"] {
   line-height: 1.4;
 }
 
-.earthquake-item a {
+.earthquake-links,
+.earthquake-item a,
+.earthquake-official-links {
+  display: grid;
+  gap: 4px;
+}
+
+.earthquake-item a,
+.earthquake-official-links a {
   color: #1f5ae1;
   text-decoration: none;
   font-size: 13px;
   white-space: nowrap;
+}
+
+.earthquake-sync-note {
+  margin: 0;
+}
+
+.eq-popup {
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.eq-popup-report {
+  margin-top: 4px;
+  padding: 8px;
+  border-radius: 8px;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+}
+
+.eq-popup-areas {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.eq-popup-links {
+  display: grid;
+  gap: 4px;
+}
+
+.eq-popup-links a {
+  color: #1f5ae1;
 }
 
 .visual-break-earthquake {
