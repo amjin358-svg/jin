@@ -175,13 +175,19 @@
         <article class="card weather-card weather-air-card msn-weather-card" aria-label="即時天氣">
           <div class="weather-now">
             <div class="weather-now-main">
-              <div id="weatherIcon" class="weather-icon" aria-hidden="true"></div>
-              <div class="weather-now-temps">
-                <p id="tempValue" class="weather-temp-main">--</p>
-                <p class="weather-feel-line">體感 <span id="feelValue">--</span></p>
-              </div>
-              <div class="weather-now-meta">
-                <p id="weatherSummary" class="weather-condition">資料讀取中...</p>
+              <div id="weatherIcon" class="weather-icon weather-icon-kawaii" aria-hidden="true"></div>
+              <div class="weather-now-side">
+                <div class="weather-now-temps">
+                  <p id="tempValue" class="weather-temp-main">--</p>
+                  <p class="weather-feel-line">體感 <span id="feelValue">--</span></p>
+                </div>
+                <div class="weather-now-meta">
+                  <p id="weatherSummary" class="weather-condition">資料讀取中...</p>
+                </div>
+                <details id="weeklyForecastDetails" class="weekly-forecast-details weekly-forecast-beside">
+                  <summary id="weeklyForecastSummary">一週天氣預報</summary>
+                  <div id="weeklyForecastList" class="weekly-forecast-list" aria-live="polite"></div>
+                </details>
               </div>
             </div>
           </div>
@@ -216,10 +222,6 @@
             <div id="rainTimeline" class="rain-timeline" aria-live="polite"></div>
             <p id="rainProjection" class="timestamp">未來 8 小時累積降雨預估：-- mm</p>
           </div>
-          <details id="weeklyForecastDetails" class="weekly-forecast-details">
-            <summary id="weeklyForecastSummary">定位點一週天氣預報</summary>
-            <div id="weeklyForecastList" class="weekly-forecast-list" aria-live="polite"></div>
-          </details>
           <details id="airDetails" class="air-details">
             <summary id="airSummary" class="air-inline-summary">當地空氣品質：讀取中...</summary>
             <div class="air-details-body">

@@ -3169,60 +3169,123 @@ async function renderAllCameraLists() {
   await renderFreewayCameraList();
 }
 
+function formatEarthquakeMagnitudeLabel(magnitude) {
+  const value = Number(magnitude);
+  if (!Number.isFinite(value)) {
+    return "--(M)級";
+  }
+  return `${value.toFixed(1)}(M)級`;
+}
+
 function getWeatherIconSvg(code) {
   const weatherCode = Number(code);
   if ([95, 96, 99].includes(weatherCode)) {
     return `
-      <svg viewBox="0 0 64 64" role="img" aria-label="雷雨">
-        <ellipse class="cloud-body" cx="30" cy="28" rx="16" ry="10" fill="#dce7f8"/>
-        <ellipse class="cloud-body" cx="40" cy="30" rx="12" ry="8" fill="#c9d8f0"/>
-        <path class="bolt" d="M34 34 L28 46 H34 L30 56 L44 40 H36 L40 34 Z" fill="#ffd166"/>
-        <path class="rain-drop" d="M18 40 l2 8" stroke="#8ecae6" stroke-width="2" stroke-linecap="round"/>
-        <path class="rain-drop" d="M24 42 l2 8" stroke="#8ecae6" stroke-width="2" stroke-linecap="round"/>
+      <svg viewBox="0 0 80 80" role="img" aria-label="雷雨">
+        <defs>
+          <linearGradient id="kawaiiStormCloud" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#e8eef8"/>
+            <stop offset="100%" stop-color="#9fb0cc"/>
+          </linearGradient>
+        </defs>
+        <ellipse class="cloud-body" cx="40" cy="34" rx="24" ry="14" fill="url(#kawaiiStormCloud)"/>
+        <ellipse class="cloud-body" cx="28" cy="36" rx="14" ry="10" fill="#c4d0e6"/>
+        <ellipse class="cloud-body" cx="52" cy="36" rx="13" ry="9" fill="#d5deef"/>
+        <circle class="kawaii-blink" cx="32" cy="34" r="2.2" fill="#4b5568"/>
+        <circle class="kawaii-blink" cx="48" cy="34" r="2.2" fill="#4b5568"/>
+        <path d="M34 40 Q40 44 46 40" fill="none" stroke="#6b7280" stroke-width="1.8" stroke-linecap="round"/>
+        <circle cx="26" cy="40" r="2.4" fill="#f9a8d4" opacity="0.85"/>
+        <circle cx="54" cy="40" r="2.4" fill="#f9a8d4" opacity="0.85"/>
+        <path class="bolt kawaii-sparkle" d="M42 42 L36 54 H42 L38 66 L54 48 H46 L50 42 Z" fill="#ffd166" stroke="#f59e0b" stroke-width="1"/>
+        <path class="rain-drop" d="M22 50 l2 10" stroke="#60a5fa" stroke-width="2.4" stroke-linecap="round"/>
+        <path class="rain-drop" d="M30 52 l2 10" stroke="#60a5fa" stroke-width="2.4" stroke-linecap="round"/>
+      </svg>`;
+  }
+  if ([71, 73, 75, 77, 85, 86].includes(weatherCode)) {
+    return `
+      <svg viewBox="0 0 80 80" role="img" aria-label="下雪">
+        <ellipse class="cloud-body" cx="40" cy="30" rx="22" ry="13" fill="#eef4ff"/>
+        <ellipse class="cloud-body" cx="28" cy="32" rx="13" ry="9" fill="#dbe7ff"/>
+        <ellipse class="cloud-body" cx="52" cy="32" rx="12" ry="8" fill="#e8f0ff"/>
+        <circle class="kawaii-blink" cx="32" cy="30" r="2" fill="#64748b"/>
+        <circle class="kawaii-blink" cx="48" cy="30" r="2" fill="#64748b"/>
+        <path d="M35 35 Q40 38 45 35" fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round"/>
+        <g fill="#bae6fd" stroke="#7dd3fc" stroke-width="0.8">
+          <path d="M28 48 l0 8 M24 52 l8 0 M25.5 49.5 l5 5 M25.5 54.5 l5 -5"/>
+          <path d="M42 50 l0 8 M38 54 l8 0 M39.5 51.5 l5 5 M39.5 56.5 l5 -5"/>
+          <path d="M56 46 l0 8 M52 50 l8 0 M53.5 47.5 l5 5 M53.5 52.5 l5 -5"/>
+        </g>
       </svg>`;
   }
   if ([61, 63, 65, 80, 81, 82, 51, 53, 55, 56, 57, 66, 67].includes(weatherCode)) {
     return `
-      <svg viewBox="0 0 64 64" role="img" aria-label="雨天">
-        <circle cx="44" cy="18" r="8" fill="#ffd166"/>
-        <ellipse class="cloud-body" cx="28" cy="28" rx="16" ry="10" fill="#e8eef8"/>
-        <ellipse class="cloud-body" cx="38" cy="30" rx="12" ry="8" fill="#d5e0f2"/>
-        <path class="rain-drop" d="M20 40 l2 9" stroke="#7db7e8" stroke-width="2.2" stroke-linecap="round"/>
-        <path class="rain-drop" d="M28 42 l2 9" stroke="#7db7e8" stroke-width="2.2" stroke-linecap="round"/>
-        <path class="rain-drop" d="M36 40 l2 9" stroke="#7db7e8" stroke-width="2.2" stroke-linecap="round"/>
+      <svg viewBox="0 0 80 80" role="img" aria-label="雨天">
+        <circle class="sun-core" cx="58" cy="18" r="8" fill="#ffd166"/>
+        <ellipse class="cloud-body" cx="36" cy="34" rx="22" ry="13" fill="#eaf2ff"/>
+        <ellipse class="cloud-body" cx="24" cy="36" rx="13" ry="9" fill="#d5e4fb"/>
+        <ellipse class="cloud-body" cx="48" cy="36" rx="12" ry="8" fill="#f2f7ff"/>
+        <circle class="kawaii-blink" cx="28" cy="34" r="2.1" fill="#475569"/>
+        <circle class="kawaii-blink" cx="44" cy="34" r="2.1" fill="#475569"/>
+        <path d="M31 40 Q36 43 41 40" fill="none" stroke="#64748b" stroke-width="1.7" stroke-linecap="round"/>
+        <circle cx="22" cy="40" r="2.3" fill="#fda4af" opacity="0.9"/>
+        <circle cx="50" cy="40" r="2.3" fill="#fda4af" opacity="0.9"/>
+        <path class="rain-drop" d="M24 48 q2 6 0 10" fill="none" stroke="#38bdf8" stroke-width="3" stroke-linecap="round"/>
+        <path class="rain-drop" d="M36 50 q2 6 0 10" fill="none" stroke="#38bdf8" stroke-width="3" stroke-linecap="round"/>
+        <path class="rain-drop" d="M48 48 q2 6 0 10" fill="none" stroke="#38bdf8" stroke-width="3" stroke-linecap="round"/>
       </svg>`;
   }
   if ([45, 48, 3].includes(weatherCode)) {
     return `
-      <svg viewBox="0 0 64 64" role="img" aria-label="陰天">
-        <ellipse class="cloud-body" cx="26" cy="30" rx="15" ry="10" fill="#cfd8e6"/>
-        <ellipse class="cloud-body" cx="38" cy="28" rx="14" ry="11" fill="#b7c4d8"/>
-        <ellipse class="cloud-body" cx="34" cy="34" rx="16" ry="9" fill="#a9b7cd"/>
+      <svg viewBox="0 0 80 80" role="img" aria-label="陰天">
+        <ellipse class="cloud-body" cx="40" cy="40" rx="24" ry="14" fill="#c5d0e0"/>
+        <ellipse class="cloud-body" cx="26" cy="42" rx="14" ry="10" fill="#aebbd0"/>
+        <ellipse class="cloud-body" cx="54" cy="42" rx="13" ry="9" fill="#b7c4d8"/>
+        <circle class="kawaii-blink" cx="32" cy="40" r="2.2" fill="#4b5563"/>
+        <circle class="kawaii-blink" cx="48" cy="40" r="2.2" fill="#4b5563"/>
+        <path d="M34 46 Q40 49 46 46" fill="none" stroke="#6b7280" stroke-width="1.8" stroke-linecap="round"/>
+        <circle cx="24" cy="46" r="2.4" fill="#f9a8d4" opacity="0.8"/>
+        <circle cx="56" cy="46" r="2.4" fill="#f9a8d4" opacity="0.8"/>
       </svg>`;
   }
   if ([1, 2].includes(weatherCode)) {
     return `
-      <svg viewBox="0 0 64 64" role="img" aria-label="多雲">
+      <svg viewBox="0 0 80 80" role="img" aria-label="多雲">
         <g class="sun-core">
-          <circle cx="42" cy="20" r="8" fill="#ffd166"/>
-          <g stroke="#ffd166" stroke-width="2" stroke-linecap="round">
-            <path d="M42 8 v3"/><path d="M42 29 v3"/><path d="M30 20 h3"/><path d="M51 20 h3"/>
-            <path d="M33 11 l2 2"/><path d="M49 27 l2 2"/><path d="M49 11 l-2 2"/><path d="M33 27 l-2 2"/>
+          <circle cx="56" cy="22" r="10" fill="#ffd56a"/>
+          <g stroke="#ffc53d" stroke-width="2.2" stroke-linecap="round">
+            <path d="M56 6 v4"/><path d="M56 34 v4"/><path d="M40 22 h4"/><path d="M68 22 h4"/>
+            <path d="M44 10 l2.5 2.5"/><path d="M65.5 31.5 l2.5 2.5"/>
+            <path d="M65.5 10 l2.5 -2.5"/><path d="M44 34 l-2.5 -2.5"/>
           </g>
+          <circle class="kawaii-blink" cx="52" cy="20" r="1.5" fill="#9a3412"/>
+          <circle class="kawaii-blink" cx="60" cy="20" r="1.5" fill="#9a3412"/>
+          <path d="M52 25 Q56 28 60 25" fill="none" stroke="#b45309" stroke-width="1.4" stroke-linecap="round"/>
         </g>
-        <ellipse class="cloud-body" cx="26" cy="34" rx="15" ry="10" fill="#f2f6ff"/>
-        <ellipse class="cloud-body" cx="38" cy="36" rx="12" ry="8" fill="#e2eaf8"/>
+        <ellipse class="cloud-body" cx="32" cy="48" rx="18" ry="11" fill="#ffffff"/>
+        <ellipse class="cloud-body" cx="22" cy="50" rx="11" ry="8" fill="#edf4ff"/>
+        <ellipse class="cloud-body" cx="44" cy="50" rx="11" ry="8" fill="#f8fbff"/>
+        <circle class="kawaii-blink" cx="26" cy="48" r="1.8" fill="#64748b"/>
+        <circle class="kawaii-blink" cx="38" cy="48" r="1.8" fill="#64748b"/>
+        <path d="M28 53 Q32 56 36 53" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round"/>
+        <circle cx="18" cy="52" r="2" fill="#fda4af" opacity="0.85"/>
+        <circle cx="46" cy="52" r="2" fill="#fda4af" opacity="0.85"/>
       </svg>`;
   }
   return `
-    <svg viewBox="0 0 64 64" role="img" aria-label="晴朗">
+    <svg viewBox="0 0 80 80" role="img" aria-label="晴朗">
       <g class="sun-core">
-        <circle cx="32" cy="32" r="12" fill="#ffd166"/>
-        <g stroke="#ffd166" stroke-width="2.4" stroke-linecap="round">
-          <path d="M32 10 v5"/><path d="M32 49 v5"/><path d="M10 32 h5"/><path d="M49 32 h5"/>
-          <path d="M16 16 l3.5 3.5"/><path d="M44.5 44.5 l3.5 3.5"/>
-          <path d="M44.5 16 l3.5 -3.5"/><path d="M16 48 l3.5 -3.5"/>
+        <circle cx="40" cy="40" r="16" fill="#ffd166"/>
+        <g stroke="#ffc107" stroke-width="3" stroke-linecap="round">
+          <path d="M40 12 v6"/><path d="M40 62 v6"/><path d="M12 40 h6"/><path d="M62 40 h6"/>
+          <path d="M20 20 l4 4"/><path d="M56 56 l4 4"/>
+          <path d="M56 20 l4 -4"/><path d="M20 60 l4 -4"/>
         </g>
+        <circle class="kawaii-blink" cx="34" cy="37" r="2.4" fill="#9a3412"/>
+        <circle class="kawaii-blink" cx="46" cy="37" r="2.4" fill="#9a3412"/>
+        <path d="M33 46 Q40 52 47 46" fill="none" stroke="#b45309" stroke-width="2.2" stroke-linecap="round"/>
+        <circle cx="28" cy="44" r="2.6" fill="#fb7185" opacity="0.9"/>
+        <circle cx="52" cy="44" r="2.6" fill="#fb7185" opacity="0.9"/>
+        <path class="kawaii-sparkle" d="M18 16 l1.5 3.5 L23 21 l-3.5 1.5 L18 26 l-1.5 -3.5 L13 21 l3.5 -1.5 Z" fill="#fff7c2"/>
       </g>
     </svg>`;
 }
@@ -3367,7 +3430,7 @@ function renderWeeklyForecast(days = [], locationLabel = "") {
   if (weeklyForecastSummary) {
     weeklyForecastSummary.textContent = locationLabel
       ? `${locationLabel}｜一週天氣預報`
-      : "定位點一週天氣預報";
+      : "一週天氣預報";
   }
   if (!weeklyForecastList) {
     return;
@@ -4895,7 +4958,7 @@ function createEarthquakeListItem(quake) {
     : "";
   const serialText = quake.serial && quake.serial !== "小區域" ? `第${quake.serial}號` : "小區域";
   item.innerHTML = `
-    <span class="earthquake-mag">M${quake.magnitude.toFixed(1)}</span>
+    <span class="earthquake-mag">${formatEarthquakeMagnitudeLabel(quake.magnitude)}</span>
     <span class="earthquake-body">
       <strong>${serialText}｜震度 ${formatIntensityLabel(quake.intensityValue)}｜${getEarthquakeLocatedLabel(
         quake.place
@@ -4931,9 +4994,10 @@ function renderEarthquakePanel() {
 
   const latest = quakes[0];
   if (earthquakeSummary) {
-    earthquakeSummary.textContent = `最新：規模 ${latest.magnitude.toFixed(1)}｜最大震度 ${formatIntensityLabel(
+    const placeLabel = getEarthquakeLocatedLabel(latest.place);
+    earthquakeSummary.innerHTML = `最新：規模 ${latest.magnitude.toFixed(1)}｜最大震度 ${formatIntensityLabel(
       latest.intensityValue
-    )}｜ ${getEarthquakeLocatedLabel(latest.place)}`;
+    )}<span class="earthquake-place-label">（${placeLabel}）</span>`;
   }
   renderEarthquakeSourceMeta(Date.now());
 
