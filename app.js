@@ -5017,7 +5017,7 @@ function createEarthquakeListItem(quake) {
   item.innerHTML = `
     <span class="earthquake-mag">${formatEarthquakeMagnitudeLabel(quake.magnitude)}</span>
     <span class="earthquake-body">
-      <strong>${serialText}｜震度 ${formatIntensityLabel(quake.intensityValue)}｜<span class="earthquake-place-label">${getEarthquakeLocatedLabel(
+      <strong>${serialText}｜震度 ${formatIntensityLabel(quake.intensityValue)}<span class="earthquake-place-label">${getEarthquakeLocatedLabel(
         quake.place
       )}</span></strong>
       <small>${formatDateTime(quake.timeMs)}${distanceText}｜深度 ${
@@ -5055,7 +5055,7 @@ function renderEarthquakePanel() {
     const placeLabel = getEarthquakeLocatedLabel(latest.place);
     earthquakeSummary.innerHTML = `最新：規模 ${latest.magnitude.toFixed(1)}｜最大震度 ${formatIntensityLabel(
       latest.intensityValue
-    )}<span class="earthquake-place-label">（${placeLabel}）</span>`;
+    )}<span class="earthquake-place-label">${placeLabel}</span>`;
     earthquakeSummary.classList.toggle("intensity-4-plus", (latest.intensityValue || 0) >= 4);
   }
   renderEarthquakeSourceMeta(Date.now());
