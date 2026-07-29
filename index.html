@@ -175,12 +175,15 @@
         <article class="card weather-card weather-air-card msn-weather-card" aria-label="即時天氣">
           <div class="weather-now">
             <div class="weather-now-main">
-              <div id="weatherIcon" class="weather-icon weather-icon-kawaii" aria-hidden="true"></div>
+              <div id="weatherIcon" class="weather-icon weather-icon-pastel" aria-hidden="true"></div>
               <div class="weather-now-side">
                 <p id="tempValue" class="weather-temp-main">--</p>
                 <p class="weather-feel-line">體感 <span id="feelValue">--</span></p>
-                <p id="weatherPlace" class="weather-place">讀取中</p>
-                <p id="weatherSummary" class="weather-condition">資料讀取中...</p>
+                <p class="weather-place-line">
+                  <span id="weatherPlace" class="weather-place">讀取中</span>
+                  <span class="weather-place-sep" aria-hidden="true">／</span>
+                  <span id="weatherSummary" class="weather-condition">資料讀取中...</span>
+                </p>
               </div>
             </div>
             <details id="weeklyForecastDetails" class="weekly-forecast-details weekly-forecast-below">

@@ -3192,128 +3192,77 @@ function formatEarthquakeMagnitudeLabel(magnitude) {
 
 function getWeatherIconSvg(code) {
   const weatherCode = Number(code);
-  // Soft kawaii faces: oversized eyes, blush; no shared gradient IDs.
+  // Soft pastel weather icons: gentle fills, low contrast, calm mood.
   if ([95, 96, 99].includes(weatherCode)) {
     return `
       <svg viewBox="0 0 96 96" role="img" aria-label="雷雨">
-        <ellipse class="cloud-body" cx="48" cy="40" rx="30" ry="18" fill="#d9e3f5"/>
-        <ellipse class="cloud-body" cx="30" cy="44" rx="16" ry="12" fill="#b8c7e0"/>
-        <ellipse class="cloud-body" cx="64" cy="44" rx="15" ry="11" fill="#c9d6ec"/>
-        <circle cx="36" cy="40" r="5.2" fill="#fff"/>
-        <circle cx="60" cy="40" r="5.2" fill="#fff"/>
-        <circle class="kawaii-blink" cx="36.8" cy="40.5" r="2.8" fill="#334155"/>
-        <circle class="kawaii-blink" cx="60.8" cy="40.5" r="2.8" fill="#334155"/>
-        <circle cx="35.4" cy="39.4" r="1" fill="#fff"/>
-        <circle cx="59.4" cy="39.4" r="1" fill="#fff"/>
-        <path d="M40 50 Q48 56 56 50" fill="none" stroke="#64748b" stroke-width="2.4" stroke-linecap="round"/>
-        <circle cx="24" cy="50" r="3.4" fill="#fda4af"/>
-        <circle cx="72" cy="50" r="3.4" fill="#fda4af"/>
-        <path class="bolt kawaii-sparkle" d="M52 52 L42 68 H50 L44 84 L66 60 H56 L62 52 Z" fill="#ffe066" stroke="#f59e0b" stroke-width="1.2"/>
-        <path class="rain-drop" d="M26 62 q3 8 0 14" fill="none" stroke="#60a5fa" stroke-width="3.4" stroke-linecap="round"/>
-        <path class="rain-drop" d="M38 64 q3 8 0 14" fill="none" stroke="#60a5fa" stroke-width="3.4" stroke-linecap="round"/>
+        <ellipse class="cloud-body" cx="48" cy="42" rx="28" ry="16" fill="#d7dff2"/>
+        <ellipse class="cloud-body" cx="32" cy="46" rx="14" ry="10" fill="#c5d0ea"/>
+        <ellipse class="cloud-body" cx="62" cy="46" rx="13" ry="9" fill="#e4eaf8"/>
+        <path class="bolt kawaii-sparkle" d="M52 50 L44 64 H51 L46 78 L64 58 H55 L60 50 Z" fill="#ffe08a" stroke="#f0c35a" stroke-width="1"/>
+        <path class="rain-drop" d="M30 60 q2.5 7 0 12" fill="none" stroke="#9ec9ef" stroke-width="3.2" stroke-linecap="round"/>
+        <path class="rain-drop" d="M40 62 q2.5 7 0 12" fill="none" stroke="#9ec9ef" stroke-width="3.2" stroke-linecap="round"/>
       </svg>`;
   }
   if ([71, 73, 75, 77, 85, 86].includes(weatherCode)) {
     return `
       <svg viewBox="0 0 96 96" role="img" aria-label="下雪">
-        <ellipse class="cloud-body" cx="48" cy="36" rx="28" ry="16" fill="#f1f6ff"/>
-        <ellipse class="cloud-body" cx="32" cy="40" rx="15" ry="11" fill="#dbe7ff"/>
-        <ellipse class="cloud-body" cx="64" cy="40" rx="14" ry="10" fill="#e8f1ff"/>
-        <circle cx="36" cy="36" r="4.8" fill="#fff"/>
-        <circle cx="60" cy="36" r="4.8" fill="#fff"/>
-        <circle class="kawaii-blink" cx="36.8" cy="36.5" r="2.5" fill="#475569"/>
-        <circle class="kawaii-blink" cx="60.8" cy="36.5" r="2.5" fill="#475569"/>
-        <path d="M40 44 Q48 48 56 44" fill="none" stroke="#94a3b8" stroke-width="2.2" stroke-linecap="round"/>
-        <circle cx="24" cy="46" r="3" fill="#fda4af" opacity="0.9"/>
-        <circle cx="72" cy="46" r="3" fill="#fda4af" opacity="0.9"/>
-        <g fill="#bae6fd" stroke="#7dd3fc" stroke-width="1.1">
-          <path d="M30 58 l0 12 M24 64 l12 0 M26 60 l8 8 M26 68 l8 -8"/>
-          <path d="M48 62 l0 12 M42 68 l12 0 M44 64 l8 8 M44 72 l8 -8"/>
-          <path d="M68 56 l0 12 M62 62 l12 0 M64 58 l8 8 M64 66 l8 -8"/>
+        <ellipse class="cloud-body" cx="48" cy="38" rx="26" ry="14" fill="#eef3ff"/>
+        <ellipse class="cloud-body" cx="34" cy="42" rx="13" ry="9" fill="#dde7fb"/>
+        <ellipse class="cloud-body" cx="62" cy="42" rx="12" ry="8" fill="#f7f9ff"/>
+        <g fill="#c9e7ff" stroke="#a8d8f7" stroke-width="0.9">
+          <path d="M32 58 l0 10 M27 63 l10 0 M29 60 l6 6 M29 66 l6 -6"/>
+          <path d="M48 60 l0 10 M43 65 l10 0 M45 62 l6 6 M45 68 l6 -6"/>
+          <path d="M66 56 l0 10 M61 61 l10 0 M63 58 l6 6 M63 64 l6 -6"/>
         </g>
       </svg>`;
   }
   if ([61, 63, 65, 80, 81, 82, 51, 53, 55, 56, 57, 66, 67].includes(weatherCode)) {
     return `
       <svg viewBox="0 0 96 96" role="img" aria-label="雨天">
-        <circle class="sun-core" cx="72" cy="20" r="11" fill="#ffd56a"/>
-        <ellipse class="cloud-body" cx="42" cy="40" rx="28" ry="16" fill="#eef5ff"/>
-        <ellipse class="cloud-body" cx="26" cy="44" rx="15" ry="11" fill="#d5e6fb"/>
-        <ellipse class="cloud-body" cx="58" cy="44" rx="14" ry="10" fill="#f8fbff"/>
-        <circle cx="32" cy="40" r="5" fill="#fff"/>
-        <circle cx="52" cy="40" r="5" fill="#fff"/>
-        <circle class="kawaii-blink" cx="32.8" cy="40.6" r="2.7" fill="#334155"/>
-        <circle class="kawaii-blink" cx="52.8" cy="40.6" r="2.7" fill="#334155"/>
-        <path d="M36 50 Q42 55 48 50" fill="none" stroke="#64748b" stroke-width="2.3" stroke-linecap="round"/>
-        <circle cx="20" cy="50" r="3.2" fill="#fda4af"/>
-        <circle cx="64" cy="50" r="3.2" fill="#fda4af"/>
-        <path class="rain-drop" d="M28 58 q3.5 9 0 16" fill="none" stroke="#38bdf8" stroke-width="4" stroke-linecap="round"/>
-        <path class="rain-drop" d="M44 60 q3.5 9 0 16" fill="none" stroke="#38bdf8" stroke-width="4" stroke-linecap="round"/>
-        <path class="rain-drop" d="M60 58 q3.5 9 0 16" fill="none" stroke="#38bdf8" stroke-width="4" stroke-linecap="round"/>
+        <circle class="sun-core" cx="70" cy="22" r="10" fill="#ffe6a8"/>
+        <ellipse class="cloud-body" cx="44" cy="42" rx="26" ry="14" fill="#e8f1ff"/>
+        <ellipse class="cloud-body" cx="30" cy="46" rx="13" ry="9" fill="#d5e5fa"/>
+        <ellipse class="cloud-body" cx="58" cy="46" rx="12" ry="8" fill="#f4f8ff"/>
+        <path class="rain-drop" d="M32 58 q2.8 8 0 14" fill="none" stroke="#8fc5ef" stroke-width="3.6" stroke-linecap="round"/>
+        <path class="rain-drop" d="M46 60 q2.8 8 0 14" fill="none" stroke="#8fc5ef" stroke-width="3.6" stroke-linecap="round"/>
+        <path class="rain-drop" d="M60 58 q2.8 8 0 14" fill="none" stroke="#8fc5ef" stroke-width="3.6" stroke-linecap="round"/>
       </svg>`;
   }
   if ([45, 48, 3].includes(weatherCode)) {
     return `
       <svg viewBox="0 0 96 96" role="img" aria-label="陰天">
-        <ellipse class="cloud-body" cx="48" cy="48" rx="30" ry="18" fill="#c9d4e6"/>
-        <ellipse class="cloud-body" cx="30" cy="52" rx="16" ry="12" fill="#aebbd2"/>
-        <ellipse class="cloud-body" cx="66" cy="52" rx="15" ry="11" fill="#b8c6db"/>
-        <circle cx="36" cy="48" r="5.4" fill="#fff"/>
-        <circle cx="60" cy="48" r="5.4" fill="#fff"/>
-        <circle class="kawaii-blink" cx="36.9" cy="48.6" r="2.9" fill="#475569"/>
-        <circle class="kawaii-blink" cx="60.9" cy="48.6" r="2.9" fill="#475569"/>
-        <circle cx="35.4" cy="47.3" r="1.1" fill="#fff"/>
-        <circle cx="59.4" cy="47.3" r="1.1" fill="#fff"/>
-        <path d="M40 58 Q48 64 56 58" fill="none" stroke="#64748b" stroke-width="2.5" stroke-linecap="round"/>
-        <circle cx="24" cy="58" r="3.5" fill="#fda4af"/>
-        <circle cx="72" cy="58" r="3.5" fill="#fda4af"/>
+        <ellipse class="cloud-body" cx="48" cy="50" rx="28" ry="15" fill="#d5deec"/>
+        <ellipse class="cloud-body" cx="33" cy="53" rx="14" ry="10" fill="#c4cfe0"/>
+        <ellipse class="cloud-body" cx="63" cy="53" rx="13" ry="9" fill="#e1e7f2"/>
       </svg>`;
   }
   if ([1, 2].includes(weatherCode)) {
     return `
       <svg viewBox="0 0 96 96" role="img" aria-label="多雲">
         <g class="sun-core">
-          <circle cx="70" cy="24" r="13" fill="#ffd56a"/>
-          <g stroke="#ffc107" stroke-width="2.6" stroke-linecap="round">
-            <path d="M70 4 v5"/><path d="M70 39 v5"/><path d="M50 24 h5"/><path d="M85 24 h5"/>
-            <path d="M55 9 l3.2 3.2"/><path d="M81.8 35.8 l3.2 3.2"/>
-            <path d="M81.8 9 l3.2 -3.2"/><path d="M55 39 l-3.2 -3.2"/>
+          <circle cx="68" cy="26" r="12" fill="#ffe2a3"/>
+          <g stroke="#ffd27a" stroke-width="2.4" stroke-linecap="round">
+            <path d="M68 8 v4"/><path d="M68 40 v4"/><path d="M50 26 h4"/><path d="M82 26 h4"/>
+            <path d="M55 13 l2.6 2.6"/><path d="M78.4 36.4 l2.6 2.6"/>
+            <path d="M78.4 13 l2.6 -2.6"/><path d="M55 39 l-2.6 -2.6"/>
           </g>
-          <circle cx="65" cy="22" r="2.2" fill="#fff"/><circle cx="75" cy="22" r="2.2" fill="#fff"/>
-          <circle class="kawaii-blink" cx="65.5" cy="22.4" r="1.3" fill="#9a3412"/>
-          <circle class="kawaii-blink" cx="75.5" cy="22.4" r="1.3" fill="#9a3412"/>
-          <path d="M65 28 Q70 31 75 28" fill="none" stroke="#b45309" stroke-width="1.6" stroke-linecap="round"/>
         </g>
-        <ellipse class="cloud-body" cx="38" cy="58" rx="24" ry="14" fill="#ffffff"/>
-        <ellipse class="cloud-body" cx="24" cy="62" rx="13" ry="10" fill="#edf4ff"/>
-        <ellipse class="cloud-body" cx="54" cy="62" rx="13" ry="10" fill="#f8fbff"/>
-        <circle cx="30" cy="58" r="4.6" fill="#fff" stroke="#e2e8f0"/>
-        <circle cx="46" cy="58" r="4.6" fill="#fff" stroke="#e2e8f0"/>
-        <circle class="kawaii-blink" cx="30.8" cy="58.5" r="2.4" fill="#64748b"/>
-        <circle class="kawaii-blink" cx="46.8" cy="58.5" r="2.4" fill="#64748b"/>
-        <path d="M34 66 Q38 70 42 66" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
-        <circle cx="18" cy="64" r="2.8" fill="#fda4af"/>
-        <circle cx="58" cy="64" r="2.8" fill="#fda4af"/>
+        <ellipse class="cloud-body" cx="40" cy="58" rx="22" ry="12" fill="#ffffff"/>
+        <ellipse class="cloud-body" cx="28" cy="61" rx="12" ry="8" fill="#eef4ff"/>
+        <ellipse class="cloud-body" cx="54" cy="61" rx="11" ry="8" fill="#f8fbff"/>
       </svg>`;
   }
   return `
     <svg viewBox="0 0 96 96" role="img" aria-label="晴朗">
       <g class="sun-core">
-        <circle cx="48" cy="48" r="20" fill="#ffd166"/>
-        <g stroke="#ffc107" stroke-width="3.4" stroke-linecap="round">
-          <path d="M48 10 v8"/><path d="M48 78 v8"/><path d="M10 48 h8"/><path d="M78 48 h8"/>
-          <path d="M20 20 l5.5 5.5"/><path d="M70.5 70.5 l5.5 5.5"/>
-          <path d="M70.5 20 l5.5 -5.5"/><path d="M20 76 l5.5 -5.5"/>
+        <circle cx="48" cy="48" r="18" fill="#ffe2a8"/>
+        <g stroke="#ffd27a" stroke-width="3" stroke-linecap="round">
+          <path d="M48 14 v7"/><path d="M48 75 v7"/><path d="M14 48 h7"/><path d="M75 48 h7"/>
+          <path d="M24 24 l4.5 4.5"/><path d="M67.5 67.5 l4.5 4.5"/>
+          <path d="M67.5 24 l4.5 -4.5"/><path d="M24 72 l4.5 -4.5"/>
         </g>
-        <circle cx="40" cy="44" r="4.2" fill="#fff"/>
-        <circle cx="56" cy="44" r="4.2" fill="#fff"/>
-        <circle class="kawaii-blink" cx="41" cy="44.6" r="2.4" fill="#9a3412"/>
-        <circle class="kawaii-blink" cx="57" cy="44.6" r="2.4" fill="#9a3412"/>
-        <path d="M38 56 Q48 64 58 56" fill="none" stroke="#b45309" stroke-width="2.6" stroke-linecap="round"/>
-        <circle cx="32" cy="54" r="3.4" fill="#fb7185"/>
-        <circle cx="64" cy="54" r="3.4" fill="#fb7185"/>
-        <path class="kawaii-sparkle" d="M18 16 l2 5 L25 23 l-5 2 L18 30 l-2 -5 L11 23 l5 -2 Z" fill="#fff7c2"/>
-        <path class="kawaii-sparkle" d="M76 68 l1.4 3.4 L81 73 l-3.4 1.4 L76 78 l-1.4 -3.4 L71 73 l3.4 -1.4 Z" fill="#fff7c2"/>
+        <circle cx="48" cy="48" r="12" fill="#fff1c9"/>
       </g>
     </svg>`;
 }
@@ -3484,11 +3433,9 @@ function renderWeeklyForecast(days = [], locationLabel = "") {
         <strong>${index === 0 ? "今天" : day.weekday}</strong>
         <span>${day.monthDay}</span>
       </div>
-      <div class="weekly-forecast-main">
-        <div class="weekly-forecast-icon" aria-hidden="true">${getWeatherIconSvg(day.weatherCode)}</div>
+      <div class="weekly-forecast-icon" aria-hidden="true">${getWeatherIconSvg(day.weatherCode)}</div>
+      <div class="weekly-forecast-side">
         <span class="weekly-forecast-label">${day.label}</span>
-      </div>
-      <div class="weekly-forecast-meta">
         <span class="weekly-forecast-temps">${minText} / ${maxText}</span>
         <span class="weekly-forecast-rain">降雨 ${rainProbText}｜${rainSumText}</span>
       </div>

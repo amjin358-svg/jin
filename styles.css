@@ -1357,9 +1357,9 @@ input[type="checkbox"] {
   padding: 8px;
   border-radius: 24px;
   background:
-    linear-gradient(160deg, rgba(255, 255, 255, 0.98), rgba(210, 232, 255, 0.92));
-  border: 1px solid #8ebae8;
-  box-shadow: 0 8px 18px rgba(31, 90, 225, 0.16);
+    linear-gradient(160deg, rgba(255, 252, 245, 0.98), rgba(232, 242, 255, 0.94));
+  border: 1px solid #c5d8ef;
+  box-shadow: 0 8px 18px rgba(120, 160, 210, 0.16);
 }
 
 .weather-icon svg {
@@ -1386,9 +1386,25 @@ input[type="checkbox"] {
   line-height: 1.35;
 }
 
+.weather-place-line {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+  min-width: 0;
+  line-height: 1.4;
+}
+
+.weather-place-sep {
+  color: #7b93b3;
+  font-weight: 700;
+  font-size: clamp(1.05rem, 4.2vw, 1.3rem);
+}
+
 .weather-place {
   margin: 0;
-  font-size: clamp(1.2rem, 5vw, 1.55rem);
+  font-size: clamp(1.15rem, 4.8vw, 1.45rem);
   font-weight: 800;
   line-height: 1.35;
   color: #0a3564;
@@ -1408,7 +1424,7 @@ input[type="checkbox"] {
 
 .weekly-forecast-below {
   margin-top: 0;
-  padding: 10px 12px;
+  padding: 8px 10px;
   border-top: 1px solid #8ebce6;
   border: 1px solid #9fc9ee;
   background: rgba(255, 255, 255, 0.88);
@@ -1416,8 +1432,9 @@ input[type="checkbox"] {
 }
 
 .weekly-forecast-below > summary {
-  font-size: clamp(16px, 4.2vw, 20px);
-  padding: 6px 2px;
+  font-size: clamp(13px, 3.4vw, 15px);
+  font-weight: 700;
+  padding: 4px 2px;
 }
 
 .msn-weather-card .metrics {
@@ -1471,11 +1488,11 @@ input[type="checkbox"] {
 .weekly-forecast-details > summary {
   cursor: pointer;
   list-style: none;
-  font-size: clamp(20px, 5.2vw, 26px);
-  font-weight: 800;
+  font-size: clamp(13px, 3.4vw, 15px);
+  font-weight: 700;
   color: #072445;
   line-height: 1.35;
-  padding: 8px 4px;
+  padding: 6px 4px;
 }
 
 .weekly-forecast-details > summary::-webkit-details-marker {
@@ -1504,8 +1521,8 @@ input[type="checkbox"] {
 
 .weekly-forecast-row {
   display: grid;
-  grid-template-columns: minmax(76px, auto) minmax(0, 1.4fr) minmax(92px, auto);
-  gap: 12px 14px;
+  grid-template-columns: minmax(78px, auto) minmax(64px, 1fr) minmax(0, 1.2fr);
+  gap: 10px 12px;
   align-items: center;
   padding: 12px 14px;
   border-radius: 12px;
@@ -1525,30 +1542,24 @@ input[type="checkbox"] {
 }
 
 .weekly-forecast-day strong {
-  font-size: clamp(16px, 4.2vw, 20px);
-  font-weight: 800;
+  font-size: clamp(18px, 5vw, 24px);
+  font-weight: 900;
   color: #0b3fad;
-  line-height: 1.2;
+  line-height: 1.15;
 }
 
 .weekly-forecast-day span {
-  font-size: clamp(13px, 3.4vw, 15px);
-  color: #5b6b86;
+  font-size: clamp(15px, 4.2vw, 18px);
+  font-weight: 800;
+  color: #0b3fad;
   line-height: 1.2;
   font-variant-numeric: tabular-nums;
 }
 
-.weekly-forecast-main {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 10px;
-  align-items: center;
-  min-width: 0;
-}
-
 .weekly-forecast-icon {
-  width: 52px;
-  height: 52px;
+  width: 68px;
+  height: 68px;
+  margin: 0 auto;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1556,12 +1567,12 @@ input[type="checkbox"] {
 }
 
 .weekly-forecast-icon svg {
-  width: 48px;
-  height: 48px;
+  width: 64px;
+  height: 64px;
   display: block;
 }
 
-.weekly-forecast-meta {
+.weekly-forecast-side {
   display: grid;
   gap: 4px;
   min-width: 0;
@@ -1579,7 +1590,7 @@ input[type="checkbox"] {
 }
 
 .weekly-forecast-temps {
-  font-size: clamp(18px, 4.6vw, 22px);
+  font-size: clamp(17px, 4.4vw, 21px);
   font-weight: 800;
   color: #0b3fad;
   font-variant-numeric: tabular-nums;
@@ -1588,7 +1599,7 @@ input[type="checkbox"] {
 }
 
 .weekly-forecast-rain {
-  font-size: clamp(13px, 3.4vw, 15px);
+  font-size: clamp(12px, 3.2vw, 14px);
   color: #5b6b86;
   line-height: 1.3;
   font-variant-numeric: tabular-nums;
@@ -1811,24 +1822,34 @@ input[type="checkbox"] {
 
   .weather-feel-line,
   .weather-place,
-  .weather-condition {
-    font-size: clamp(1.15rem, 5.2vw, 1.4rem);
+  .weather-condition,
+  .weather-place-sep {
+    font-size: clamp(1.1rem, 5vw, 1.35rem);
     line-height: 1.4;
   }
 
   .weekly-forecast-below > summary {
-    font-size: clamp(16px, 4.6vw, 19px);
+    font-size: clamp(13px, 3.6vw, 15px);
   }
 
   .weekly-forecast-row {
-    grid-template-columns: minmax(64px, auto) minmax(0, 1fr);
+    grid-template-columns: minmax(70px, auto) minmax(56px, 0.8fr) minmax(0, 1.2fr);
     gap: 8px 10px;
   }
 
-  .weekly-forecast-meta {
-    grid-column: 1 / -1;
-    justify-items: start;
-    text-align: left;
+  .weekly-forecast-icon {
+    width: 60px;
+    height: 60px;
+  }
+
+  .weekly-forecast-icon svg {
+    width: 56px;
+    height: 56px;
+  }
+
+  .weekly-forecast-side {
+    justify-items: end;
+    text-align: right;
   }
 }
 
@@ -3607,40 +3628,46 @@ body.eq-sheet-open {
   }
 
   .weekly-forecast-details > summary {
-    font-size: clamp(20px, 5.6vw, 24px);
+    font-size: clamp(13px, 3.6vw, 15px);
   }
 
   .weekly-forecast-row {
-    grid-template-columns: minmax(68px, auto) minmax(0, 1fr) auto;
-    gap: 10px 12px;
-    padding: 12px;
+    grid-template-columns: minmax(68px, auto) minmax(56px, 0.9fr) minmax(0, 1.2fr);
+    gap: 8px 10px;
+    padding: 10px 12px;
   }
 
   .weekly-forecast-icon {
-    width: 48px;
-    height: 48px;
+    width: 58px;
+    height: 58px;
   }
 
   .weekly-forecast-icon svg {
-    width: 44px;
-    height: 44px;
+    width: 54px;
+    height: 54px;
   }
 
   .weekly-forecast-day strong {
-    font-size: clamp(16px, 4.4vw, 19px);
+    font-size: clamp(17px, 4.8vw, 22px);
+    font-weight: 900;
+  }
+
+  .weekly-forecast-day span {
+    font-size: clamp(14px, 4vw, 17px);
+    font-weight: 800;
+    color: #0b3fad;
   }
 
   .weekly-forecast-label {
-    font-size: clamp(15px, 4.2vw, 17px);
+    font-size: clamp(14px, 4vw, 17px);
   }
 
   .weekly-forecast-temps {
-    font-size: clamp(17px, 4.8vw, 20px);
+    font-size: clamp(16px, 4.4vw, 19px);
   }
 
-  .weekly-forecast-rain,
-  .weekly-forecast-day span {
-    font-size: clamp(13px, 3.6vw, 14px);
+  .weekly-forecast-rain {
+    font-size: clamp(12px, 3.4vw, 13px);
   }
 
   .notice-card ul {
