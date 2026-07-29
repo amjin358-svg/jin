@@ -4995,7 +4995,7 @@ function renderEarthquakeSourceMeta(updatedAt = Date.now()) {
   }
   earthquakeMeta.innerHTML = `來源：<a href="${EARTHQUAKE_CWA_PAGE}" target="_blank" rel="noopener noreferrer">中央氣象署</a>｜更新 ${formatDateTime(
     updatedAt
-  )}｜<a href="${EARTHQUAKE_SCWEB_PAGE}" target="_blank" rel="noopener noreferrer">測報中心／公眾警示</a>`;
+  )}｜<a href="${EARTHQUAKE_SCWEB_PAGE}" target="_blank" rel="noopener noreferrer">測報中心</a>`;
 }
 
 function createEarthquakeListItem(quake) {
@@ -5300,7 +5300,7 @@ async function fetchEarthquakeData() {
         earthquakeSummary.textContent = "地震資料讀取失敗";
       }
       if (earthquakeList) {
-        earthquakeList.innerHTML = `<li class="status-warn">請稍後重試，或改看 <a href="${EARTHQUAKE_CWA_PAGE}" target="_blank" rel="noopener noreferrer">中央氣象署</a>／<a href="${EARTHQUAKE_SCWEB_PAGE}" target="_blank" rel="noopener noreferrer">測報中心／公眾警示</a>。</li>`;
+        earthquakeList.innerHTML = `<li class="status-warn">請稍後重試，或改看 <a href="${EARTHQUAKE_CWA_PAGE}" target="_blank" rel="noopener noreferrer">中央氣象署</a>／<a href="${EARTHQUAKE_SCWEB_PAGE}" target="_blank" rel="noopener noreferrer">測報中心</a>。</li>`;
       }
       updateEarthquakeMapLayer();
       return [];
