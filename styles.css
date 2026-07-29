@@ -399,9 +399,10 @@ label {
   line-height: 1;
 }
 
+.locate-btn .locate-icon svg,
 .locate-icon svg {
-  width: 20px;
-  height: 20px;
+  width: 26px;
+  height: 26px;
   fill: #ff3b30;
   filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.25));
 }
@@ -410,7 +411,7 @@ label {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
   width: 50%;
   max-width: 50%;
   box-sizing: border-box;
@@ -421,7 +422,7 @@ label {
   border-radius: 10px;
   background: #0f9d58;
   color: #fff;
-  font-size: clamp(13px, 3.4vw, 16px);
+  font-size: clamp(15px, 3.8vw, 18px);
   font-weight: 800;
   cursor: pointer;
   position: relative;
@@ -429,8 +430,8 @@ label {
   white-space: nowrap;
   overflow: hidden;
   flex-wrap: nowrap;
-  padding: 0 10px;
-  line-height: 1.1;
+  padding: 0 8px;
+  line-height: 1.05;
 }
 
 .locate-btn-label {
@@ -441,9 +442,9 @@ label {
   flex: 0 1 auto;
   min-width: 0;
   max-width: 100%;
-  font-size: inherit;
-  font-weight: inherit;
-  letter-spacing: 0.02em;
+  font-size: clamp(15px, 3.8vw, 18px);
+  font-weight: 800;
+  letter-spacing: 0;
 }
 
 .locate-btn-pulse,
@@ -3236,8 +3237,8 @@ body.eq-sheet-open {
     height: 48px;
     min-height: 48px;
     max-height: 48px;
-    padding: 0 8px;
-    font-size: clamp(12px, 3.2vw, 15px);
+    padding: 0 6px;
+    font-size: clamp(14px, 3.6vw, 17px);
   }
 
   .locate-wrap .locate-btn {
@@ -3246,20 +3247,21 @@ body.eq-sheet-open {
     height: 48px;
     min-height: 48px;
     max-height: 48px;
-    padding: 0 8px;
+    padding: 0 6px;
     white-space: nowrap;
     overflow: hidden;
     flex-wrap: nowrap;
-    font-size: clamp(12px, 3.2vw, 15px);
+    font-size: clamp(14px, 3.6vw, 17px);
   }
 
   .locate-btn .locate-icon svg {
-    width: 18px;
-    height: 18px;
+    width: 24px;
+    height: 24px;
   }
 
   .locate-btn-label {
     white-space: nowrap;
+    font-size: clamp(14px, 3.6vw, 17px);
   }
 
   .grid {
