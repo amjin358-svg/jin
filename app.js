@@ -4682,7 +4682,12 @@ function parseAiAlertPresentation(text) {
   const floodLevel = levelMatch ? Number(levelMatch[1]) : 0;
 
   let tone = "neutral";
-  if (tag.includes("高風險") || tag.includes("積淹水警戒") || tag.includes("國家緊急訊息")) {
+  if (
+    tag.includes("高風險") ||
+    tag.includes("積淹水警戒") ||
+    tag.includes("國家緊急訊息") ||
+    tag === "地震通報"
+  ) {
     tone = "high";
   } else if (tag.includes("積淹水警示") || tag.includes("積淹水監測")) {
     tone = floodLevel >= 1 ? `flood-${floodLevel}` : "flood-1";
@@ -4804,7 +4809,7 @@ function buildCwaEarthquakeReportContent(quake) {
   const serial = quake.serial && quake.serial !== "小區域" ? `第${quake.serial}號` : "小區域有感";
   const when = formatDateTime(quake.timeMs);
   const intensity = formatIntensityLabel(quake.intensityValue);
-  return `【國家緊急訊息／地震通報｜中央氣象署】${serial}地震報告：${when} 左右，${quake.place}發生規模 ${quake.magnitude.toFixed(
+  return `【地震通報】${serial}地震報告：${when} 左右，${quake.place}發生規模 ${quake.magnitude.toFixed(
     1
   )} 地震，最大震度 ${intensity}。請就近掩護、遠離危險物，並留意官方後續指示與餘震。`;
 }

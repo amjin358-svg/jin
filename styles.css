@@ -1698,12 +1698,16 @@ input[type="checkbox"] {
 
 .alert-block .topic-option,
 .alert-block .subscription-form > label,
-.alert-block .ai-alert-item,
-.alert-block .ai-alert-tag,
-.alert-block .ai-alert-body,
 .alert-block .subscription-status-box,
 .alert-block .subscription-email-note {
   font-size: 12px;
+}
+
+/* Match 地震通報 / ai-alert-top title+body scale for all realtime alert items. */
+.alert-block .ai-alert-item,
+.alert-block .ai-alert-tag,
+.alert-block .ai-alert-body {
+  font-size: 14px;
 }
 
 .topic-option-text {
@@ -3481,12 +3485,15 @@ body.eq-sheet-open {
 
   .alert-block .topic-option,
   .alert-block .subscription-form > label,
-  .alert-block .ai-alert-item,
-  .alert-block .ai-alert-tag,
-  .alert-block .ai-alert-body,
   .alert-block .subscription-status-box,
   .alert-block .subscription-email-note {
     font-size: 12px;
+  }
+
+  .alert-block .ai-alert-item,
+  .alert-block .ai-alert-tag,
+  .alert-block .ai-alert-body {
+    font-size: 14px;
   }
 
   .in-page-alert-host {

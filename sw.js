@@ -1,4 +1,4 @@
-const SW_VERSION = "jin-v28-locate-before-notify";
+const SW_VERSION = "jin-v29-earthquake-alert-label";
 const PREFS_DB = "jin-bg-prefs-v1";
 const PREFS_STORE = "prefs";
 const PREFS_KEY = "subscription";
@@ -220,7 +220,7 @@ async function buildBackgroundAlertMessages(prefs) {
           const top = rows[0];
           const when = new Date(top.timeMs).toLocaleString("zh-TW", { hour12: false });
           messages.push(
-            `【國家緊急訊息／地震通報｜中央氣象署】規模 ${top.magnitude.toFixed(1)}、最大震度 ${top.intensityText}級，${top.place}（${when}）。請就近掩護並留意餘震。`
+            `【地震通報】規模 ${top.magnitude.toFixed(1)}、最大震度 ${top.intensityText}級，${top.place}（${when}）。請就近掩護並留意餘震。`
           );
         }
       }
