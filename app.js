@@ -4641,22 +4641,31 @@ function renderEarthquakePanel() {
     wrap.className = "earthquake-more-wrap";
     const details = document.createElement("details");
     details.className = "earthquake-more-details";
-    details.innerHTML = `<summary class="earthquake-more-summary">▸ 展開其餘 ${rest.length} 筆通報</summary>`;
+    const topSummary = document.createElement("summary");
+    topSummary.className = "earthquake-more-summary";
+    topSummary.textContent = `▸ 展開其餘 ${rest.length} 筆通報`;
     const restList = document.createElement("ul");
     restList.className = "earthquake-list earthquake-more-list";
     rest.forEach((quake) => {
       restList.append(createEarthquakeListItem(quake));
     });
-    details.append(restList);
-    details.addEventListener("toggle", () => {
-      const summary = details.querySelector(".earthquake-more-summary");
-      if (!summary) {
-        return;
-      }
-      summary.textContent = details.open
+    const footer = document.createElement("button");
+    footer.type = "button";
+    footer.className = "earthquake-more-footer";
+    footer.textContent = `▾ 收合其餘 ${rest.length} 筆通報`;
+    footer.hidden = true;
+    footer.addEventListener("click", (event) => {
+      event.preventDefault();
+      details.open = false;
+    });
+    const syncCollapseLabels = () => {
+      topSummary.textContent = details.open
         ? `▾ 收合其餘 ${rest.length} 筆通報`
         : `▸ 展開其餘 ${rest.length} 筆通報`;
-    });
+      footer.hidden = !details.open;
+    };
+    details.addEventListener("toggle", syncCollapseLabels);
+    details.append(topSummary, restList, footer);
     wrap.append(details);
     earthquakeList.append(wrap);
   }
@@ -4713,6 +4722,13 @@ function openEarthquakeDetailSheet(quake) {
   earthquakeDetailSheetBody.innerHTML = buildEarthquakePopupHtml(quake);
   earthquakeDetailSheet.hidden = false;
   document.body.classList.add("eq-sheet-open");
+  window.requestAnimationFrame(() => {
+    earthquakeDetailSheetBody.scrollTop = 0;
+    const panel = earthquakeDetailSheet.querySelector(".eq-detail-sheet-panel");
+    if (panel) {
+      panel.scrollTop = 0;
+    }
+  });
 }
 
 function updateEarthquakeMapLayer() {
