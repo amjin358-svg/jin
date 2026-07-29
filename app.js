@@ -5489,7 +5489,7 @@ function updateNotificationHint(extraMessage = "") {
   // Keep text under「儲存訂閱」limited to subscription completion status.
   clearSubscriptionHint();
   if (extraMessage) {
-    showInPageAlert("訂閱提醒", extraMessage, { timeoutMs: 7000 });
+    showInPageAlert("訂閱提醒", extraMessage, { timeoutMs: 7000, variant: "subscribe-tip" });
   }
 }
 
@@ -5497,11 +5497,15 @@ function showInPageAlert(title, body, { timeoutMs = 8000, fullscreen = false, va
   if (!inPageAlertHost) {
     return false;
   }
+  const isReadableTip = variant === "subscribe-tip" || variant === "not-open";
   const alert = document.createElement("article");
   alert.className = [
     "in-page-alert",
     fullscreen ? "in-page-alert-fullscreen" : "",
-    variant === "locate-done" ? "in-page-alert-locate-done" : ""
+    variant === "locate-done" ? "in-page-alert-locate-done" : "",
+    isReadableTip ? "in-page-alert-readable-tip" : "",
+    variant === "subscribe-tip" ? "in-page-alert-subscribe-tip" : "",
+    variant === "not-open" ? "in-page-alert-not-open" : ""
   ]
     .filter(Boolean)
     .join(" ");
@@ -5537,7 +5541,8 @@ function showInPageAlert(title, body, { timeoutMs = 8000, fullscreen = false, va
     inPageAlertHost.classList.add("is-fullscreen-mode");
   }
   inPageAlertHost.append(alert);
-  if (!fullscreen) {
+  // Readable tips use CSS wrapping sizes; shrink-to-fit made long notices unreadable.
+  if (!fullscreen && !isReadableTip) {
     window.requestAnimationFrame(() => {
       const width = Math.floor(alert.getBoundingClientRect().width || 0);
       fitSingleLineText(titleEl, {
@@ -7431,7 +7436,10 @@ testNotificationBtn?.addEventListener("click", async () => {
   if (!isForecastNotifyArmedByLocate()) {
     renderSubscriptionStatus(getForecastNotifyGateMessage());
     updateNotificationHint(getForecastNotifyGateMessage());
-    showInPageAlert("尚未開放通知", getForecastNotifyGateMessage(), { timeoutMs: 5000 });
+    showInPageAlert("尚未開放通知", getForecastNotifyGateMessage(), {
+      timeoutMs: 5000,
+      variant: "not-open"
+    });
     return;
   }
   await sendSubscriptionNotification({ force: true });

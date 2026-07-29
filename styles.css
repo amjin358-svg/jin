@@ -914,6 +914,7 @@ label {
 .notification-hint {
   margin-top: 6px;
   color: #5a6787;
+  font-size: 16px;
   line-height: 1.45;
 }
 
@@ -969,6 +970,64 @@ label {
   overflow: hidden;
   width: 100%;
   max-width: 100%;
+}
+
+.in-page-alert-subscribe-tip .in-page-alert-title {
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.3;
+  white-space: normal;
+  overflow: visible;
+}
+
+.in-page-alert-subscribe-tip .in-page-alert-line {
+  font-size: 16px;
+  line-height: 1.45;
+  white-space: normal;
+  overflow: visible;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.in-page-alert-host:has(.in-page-alert-readable-tip) {
+  width: min(94%, 560px);
+}
+
+.in-page-alert-readable-tip {
+  padding: 16px 18px;
+}
+
+.in-page-alert-readable-tip .in-page-alert-title {
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.35;
+  white-space: normal;
+  overflow: visible;
+}
+
+.in-page-alert-readable-tip .in-page-alert-line {
+  font-size: 18px;
+  line-height: 1.5;
+  white-space: normal;
+  overflow: visible;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.in-page-alert-readable-tip .in-page-alert-close {
+  margin-top: 12px;
+  padding: 10px 14px;
+  font-size: 16px;
+}
+
+.in-page-alert-not-open .in-page-alert-title {
+  font-size: 22px;
+}
+
+.in-page-alert-not-open .in-page-alert-line {
+  font-size: 20px;
+  line-height: 1.55;
+  font-weight: 600;
 }
 
 .in-page-alert-close {
@@ -1679,7 +1738,7 @@ input[type="checkbox"] {
   border-radius: 10px;
   background: #eaf2ff;
   color: #123a7a;
-  font-size: 14px;
+  font-size: 17px;
   font-weight: 700;
   line-height: 1.45;
   box-shadow: inset 0 0 0 1px rgba(31, 90, 225, 0.12);
@@ -1692,15 +1751,22 @@ input[type="checkbox"] {
 .subscription-email-note {
   margin: 8px 0 0;
   color: var(--muted);
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.45;
 }
 
 .alert-block .topic-option,
-.alert-block .subscription-form > label,
-.alert-block .subscription-status-box,
-.alert-block .subscription-email-note {
+.alert-block .subscription-form > label {
   font-size: 12px;
+}
+
+.alert-block .subscription-status-box {
+  font-size: 17px;
+}
+
+.alert-block .subscription-email-note,
+.alert-block .notification-hint {
+  font-size: 16px;
 }
 
 /* Match 地震通報 / ai-alert-top title+body scale for all realtime alert items. */
@@ -3484,9 +3550,7 @@ body.eq-sheet-open {
   }
 
   .alert-block .topic-option,
-  .alert-block .subscription-form > label,
-  .alert-block .subscription-status-box,
-  .alert-block .subscription-email-note {
+  .alert-block .subscription-form > label {
     font-size: 12px;
   }
 
@@ -3494,6 +3558,45 @@ body.eq-sheet-open {
   .alert-block .ai-alert-tag,
   .alert-block .ai-alert-body {
     font-size: 14px;
+  }
+
+  .alert-block .subscription-status-box,
+  .subscription-status-box.timestamp {
+    font-size: 17px;
+  }
+
+  .alert-block .subscription-email-note,
+  .alert-block .notification-hint,
+  .subscription-email-note.timestamp,
+  .notification-hint.timestamp {
+    font-size: 16px;
+  }
+
+  .in-page-alert-subscribe-tip .in-page-alert-title,
+  .in-page-alert-readable-tip .in-page-alert-title {
+    font-size: clamp(22px, 5.5vw, 28px);
+    white-space: normal;
+    overflow: visible;
+  }
+
+  .in-page-alert-subscribe-tip .in-page-alert-line,
+  .in-page-alert-readable-tip .in-page-alert-line {
+    font-size: clamp(18px, 4.5vw, 22px);
+    line-height: 1.45;
+    white-space: normal;
+    overflow: visible;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+  }
+
+  .in-page-alert-not-open .in-page-alert-title {
+    font-size: clamp(24px, 6.5vw, 32px);
+  }
+
+  .in-page-alert-not-open .in-page-alert-line {
+    font-size: clamp(20px, 5.5vw, 26px);
+    line-height: 1.55;
+    font-weight: 600;
   }
 
   .in-page-alert-host {
