@@ -689,32 +689,35 @@ label {
 
 .windy-locate-btn {
   position: absolute;
-  top: 8px;
-  left: 8px;
+  /* Sit on Windy embed wordmark (top-left); sized to cover, not dominate. */
+  top: 4px;
+  left: 4px;
   z-index: 6;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  width: auto;
-  min-width: 132px;
-  height: 48px;
-  min-height: 48px;
-  padding: 0 18px;
+  gap: 4px;
+  box-sizing: border-box;
+  width: 100px;
+  min-width: 100px;
+  max-width: 100px;
+  height: 28px;
+  min-height: 28px;
+  padding: 0 8px;
   border: 1px solid #b71c1c;
   border-radius: 999px;
   background: #e53935;
   color: #fff;
-  font-size: 16px;
+  font-size: 11px;
   font-weight: 800;
   line-height: 1;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.28);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.28);
 }
 
 .windy-locate-btn .locate-icon svg {
-  width: 22px;
-  height: 22px;
+  width: 12px;
+  height: 12px;
   fill: #fff;
   filter: none;
 }
