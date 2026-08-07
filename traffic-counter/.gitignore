@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+demo/
+/data/
+/reports/
+*.db
+*.mp4
+# 保留展示網站的資料集
+!web/data/
+!scripts/*.py

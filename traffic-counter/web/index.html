@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>台南路況車流量統計儀表板</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">Tainan Traffic Volume Dashboard</p>
+          <h1>路況 CCTV 車流量統計儀表板</h1>
+          <p class="subtitle">
+            由路況攝影機影像自動偵測、跨線計數，彙整為每小時車流量。
+          </p>
+        </div>
+        <div class="cam-pill" id="cameraPill">攝影機：載入中…</div>
+      </header>
+
+      <section class="controls card">
+        <div class="date-tabs" id="dateTabs" role="tablist"></div>
+        <p class="timestamp" id="generatedAt">資料讀取中…</p>
+      </section>
+
+      <section class="summary" id="summaryCards"></section>
+
+      <section class="card chart-card">
+        <div class="section-head">
+          <h2>每小時車流量</h2>
+          <div class="legend">
+            <span class="dot dot-a"></span>方向A
+            <span class="dot dot-b"></span>方向B
+          </div>
+        </div>
+        <div class="chart" id="hourlyChart" aria-live="polite"></div>
+      </section>
+
+      <section class="card table-card">
+        <div class="section-head">
+          <h2>每小時明細表</h2>
+          <div class="dl-links">
+            <a href="./data/hourly_traffic.csv" download>CSV</a>
+            <a href="./data/hourly_traffic.xlsx" download>Excel</a>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="traffic-table" id="hourlyTable">
+            <thead>
+              <tr>
+                <th>時段</th>
+                <th>車流量</th>
+                <th>方向A</th>
+                <th>方向B</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card cameras-card">
+        <div class="section-head">
+          <h2>距白河區中山路最近的攝影機</h2>
+        </div>
+        <p class="note" id="camerasNote">
+          白河區在台南市公開 CCTV 開放資料中<strong>沒有</strong>攝影機；以下為依座標距離最接近的鏡頭（屬鄰近城鎮，僅供參考）。
+        </p>
+        <div class="camera-list" id="cameraList"></div>
+      </section>
+
+      <section class="card notice-card">
+        <h2>資料與方法說明</h2>
+        <ul>
+          <li>攝影機清單來源：臺南市政府資料開放平台「路況攝影機(CCTV)位置影像資料」。</li>
+          <li>車流量以 OpenCV 背景相減（可選 YOLO）偵測車輛，並以虛擬計數線判斷跨越與方向。</li>
+          <li>官方 CCTV 僅提供即時串流、不保存歷史錄影，過去日期無法回溯；本頁數據為示範資料集。</li>
+        </ul>
+      </section>
+
+      <footer class="foot" id="footer"></footer>
+    </main>
+
+    <script src="./app.js" defer></script>
+  </body>
+</html>
